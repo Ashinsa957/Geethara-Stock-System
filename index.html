@@ -806,8 +806,7 @@
         projectId: "geethara-stock-system",
         storageBucket: "geethara-stock-system.firebasestorage.app",
         messagingSenderId: "829359169115",
-        appId: "1:829359169115:web:7e6b033326275cc2ed697e",
-        databaseURL: "https://coke-credit-system-default-rtdb.firebaseio.com"
+        appId: "1:829359169115:web:7e6b033326275cc2ed697e"
     };
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
@@ -873,28 +872,42 @@
         db.ref('geethara_db/cokeSysUltraData').on('value', (snapshot) => {
             if(isSyncing) return; // Prevent loop if this specific PC pushed the update
             const data = snapshot.val();
+            
             if(data) {
-                priceMaster = data.priceMaster || {}; masterData = data.masterData || [];
-                targetMaster = data.targetMaster || {}; discountData = data.discountData || [];
-                halfCaseItems = data.halfCaseItems || []; discountHeaders = data.discountHeaders || [];
+                priceMaster = data.priceMaster || {}; 
+                masterData = data.masterData || [];
+                targetMaster = data.targetMaster || {}; 
+                discountData = data.discountData || [];
+                halfCaseItems = data.halfCaseItems || []; 
+                discountHeaders = data.discountHeaders || [];
                 
                 // Debounce UI refresh to stop browser hang on big DB loads
                 clearTimeout(refreshTimeout);
                 refreshTimeout = setTimeout(() => {
-                    refreshAllUIs();
-                    document.getElementById('globalLoader').style.display = 'none'; // Hide loader
-                    
-                    let badge = document.getElementById('statusBadge');
-                    badge.classList.add('bg-success', 'text-white');
-                    badge.innerText = "Live Update Received!";
-                    setTimeout(() => { 
-                        badge.classList.remove('bg-success', 'text-white'); 
-                        badge.innerText = "Cloud Live Syncing..."; 
-                    }, 2000);
+                    try {
+                        refreshAllUIs();
+                    } catch (e) {
+                        console.error("UI Refreshing Error: ", e);
+                    } finally {
+                        document.getElementById('globalLoader').style.display = 'none'; // අනිවාර්යයෙන්ම ලෝඩරය ඉවත් කිරීම
+                        
+                        let badge = document.getElementById('statusBadge');
+                        badge.classList.add('bg-success', 'text-white');
+                        badge.innerText = "Live Update Received!";
+                        setTimeout(() => { 
+                            badge.classList.remove('bg-success', 'text-white'); 
+                            badge.innerText = "Cloud Live Syncing..."; 
+                        }, 2000);
+                    }
                 }, 300);
             } else {
-                document.getElementById('globalLoader').style.display = 'none'; // Hide even if empty DB
+                document.getElementById('globalLoader').style.display = 'none'; // හිස් ඩේටාබේස් එකක් නම් ලෝඩරය ඉවත් කිරීම
             }
+        }, (error) => {
+            // දත්ත ගෙන්වා ගැනීමේදී දෝෂයක් ආවොත් ලෝඩරය ඉවත් කර Error මැසේජ් එකක් පෙන්වීම
+            console.error("Firebase Sync Error: ", error);
+            document.getElementById('globalLoader').style.display = 'none';
+            Swal.fire('Database Connection Error', 'දත්ත ලබාගැනීමේදී දෝෂයක් ඇතිවිය: ' + error.message, 'error');
         });
     }
 
