@@ -75,7 +75,7 @@
         .nav-pills-main .nav-link:hover { color: var(--text-light); background: rgba(229, 0, 20, 0.1);
         }
         .nav-pills-main .nav-link.active { color: white; background: linear-gradient(45deg, var(--coke-red), #ff416c);
-        box-shadow: 0 8px 20px var(--coke-red-glow); }
+            box-shadow: 0 8px 20px var(--coke-red-glow); }
 
         ::-webkit-scrollbar { width: 8px; height: 8px;
         }
@@ -111,14 +111,14 @@
             color: #fff; border-top: 2px solid var(--coke-red);
         }
         .table tbody tr { transition: all 0.2s; cursor: pointer;
-        border-bottom: 1px solid rgba(255,255,255,0.05); }
+            border-bottom: 1px solid rgba(255,255,255,0.05); }
         .table tbody tr:hover { background-color: rgba(102, 252, 241, 0.1) !important;
-        transform: scale(1.005); box-shadow: 0 2px 10px rgba(0,0,0,0.5);}
+            transform: scale(1.005); box-shadow: 0 2px 10px rgba(0,0,0,0.5);}
 
         .discrepancy { color: #ff4757 !important;
-        font-weight: 700; background-color: rgba(255, 71, 87, 0.1) !important; }
+            font-weight: 700; background-color: rgba(255, 71, 87, 0.1) !important; }
         .match { color: #2ed573 !important;
-        font-weight: 700; background-color: rgba(46, 213, 115, 0.1) !important; }
+            font-weight: 700; background-color: rgba(46, 213, 115, 0.1) !important; }
         
         .icon-box { 
             display: inline-flex;
@@ -130,7 +130,7 @@
             border: 1px solid rgba(229,0,20,0.3); box-shadow: 0 8px 30px rgba(229,0,20,0.2);
         }
         .btn-pro { border-radius: 12px; font-weight: 600; padding: 12px 25px; transition: all 0.3s;
-        letter-spacing: 0.5px; }
+            letter-spacing: 0.5px; }
         .btn-pro-red { background: linear-gradient(45deg, var(--coke-red), #ff416c); color: white; border: none;
         }
         .btn-pro-red:hover { box-shadow: 0 8px 25px var(--coke-red-glow); color: white; transform: translateY(-2px);
@@ -142,12 +142,12 @@
             color: var(--text-light) !important; border-radius: 12px; padding: 10px 15px; font-size: 14px;
         }
         .form-control:focus, .form-select:focus { border-color: var(--accent-cyan);
-        box-shadow: 0 0 0 0.25rem rgba(102, 252, 241, 0.2); }
+            box-shadow: 0 0 0 0.25rem rgba(102, 252, 241, 0.2); }
         .form-label { color: var(--accent-cyan);
-        font-weight: 500; text-transform: uppercase; font-size: 11px; margin-bottom: 0.3rem;}
+            font-weight: 500; text-transform: uppercase; font-size: 11px; margin-bottom: 0.3rem;}
         
         .modal-content { background: var(--dark-bg);
-        border-radius: 24px; border: 1px solid var(--glass-border); box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            border-radius: 24px; border: 1px solid var(--glass-border); box-shadow: 0 25px 50px rgba(0,0,0,0.5);
         }
         .modal-header { background: rgba(0,0,0,0.5); border-bottom: 1px solid var(--glass-border);
         }
@@ -156,16 +156,16 @@
         .btn-close { filter: invert(1) grayscale(100%) brightness(200%);
         }
         .edit-input { background: transparent; border: 1px solid #45a29e; color: white; width: 80px;
-        text-align: center; border-radius: 5px; }
+            text-align: center; border-radius: 5px; }
         
         .target-stat-box { cursor: pointer;
-        border-left: 4px solid transparent; }
+            border-left: 4px solid transparent; }
         .target-stat-box:hover { border-left-color: var(--coke-red);
         }
         
         .math-step { padding: 10px;
-        border-radius: 8px; background: rgba(255,255,255,0.03); margin-bottom: 8px; border-left: 3px solid var(--accent-cyan); font-family: monospace;
-        font-size: 15px;}
+            border-radius: 8px; background: rgba(255,255,255,0.03); margin-bottom: 8px; border-left: 3px solid var(--accent-cyan); font-family: monospace;
+            font-size: 15px;}
         .math-highlight { color: #2ed573; font-weight: bold;
         }
         .zero-profit { background: rgba(229,0,20,0.15) !important; color: #ff4757 !important; border-left: 4px solid var(--coke-red);
@@ -196,6 +196,12 @@
 </head>
 <body>
 
+<div id="globalLoader" style="position: fixed; z-index: 99999; top: 0; left: 0; width: 100%; height: 100%; background: rgba(11, 12, 16, 0.95); backdrop-filter: blur(10px); display: none; justify-content: center; align-items: center; flex-direction: column;">
+    <div class="spinner-border text-danger mb-4" style="width: 5rem; height: 5rem; border-width: 5px;" role="status"></div>
+    <h3 class="text-white fw-bold animate__animated animate__pulse animate__infinite">සජීවී දත්ත ලබාගනිමින් පවතී...</h3>
+    <p class="text-info mt-2"><i class="fa-solid fa-cloud-bolt"></i> Syncing Live Database Engine. Please wait.</p>
+</div>
+
 <div id="loginOverlay">
     <div class="pro-card p-5 text-center shadow-lg" style="max-width: 550px; margin: 10vh auto; border-top: 4px solid var(--coke-red);">
         <div class="icon-box"><i class="fa-solid fa-shield-halved"></i></div>
@@ -225,8 +231,7 @@
             </div>
             <div class="d-flex gap-2 align-items-center">
                 <button class="btn btn-sm btn-outline-info rounded-pill" onclick="exportBackup()"><i class="fa-solid fa-cloud-arrow-down"></i> Quick Backup</button>
-                <span class="badge bg-transparent text-success p-2 px-3 rounded-pill 
-                border border-success shadow heartbeat" id="statusBadge"><i class="fa-solid fa-cloud-bolt me-2"></i> Cloud Live Syncing...</span>
+                <span class="badge bg-transparent text-success p-2 px-3 rounded-pill border border-success shadow heartbeat" id="statusBadge"><i class="fa-solid fa-cloud-bolt me-2"></i> Cloud Live Syncing...</span>
             </div>
         </div>
 
@@ -237,7 +242,7 @@
                 <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#profitView"><i class="fa-solid fa-sack-dollar me-2"></i> Profit Analytics</button></li>
                 <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#targetView"><i class="fa-solid fa-bullseye me-2"></i> Targets & KPIs</button></li>
                 <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#discountView"><i class="fa-solid fa-tags me-2"></i> Discount Hub</button></li>
-                <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#irdReportsView"><i class="fa-solid fa-file-invoice-dollar me-2"></i> IRD Reports</button></li>
+                <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#irdReportsView"><i class="fa-solid fa-file-invoice-dollar me-2"></i> VAT And SSCL</button></li>
                 <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#settings"><i class="fa-solid fa-shield-halved me-2"></i> Security</button></li>
             </ul>
         </div>
@@ -250,8 +255,7 @@
                         <div class="pro-card p-5 text-center h-100">
                             <div class="icon-box"><i class="fa-solid fa-file-excel"></i></div>
                             <h4 class="fw-bold text-white">Step 1: Price Master Sync</h4>
-                            <p class="text-muted small mb-3">Upload Excel containing exactly 4 columns: <br><strong>Code |
-                            Item | Unit Price | Sale Price</strong></p>
+                            <p class="text-muted small mb-3">Upload Excel containing exactly 4 columns: <br><strong>Code | Item | Unit Price | Sale Price</strong></p>
                             <p id="pmStatusBadge" class="badge bg-danger mb-4">Not Loaded</p>
                             <input type="file" class="form-control form-control-lg" id="priceFile" accept=".xlsx, .csv">
                         </div>
@@ -271,8 +275,7 @@
                 <div class="pro-card p-4">
                     <div class="d-flex justify-content-between align-items-end mb-4">
                         <div class="d-flex gap-3 flex-wrap">
-                            <div><label class="form-label"><i class="fa-regular fa-calendar text-primary"></i> Date Filter</label><input 
-                            type="date" id="filterDate" class="form-control form-control-sm" onchange="renderMasterData()"></div>
+                            <div><label class="form-label"><i class="fa-regular fa-calendar text-primary"></i> Date Filter</label><input type="date" id="filterDate" class="form-control form-control-sm" onchange="renderMasterData()"></div>
                             <div><label class="form-label"><i class="fa-solid fa-calendar-days text-primary"></i> Coke Month</label><input type="text" id="filterCokeMonth" class="form-control form-control-sm" placeholder="Ex: 2026 March" oninput="renderMasterData()"></div>
                             <div><label class="form-label"><i class="fa-solid fa-hashtag text-primary"></i> Invoice No</label><input type="text" id="filterInvoice" class="form-control form-control-sm" placeholder="Search Invoice..." oninput="renderMasterData()"></div>
                             <div><label class="form-label"><i class="fa-solid fa-truck text-primary"></i> Vehicle No</label><input type="text" id="filterVehicle" class="form-control form-control-sm" placeholder="Search Vehicle..." oninput="renderMasterData()"></div>
@@ -329,8 +332,7 @@
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <div>
                                     <h4 class="fw-bold text-white mb-1"><i class="fa-solid fa-boxes-packing text-success"></i> Item Profit Margins</h4>
-                                    <p class="text-muted small mb-0">ක්ලික් කිරීම මගින් සූත්‍රය පියවරෙන් පියවර බලාගත හැක.
-                                    (Sort කිරීමට මාතෘකා මත ක්ලික් කරන්න)</p>
+                                    <p class="text-muted small mb-0">ක්ලික් කිරීම මගින් සූත්‍රය පියවරෙන් පියවර බලාගත හැක. (Sort කිරීමට මාතෘකා මත ක්ලික් කරන්න)</p>
                                 </div>
                                 <button class="btn btn-outline-success btn-sm" onclick="exportToCSV('profitItemTable', 'Item_Margins.csv')"><i class="fa-solid fa-file-csv"></i> Export CSV</button>
                             </div>
@@ -558,7 +560,7 @@
 
             <div class="tab-pane fade" id="irdReportsView">
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h2 class="text-white"><i class="fa-solid fa-file-invoice-dollar"></i> IRD Reports & SSCL</h2>
+                    <h2 class="text-white"><i class="fa-solid fa-file-invoice-dollar"></i> VAT And SSCL</h2>
                 </div>
 
                 <div class="card bg-dark mb-4 border border-danger">
@@ -582,7 +584,7 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="p-3 border border-secondary rounded" style="background: rgba(0,0,0,0.2);">
-                                    <h6 class="text-info">Distributor Output VAT (සේල් සහ ඩිස්කවුන්ට්)</h6>
+                                    <h6 class="text-info">Company Output VAT (සේල් සහ ඩිස්කවුන්ට්)</h6>
                                     <div class="row mt-2">
                                         <div class="col-6">
                                             <label class="text-light">From Date</label>
@@ -619,10 +621,10 @@
             <div class="tab-pane fade" id="settings">
                 <div class="row justify-content-center g-4">
                     <div class="col-md-5">
-                         <div class="pro-card p-5 h-100 text-center border-top border-4 border-info">
+                        <div class="pro-card p-5 h-100 text-center border-top border-4 border-info">
                              <div class="mb-3 text-info fs-1"><i class="fa-solid fa-cloud-arrow-down"></i></div>
                             <h4 class="fw-bold text-white">System Backup</h4>
-                             <button class="btn btn-outline-info btn-pro w-100 mt-auto" onclick="exportBackup()">Download Full JSON Backup</button>
+                            <button class="btn btn-outline-info btn-pro w-100 mt-auto" onclick="exportBackup()">Download Full JSON Backup</button>
                          </div>
                     </div>
                     <div class="col-md-5">
@@ -810,11 +812,13 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.database();
-
+    
     const allowedEmails = ["ranjithu1234@gmail.com", "pkumara125@gmail.com", "1234kumarika@gmail.com", "ashinsasathsara@gmail.com"];
+    
     auth.onAuthStateChanged(user => {
         if (user && allowedEmails.includes(user.email.toLowerCase())) {
             document.getElementById('loginOverlay').style.display = 'none';
+            document.getElementById('globalLoader').style.display = 'flex'; // Show loading screen on login
             document.getElementById('mainAppWrapper').style.display = 'block';
             initLiveSync(); 
         } else if (user) {
@@ -825,6 +829,7 @@
             document.getElementById('mainAppWrapper').style.display = 'none';
         }
     });
+
     function loginWithGoogle() {
         const provider = new firebase.auth.GoogleAuthProvider();
         auth.signInWithPopup(provider).catch(error => {
@@ -838,7 +843,7 @@
     // --- GLOBAL DATA ---
     let priceMaster = {};
     let pendingLoads = [];
-    let initialPendingCount = 0; // New var for tracking progress
+    let initialPendingCount = 0;
     let masterData = [];
     let targetMaster = {};
     let discountData = []; 
@@ -846,10 +851,12 @@
     let discountHeaders = []; 
     let currentEditingLoad = null;
     let isSyncing = false; 
+    let refreshTimeout = null;
     
     let loadModalInstance, detailsModalInstance, targetDetailsModalInstance, discountModalInstance;
     let itemProfitModalInstance, invoiceProfitModalInstance;
     window.excludedIrdInvoices = [];
+
     window.onload = function() {
         loadModalInstance = new bootstrap.Modal(document.getElementById('loadModal'));
         detailsModalInstance = new bootstrap.Modal(document.getElementById('loadDetailsModal'));
@@ -858,35 +865,35 @@
         itemProfitModalInstance = new bootstrap.Modal(document.getElementById('itemProfitModal'));
         invoiceProfitModalInstance = new bootstrap.Modal(document.getElementById('invoiceProfitModal'));
         
-        const savedData = localStorage.getItem('cokeSysUltraData');
-        if(savedData) {
-            try {
-                const data = JSON.parse(savedData);
-                priceMaster = data.priceMaster || {}; masterData = data.masterData || [];
-                targetMaster = data.targetMaster || {}; discountData = data.discountData || [];
-                halfCaseItems = data.halfCaseItems || []; discountHeaders = data.discountHeaders || [];
-                
-                refreshAllUIs();
-            } catch(e) { console.error("Error loading local data", e);
-            }
-        }
+        // Removed heavy localStorage load here to avoid freezing before Firebase syncs.
+        // Data will load from Firebase directly to keep all PCs in sync.
     };
+
     function initLiveSync() {
         db.ref('geethara_db/cokeSysUltraData').on('value', (snapshot) => {
+            if(isSyncing) return; // Prevent loop if this specific PC pushed the update
             const data = snapshot.val();
-            if(data && !isSyncing) {
+            if(data) {
                 priceMaster = data.priceMaster || {}; masterData = data.masterData || [];
                 targetMaster = data.targetMaster || {}; discountData = data.discountData || [];
                 halfCaseItems = data.halfCaseItems || []; discountHeaders = data.discountHeaders || [];
-                refreshAllUIs();
                 
-                let badge = document.getElementById('statusBadge');
-                badge.classList.add('bg-success', 'text-white');
-                badge.innerText = "Live Update Received!";
-                setTimeout(() => { 
-                    badge.classList.remove('bg-success', 'text-white'); 
-                    badge.innerText = "Cloud Live Syncing..."; 
-                }, 2000);
+                // Debounce UI refresh to stop browser hang on big DB loads
+                clearTimeout(refreshTimeout);
+                refreshTimeout = setTimeout(() => {
+                    refreshAllUIs();
+                    document.getElementById('globalLoader').style.display = 'none'; // Hide loader
+                    
+                    let badge = document.getElementById('statusBadge');
+                    badge.classList.add('bg-success', 'text-white');
+                    badge.innerText = "Live Update Received!";
+                    setTimeout(() => { 
+                        badge.classList.remove('bg-success', 'text-white'); 
+                        badge.innerText = "Cloud Live Syncing..."; 
+                    }, 2000);
+                }, 300);
+            } else {
+                document.getElementById('globalLoader').style.display = 'none'; // Hide even if empty DB
             }
         });
     }
@@ -894,7 +901,6 @@
     function saveToDatabase() {
         isSyncing = true;
         const data = { priceMaster, masterData, targetMaster, discountData, halfCaseItems, discountHeaders };
-        localStorage.setItem('cokeSysUltraData', JSON.stringify(data));
         db.ref('geethara_db/cokeSysUltraData').set(data).then(() => {
             setTimeout(() => { isSyncing = false; }, 800); 
         }).catch(e => {
@@ -1054,7 +1060,6 @@
         reader.readAsArrayBuffer(e.target.files[0]);
     });
 
-    // UPDATE 1: FREE Sale Value Calculation
     function renderDiscountDashboard() {
         let fFrom = document.getElementById('disFilterFrom').value;
         let fTo = document.getElementById('disFilterTo').value;
@@ -1169,7 +1174,6 @@
         });
     }
 
-    // UPDATE 1 (continued): FREE Sale Value Calculation for Modal
     function showDiscountSplitModal() {
         let fFrom = document.getElementById('disFilterFrom').value;
         let fTo = document.getElementById('disFilterTo').value;
@@ -1275,7 +1279,6 @@
         });
     }
 
-    // AI Pricing Animation Update
     window.showItemProfitMath = function(code) {
         let prf = calculateItemProfit(code);
         if(!prf) return;
@@ -1399,27 +1402,26 @@
         };
         reader.readAsArrayBuffer(e.target.files[0]);
     });
-
     function extractInvoicesSuperRobust(aoa) {
         let loads = []; let current = null;
         const findValInChunk = (start, end, keyword) => {
             for(let r=start; r<=end && r<aoa.length; r++) { let row = aoa[r];
                 for(let c=0; c<row.length; c++) { let cellStr = String(row[c]).toLowerCase().replace(/[^a-z0-9]/g, ''); let keyClean = keyword.toLowerCase().replace(/[^a-z0-9]/g, '');
-                    if(cellStr.includes(keyClean)) { for(let i=c+1; i<row.length; i++) { if(String(row[i]).trim() !== "") return String(row[i]).trim(); }
+                    if(cellStr.includes(keyClean)) { for(let i=c+1; i<row.length; i++) { if(String(row[i]).trim() !== "") return String(row[i]).trim();
+                        }
                         if(r+1 < aoa.length && String(aoa[r+1][c]).trim() !== "") return String(aoa[r+1][c]).trim();
                     } 
                 } 
             } return "";
         };
-        const getNumFromRow = (row) => { let nums = row.map(x => cleanNum(x)).filter(x => !isNaN(x) && x !== 0); return nums.length > 0 ? nums[nums.length - 1] : 0; };
-        
+        const getNumFromRow = (row) => { let nums = row.map(x => cleanNum(x)).filter(x => !isNaN(x) && x !== 0);
+            return nums.length > 0 ? nums[nums.length - 1] : 0; };
         for (let i = 0; i < aoa.length; i++) { let rowStr = aoa[i].join(" ").toLowerCase();
             if (rowStr.includes("date") || rowStr.includes("invoice no") || rowStr.includes("load no")) {
                 if (current && current.items.length > 0) loads.push(current);
                 current = { headerRow: i, state: "HEADER", items: [], excelSummary: {} };
             }
             if (!current) continue;
-            
             if (current.state === "HEADER") { let lowerRow = aoa[i].map(c => String(c).trim().toLowerCase());
                 if (lowerRow.some(c => c.includes("code") || c.includes("description") || c.includes("product"))) { 
                     current.state = "ITEMS";
@@ -1434,12 +1436,13 @@
                     current.cokeMonth = findValInChunk(current.headerRow, i, "Coke Month"); 
                     current.cokeWeek = findValInChunk(current.headerRow, i, "Coke Week");
                     
-                    current.noteTypeRaw = findValInChunk(current.headerRow, i, "Note") || findValInChunk(current.headerRow, i, "Type") || findValInChunk(current.headerRow, i, "Note Type");
+                    current.noteTypeRaw = findValInChunk(current.headerRow, i, "Note") ||
+                        findValInChunk(current.headerRow, i, "Type") || findValInChunk(current.headerRow, i, "Note Type");
                 }
             } else if (current.state === "ITEMS") { 
                 let firstCellStr = String(aoa[i][0] || "").trim().toLowerCase();
                 if (firstCellStr.includes("total") || firstCellStr.includes("net value") || firstCellStr.includes("discount")) { 
-                    current.state = "SUMMARY"; 
+                    current.state = "SUMMARY";
                     if(firstCellStr.includes("net value")) current.excelSummary.netValue = getNumFromRow(aoa[i]);
                 } else {
                     let code = cleanItemCode(aoa[i][current.nameIdx] || aoa[i][1] || aoa[i][0]);
@@ -1449,7 +1452,8 @@
             } 
             if (current.state === "SUMMARY" || current.state === "ITEMS") { let rowStrLower = aoa[i].join(" ").toLowerCase();
                 if(rowStrLower.includes("cash discount")) current.excelSummary.cashDiscount = Math.abs(getNumFromRow(aoa[i]));
-                if(rowStrLower.includes("early settlement") || rowStrLower.includes("early set") || rowStrLower.includes("settlement discount")) { current.excelSummary.earlySet = Math.abs(getNumFromRow(aoa[i])); }
+                if(rowStrLower.includes("early settlement") || rowStrLower.includes("early set") || rowStrLower.includes("settlement discount")) { current.excelSummary.earlySet = Math.abs(getNumFromRow(aoa[i]));
+                }
                 if(rowStrLower.includes("taxable")) current.excelSummary.taxable = getNumFromRow(aoa[i]);
                 if(rowStrLower.includes("vat")) current.excelSummary.vat = getNumFromRow(aoa[i]);
                 if(rowStrLower.includes("after tax") || rowStrLower.includes("invoice value")) current.excelSummary.finalValue = getNumFromRow(aoa[i]);
@@ -1472,10 +1476,10 @@
 
         let finalDate = convertExcelDate(currentEditingLoad.dateRaw);
         document.getElementById('m-date').value = finalDate; autoFillCalMonth(finalDate);
-        document.getElementById('m-cokeMonth').value = currentEditingLoad.cokeMonth || ""; document.getElementById('m-cokeWeek').value = currentEditingLoad.cokeWeek || "";
+        document.getElementById('m-cokeMonth').value = currentEditingLoad.cokeMonth || "";
+        document.getElementById('m-cokeWeek').value = currentEditingLoad.cokeWeek || "";
         document.getElementById('m-invNo').value = currentEditingLoad.invNo || ""; document.getElementById('m-loadNo').value = currentEditingLoad.loadNo || "";
         document.getElementById('m-vehicleNo').value = currentEditingLoad.vehicleNo || "";
-        
         let detectedNote = 'Standard';
         let rawTypeStr = (currentEditingLoad.noteTypeRaw || "").toUpperCase();
         
@@ -1509,10 +1513,10 @@
             tbody.innerHTML += `<tr><td class="text-start ps-3 fw-bold text-light">${item.code}</td><td class="text-light text-start">${item.itemName}</td><td class="text-info">${item.itemType}</td><td>Rs. ${item.unitPrice.toFixed(2)}</td><td><input type="number" class="edit-input" value="${item.qty}" onchange="updateItemQty(${index}, this.value)"></td><td class="text-success fw-bold">Rs. ${item.lineTotal.toLocaleString('en-US',{minimumFractionDigits:2})}</td><td><button class="btn btn-sm btn-outline-danger" onclick="removeItem(${index})"><i class="fa-solid fa-xmark"></i></button></td></tr>`;
         });
         if (currentNoteType === 'FREE') { sys.cashDiscount = 0; sys.earlySet = 0;
-        sys.taxable = 0; sys.vat = 0; sys.finalValue = sys.netValue; } else {
+            sys.taxable = 0; sys.vat = 0; sys.finalValue = sys.netValue; } else {
             sys.cashDiscount = sys.totalQty * 264.42;
-        sys.earlySet = sys.netValue * 0.0049; sys.taxable = sys.netValue - sys.cashDiscount - sys.earlySet; sys.vat = sys.taxable * 0.18;
-        sys.finalValue = sys.taxable + sys.vat; }
+            sys.earlySet = sys.netValue * 0.0049; sys.taxable = sys.netValue - sys.cashDiscount - sys.earlySet; sys.vat = sys.taxable * 0.18;
+            sys.finalValue = sys.taxable + sys.vat; }
         currentEditingLoad.sysTotals = sys; renderComparisonMatrix();
     }
     function updateItemQty(index, newQty) { currentEditingLoad.items[index].qty = cleanNum(newQty); renderItemsAndCalculate();
@@ -1532,7 +1536,7 @@
         let newInvNo = document.getElementById('m-invNo').value.trim();
         let isDuplicate = masterData.some(l => l.invNo && l.invNo.toLowerCase() === newInvNo.toLowerCase());
         if (isDuplicate && newInvNo !== "") { Swal.fire('Error!', 'මෙම Invoice අංකය දැනටමත් සිස්ටම් එකට ඇතුලත් කර ඇත: ' + newInvNo, 'error');
-        return; }
+            return; }
         currentEditingLoad.date = document.getElementById('m-date').value; currentEditingLoad.calMonth = document.getElementById('m-calMonth').value; currentEditingLoad.cokeMonth = document.getElementById('m-cokeMonth').value;
         currentEditingLoad.cokeWeek = document.getElementById('m-cokeWeek').value; currentEditingLoad.invNo = newInvNo; currentEditingLoad.loadNo = document.getElementById('m-loadNo').value; currentEditingLoad.vehicleNo = document.getElementById('m-vehicleNo').value; currentEditingLoad.note = document.getElementById('m-note').value;
         currentEditingLoad.items.forEach(item => { let lookupCode = cleanItemCode(item.code); let p = priceMaster[lookupCode];
@@ -1577,7 +1581,7 @@
         let idx = document.getElementById('editLoadIndex').value; let l = masterData[idx]; let net = l.sysTotals.netValue, qty = l.sysTotals.totalQty;
         let cd=0, es=0, tax=0, vat=0, fin=net;
         if(newNote !== 'FREE') { cd = qty * 264.42; es = net * 0.0049;
-        tax = net - cd - es; vat = tax * 0.18; fin = tax + vat;
+            tax = net - cd - es; vat = tax * 0.18; fin = tax + vat;
         }
         document.getElementById('e_cd').innerText = `Sys: ${cd.toLocaleString('en-US',{minimumFractionDigits:2})}`; document.getElementById('e_es').innerText = `Sys: ${es.toLocaleString('en-US',{minimumFractionDigits:2})}`; document.getElementById('e_vat').innerText = `Sys: ${vat.toLocaleString('en-US',{minimumFractionDigits:2})}`;
         document.getElementById('e_fin').innerText = `Sys: ${fin.toLocaleString('en-US',{minimumFractionDigits:2})}`;
@@ -1605,13 +1609,13 @@
         let idx = document.getElementById('editLoadIndex').value;
         let l = masterData[idx]; let editInvNo = document.getElementById('editInvNo').value.trim(); let editNote = document.getElementById('editNote').value;
         if (l.invNo !== editInvNo && masterData.some((data, i) => i !== parseInt(idx) && data.invNo === editInvNo)) { Swal.fire('Error!', 'මෙම Invoice අංකය වෙනත් වාර්තාවකට දැනටමත් ලබා දී ඇත!', 'error');
-        return; }
+            return; }
         let net = l.sysTotals.netValue; let qty = l.sysTotals.totalQty;
         if(editNote.toUpperCase() === 'FREE') { l.sysTotals.cashDiscount = 0; l.sysTotals.earlySet = 0; l.sysTotals.taxable = 0; l.sysTotals.vat = 0; l.sysTotals.finalValue = net;
         } else {
             l.sysTotals.cashDiscount = qty * 264.42;
-        l.sysTotals.earlySet = net * 0.0049; l.sysTotals.taxable = net - l.sysTotals.cashDiscount - l.sysTotals.earlySet; l.sysTotals.vat = l.sysTotals.taxable * 0.18;
-        l.sysTotals.finalValue = l.sysTotals.taxable + l.sysTotals.vat; }
+            l.sysTotals.earlySet = net * 0.0049; l.sysTotals.taxable = net - l.sysTotals.cashDiscount - l.sysTotals.earlySet; l.sysTotals.vat = l.sysTotals.taxable * 0.18;
+            l.sysTotals.finalValue = l.sysTotals.taxable + l.sysTotals.vat; }
         l.invNo = editInvNo; l.loadNo = document.getElementById('editLoadNo').value;
         l.date = document.getElementById('editDate').value; l.vehicleNo = document.getElementById('editVehicle').value; l.cokeMonth = document.getElementById('editCokeMonth').value; l.cokeWeek = document.getElementById('editCokeWeek').value; l.note = editNote;
         saveToDatabase(); renderMasterData(); renderDiscountDashboard(); renderHistoricalProfit();
@@ -1622,7 +1626,7 @@
     async function promptHalfCaseItems() {
         const { value: codes } = await Swal.fire({ title: 'Define Half-Case Items', input: 'textarea', inputLabel: 'Enter item codes that should be divided by 2 (comma separated):', inputValue: halfCaseItems.join(', '), showCancelButton: true, background: '#1f2833', color: '#fff' });
         if (codes !== undefined) { halfCaseItems = codes.split(',').map(c => cleanItemCode(c)).filter(c => c); saveToDatabase();
-        Swal.fire('Saved!', 'Target calculations will now use these codes.', 'success'); loadTargetConfig();
+            Swal.fire('Saved!', 'Target calculations will now use these codes.', 'success'); loadTargetConfig();
         }
     }
     function calculateTargetCases(items) { let cases = 0;
@@ -1668,6 +1672,9 @@
         document.getElementById('targetProgressArea').style.display = 'block'; document.getElementById('displayTargetMonth').innerHTML = `<i class="fa-solid fa-chart-pie text-danger"></i> ${month} Performance Analytics`;
         let monthActual = 0; let weeklyActuals = {};
         masterData.forEach(load => {
+            // "FREE" බීම ඉවත් කිරීම
+            if(load.note && load.note.toUpperCase() === 'FREE') return;
+            
             if(load.cokeMonth === month) { let loadCases = calculateTargetCases(load.items); monthActual += loadCases; let rawWk = String(load.cokeWeek || "").trim(); let wk = "Uncategorized";
                 if (rawWk.match(/^\d+$/)) { wk = "Week " + rawWk; } else if (rawWk.toLowerCase().includes("week")) { let match = rawWk.match(/\d+/); if (match) wk = "Week " + match[0]; else wk = rawWk; } else if (rawWk) { wk = rawWk; }
             
@@ -1687,11 +1694,16 @@
     }
     window.openLoadFromTarget = function(invNo) { let idx = masterData.findIndex(l => l.invNo === invNo);
         if(idx !== -1) { targetDetailsModalInstance.hide(); setTimeout(() => { showLoadDetails(idx); }, 300); } };
+    
     window.showTargetDetails = function(month, week = null) {
         document.getElementById('targetModalTitle').innerHTML = week ? `${month} • <span class="text-danger">${week}</span> Deep Dive` : `${month} • Full Month Deep Dive`;
         const tbody = document.getElementById('targetDetailsBody'); tbody.innerHTML = '';
         let totalQty = 0, totalCalcCases = 0;
-        masterData.forEach(load => { let rawWk = String(load.cokeWeek || "").trim(); let wk = "Uncategorized";
+        masterData.forEach(load => { 
+            // "FREE" බීම ඉවත් කිරීම
+            if(load.note && load.note.toUpperCase() === 'FREE') return;
+
+            let rawWk = String(load.cokeWeek || "").trim(); let wk = "Uncategorized";
             if (rawWk.match(/^\d+$/)) { wk = "Week " + rawWk; } else if (rawWk.toLowerCase().includes("week")) { let match = rawWk.match(/\d+/); if (match) wk = "Week " + match[0]; else wk = rawWk; } else if (rawWk) { wk = rawWk; }
             let match = week ? (load.cokeMonth === month && wk === week) : (load.cokeMonth === month);
     
@@ -1705,7 +1717,7 @@
 
     // --- SYSTEM SECURITY & SETTINGS ---
     function exportBackup() {
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(localStorage.getItem('cokeSysUltraData') || "{}");
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ priceMaster, masterData, targetMaster, discountData, halfCaseItems, discountHeaders }));
         const downloadAnchorNode = document.createElement('a'); downloadAnchorNode.setAttribute("href", dataStr); downloadAnchorNode.setAttribute("download", "coke_ultra_erp_backup.json");
         document.body.appendChild(downloadAnchorNode); downloadAnchorNode.click(); downloadAnchorNode.remove();
     }
@@ -1731,7 +1743,6 @@
         });
         if (pin) {
             if (parseInt(pin) === (num1 + num2)) {
-                localStorage.removeItem('cokeSysUltraData');
                 priceMaster = {}; masterData = []; targetMaster = {}; halfCaseItems = []; discountData = []; discountHeaders = [];
                 db.ref('geethara_db/cokeSysUltraData').set({});
                 Swal.fire('Database Wiped!', 'Your system is completely clean.', 'success').then(() => { location.reload(); });
@@ -1859,7 +1870,6 @@
         });
     }
 
-    // UPDATE 3: Remove records function wrapper
     window.excludeIrdInvoice = function(invNo) {
         if(!window.excludedIrdInvoices) window.excludedIrdInvoices = [];
         window.excludedIrdInvoices.push(invNo);
@@ -1877,10 +1887,10 @@
         }
 
         const iFrom = new Date(inputFrom); iFrom.setHours(0,0,0,0);
-        const iTo = new Date(inputTo);
-        iTo.setHours(23,59,59,999);
+        const iTo = new Date(inputTo); iTo.setHours(23,59,59,999);
         const oFrom = new Date(outputFrom); oFrom.setHours(0,0,0,0);
         const oTo = new Date(outputTo); oTo.setHours(23,59,59,999);
+
         // --- 1. Distributor Input VAT ---
         let inputVatHtml = '';
         let totalInputVal = 0;
@@ -1897,13 +1907,10 @@
                 let val = parseFloat(l.excelSummary?.finalValue) || 0;
                 let vat = parseFloat(l.excelSummary?.vat) || 0;
                 
-                // ෆිල්ටරය: 18% VAT අගයක් නොමැති තොග මඟ හැරීම
                 if (vat <= 0) return; 
 
-                // UPDATE 3: Remove Excluded invoices
                 if (window.excludedIrdInvoices && window.excludedIrdInvoices.includes(l.invNo)) return;
 
-                // UPDATE 2: Red dot check
                 let isCollection = String(l.note).toUpperCase() === 'COLLECTION';
                 let redDot = !isCollection ? ' <span style="color:red; font-size:16px;">&bull;</span>' : '';
 
@@ -1927,20 +1934,25 @@
             inputVatHtml = `<tr><td colspan="5" style="text-align: center; border: 1px solid #000; padding: 8px;">දත්ත නොමැත</td></tr>`;
         }
 
-        // --- 2. Distributor Output VAT ---
-        let outputVatHtml = '';
-        let totalOutputCases = 0;
-        let totalOutputVal = 0;
-        let totalOutputVat = 0;
+        // --- 2. Company Output VAT & IRD Output VAT ---
+        let compVatHtml = '';
+        let irdVatHtml = '';
+        
+        let totalCompCases = 0;
+        let totalCompVal = 0;
+        let totalCompVat = 0;
+
+        let totalIrdVal = 0;
+        let totalIrdVat = 0;
 
         let dailyOutput = {};
         discountData.forEach(d => {
-             let dateObj = new Date(d.date);
+            let dateObj = new Date(d.date);
             if (isNaN(dateObj.getTime())) return;
             if (dateObj >= oFrom && dateObj <= oTo) {
                 if(!dailyOutput[d.date]) dailyOutput[d.date] = { cases: 0, saleValue: 0, discount: 0, dateObj: dateObj };
                 dailyOutput[d.date].cases += (parseFloat(d.rd) || 0);
-                 dailyOutput[d.date].saleValue += (parseFloat(d.saleValue) || 0);
+                dailyOutput[d.date].saleValue += (parseFloat(d.saleValue) || 0);
                 dailyOutput[d.date].discount += ((parseFloat(d.eligibleDiscount) || 0) + (parseFloat(d.specialOutlet) || 0));
             }
         });
@@ -1948,34 +1960,65 @@
         Object.keys(dailyOutput).sort((a,b) => dailyOutput[a].dateObj - dailyOutput[b].dateObj).forEach(dateKey => {
             let dayData = dailyOutput[dateKey];
             let dateStr = `${dayData.dateObj.getMonth()+1}/${dayData.dateObj.getDate()}/${dayData.dateObj.getFullYear()}`;
+            
+            // Company Output Variables
             let netSale = dayData.saleValue - dayData.discount;
-            let vat = netSale * (18 / 118);
-            if(dayData.cases > 0 || netSale > 0) {
-                totalOutputCases += dayData.cases;
-                totalOutputVal += netSale;
-                totalOutputVat += vat;
+            let compVat = netSale * (18 / 118);
 
-                outputVatHtml += `
+            // IRD Output Variables
+            let val1 = netSale; 
+            let val2 = (val1 * 18) / 118;
+            let irdSalesValue = val1 - val2;
+            let irdVat = irdSalesValue * 0.18;
+
+            if(dayData.cases > 0 || netSale > 0) {
+                // Company VAT Update
+                totalCompCases += dayData.cases;
+                totalCompVal += netSale;
+                totalCompVat += compVat;
+
+                compVatHtml += `
                 <tr>
                     <td style="border: 1px solid #000; padding: 6px; text-align: center;">${dateStr}</td>
                     <td style="border: 1px solid #000; padding: 6px; text-align: center;">${dayData.cases.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
                     <td style="border: 1px solid #000; padding: 6px; text-align: right;">${netSale.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                    <td style="border: 1px solid #000; padding: 6px; text-align: right;">${vat.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                    <td style="border: 1px solid #000; padding: 6px; text-align: right;">${compVat.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                </tr>`;
+
+                // IRD VAT Update
+                totalIrdVal += irdSalesValue;
+                totalIrdVat += irdVat;
+
+                irdVatHtml += `
+                <tr>
+                    <td style="border: 1px solid #000; padding: 6px; text-align: center;">${dateStr}</td>
+                    <td style="border: 1px solid #000; padding: 6px; text-align: right;">${irdSalesValue.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                    <td style="border: 1px solid #000; padding: 6px; text-align: right;">${irdVat.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
                 </tr>`;
             }
         });
 
-        if(totalOutputCases === 0) {
-            outputVatHtml = `<tr><td colspan="4" style="text-align: center; border: 1px solid #000; padding: 8px;">දත්ත නොමැත</td></tr>`;
+        if(totalCompCases === 0) {
+            compVatHtml = `<tr><td colspan="4" style="text-align: center; border: 1px solid #000; padding: 8px;">දත්ත නොමැත</td></tr>`;
+            irdVatHtml = `<tr><td colspan="3" style="text-align: center; border: 1px solid #000; padding: 8px;">දත්ත නොමැත</td></tr>`;
         }
 
-        // --- 3. Final Calculations ---
-        let totalVatPayable = totalOutputVat - totalInputVat;
-        let claimAmount = totalVatPayable * 0.70;
-        let thirtyPercent = totalVatPayable * 0.30;
+        // --- 3. Final Calculations for Summary ---
+        
+        // Company Summary
+        let compVatPayable = totalCompVat - totalInputVat;
+        let compClaim = compVatPayable * 0.70;
+        let compThirty = compVatPayable * 0.30;
+
+        // IRD Summary
+        let irdVatPayable = totalIrdVat - totalInputVat;
+        let irdClaim = irdVatPayable * 0.70;
+        let irdThirty = irdVatPayable * 0.30;
+
         let formatter = new Intl.DateTimeFormat('en', { month: 'short', year: '2-digit' });
         let parts = formatter.formatToParts(iFrom);
         const periodStr = `${parts.find(p => p.type === 'month').value}-${parts.find(p => p.type === 'year').value}`;
+
         // --- 4. HTML Generation ---
         let reportHtml = `
             <div style="font-family: Arial, sans-serif; color: #000; font-size: 13px;">
@@ -1999,38 +2042,39 @@
                     </tr>
                 </table>
 
-                <div style="display: flex; gap: 20px;">
-                    <div style="flex: 1;">
-                        <table style="width: 100%; border-collapse: collapse;">
-                            <thead>
-                                <tr>
-                                    <th colspan="5" style="background-color: #ffff00; border: 2px solid #000; padding: 8px; font-weight: bold;">Distributor Input VAT</th>
-                                </tr>
-                                <tr style="background-color: #e2efda;">
-                                    <th style="border: 1px solid #000; padding: 10px; font-weight: normal;">Invoice Date</th>
-                                    <th style="border: 1px solid #000; padding: 10px; font-weight: normal;">Invoice No.</th>
-                                    <th style="border: 1px solid #000; padding: 10px; font-weight: normal;">Invoice Value<br>paid to company</th>
-                                    <th style="border: 1px solid #000; padding: 10px; font-weight: normal;">VAT ( %)</th>
-                                    <th class="no-print" style="border: 1px solid #000; padding: 10px; font-weight: normal;">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                 ${inputVatHtml}
-                                <tr style="background-color: #c4d79b; font-weight: bold;">
-                                    <td colspan="2" style="border: 2px solid #000; border-right: 1px solid #000; padding: 8px;">Total</td>
-                                    <td style="border: 2px solid #000; border-left: 1px solid #000; padding: 8px; text-align: right;">${totalInputVal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                                    <td style="border: 2px solid #000; padding: 8px; text-align: right;">${totalInputVat.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                                    <td class="no-print" style="border: 2px solid #000; border-left: 1px solid #000;"></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                     </div>
+                <div style="margin-bottom: 30px;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr>
+                                <th colspan="5" style="background-color: #ffff00; border: 2px solid #000; padding: 8px; font-weight: bold;">Distributor Input VAT</th>
+                            </tr>
+                            <tr style="background-color: #e2efda;">
+                                <th style="border: 1px solid #000; padding: 10px; font-weight: normal;">Invoice Date</th>
+                                <th style="border: 1px solid #000; padding: 10px; font-weight: normal;">Invoice No.</th>
+                                <th style="border: 1px solid #000; padding: 10px; font-weight: normal;">Invoice Value<br>paid to company</th>
+                                <th style="border: 1px solid #000; padding: 10px; font-weight: normal;">VAT ( %)</th>
+                                <th class="no-print" style="border: 1px solid #000; padding: 10px; font-weight: normal;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${inputVatHtml}
+                            <tr style="background-color: #c4d79b; font-weight: bold;">
+                                <td colspan="2" style="border: 2px solid #000; border-right: 1px solid #000; padding: 8px;">Total</td>
+                                <td style="border: 2px solid #000; border-left: 1px solid #000; padding: 8px; text-align: right;">${totalInputVal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                                <td style="border: 2px solid #000; padding: 8px; text-align: right;">${totalInputVat.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                                <td class="no-print" style="border: 2px solid #000; border-left: 1px solid #000;"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
 
+                <div style="display: flex; gap: 30px;">
+                    
                     <div style="flex: 1;">
-                        <table style="width: 100%; border-collapse: collapse;">
+                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
                             <thead>
                                 <tr>
-                                    <th colspan="4" style="background-color: #e6b8b7; border: 2px solid #000; padding: 8px; font-weight: bold;">Distributor Output VAT</th>
+                                    <th colspan="4" style="background-color: #e6b8b7; border: 2px solid #000; padding: 8px; font-weight: bold;">Company Output VAT</th>
                                 </tr>
                                 <tr style="background-color: #e2efda;">
                                     <th style="border: 1px solid #000; padding: 10px; font-weight: normal;">Date</th>
@@ -2040,37 +2084,78 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                 ${outputVatHtml}
+                                ${compVatHtml}
                                 <tr style="background-color: #c4d79b; font-weight: bold;">
                                     <td style="border: 2px solid #000; padding: 8px;">Total</td>
-                                    <td style="border: 2px solid #000; padding: 8px; text-align: center;">${totalOutputCases.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                                    <td style="border: 2px solid #000; padding: 8px; text-align: right;">${totalOutputVal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                                    <td style="border: 2px solid #000; padding: 8px; text-align: right;">${totalOutputVat.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                                    <td style="border: 2px solid #000; padding: 8px; text-align: center;">${totalCompCases.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                                    <td style="border: 2px solid #000; padding: 8px; text-align: right;">${totalCompVal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                                    <td style="border: 2px solid #000; padding: 8px; text-align: right;">${totalCompVat.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
                                 </tr>
                             </tbody>
                         </table>
-                         
-                        <div style="margin-top: 30px;">
-                            <table style="width: 100%; border-collapse: collapse; font-weight: bold;">
+                        
+                        <table style="width: 100%; border-collapse: collapse; font-weight: bold;">
+                            <tr>
+                                <td style="padding: 10px 0; width: 60%;">Total VAT Payable (By Distributor)<br><small class="text-muted fw-normal">Output VAT - Input VAT</small></td>
+                                <td style="border: 2px solid #000; padding: 8px; text-align: right; color: ${compVatPayable >= 0 ? 'red' : '#00b050'};">${compVatPayable.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 10px 0;">Claim Amount (From CCBSL)</td>
+                                <td style="border: 2px solid #000; padding: 8px; text-align: right;">${compClaim.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 10px 0;">70% of Payment Slip Value</td>
+                                <td style="border: 2px solid #000; padding: 8px; text-align: right;">${compThirty.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 10px 0; background-color: #92d050; border: 2px solid #000; border-right: none;">To be paid * (Refer Note 2)</td>
+                                <td style="background-color: #92d050; border: 2px solid #000; padding: 8px; text-align: right;">${compThirty.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div style="flex: 1;">
+                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                            <thead>
                                 <tr>
-                                    <td style="padding: 10px 0; width: 60%;">Total VAT Payable (By Distributor) &nbsp;&nbsp;= &nbsp;&nbsp;Output VAT - Input VAT</td>
-                                    <td style="border: 2px solid #000; padding: 8px; text-align: right; color: #00b050;">(${Math.abs(totalVatPayable).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})})</td>
+                                    <th colspan="3" style="background-color: #b8cce4; border: 2px solid #000; padding: 8px; font-weight: bold;">IRD Output VAT</th>
                                 </tr>
-                                <tr>
-                                     <td style="padding: 10px 0;">Claim Amount ( From CCBSL)</td>
-                                    <td style="border: 2px solid #000; padding: 8px; text-align: right;">(${Math.abs(claimAmount).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})})</td>
+                                <tr style="background-color: #e2efda;">
+                                    <th style="border: 1px solid #000; padding: 10px; font-weight: normal;">Date</th>
+                                    <th style="border: 1px solid #000; padding: 10px; font-weight: normal;">Sales Value after<br>Discounts</th>
+                                    <th style="border: 1px solid #000; padding: 10px; font-weight: normal;">VAT ( %)</th>
                                 </tr>
-                                <tr>
-                                     <td style="padding: 10px 0;">70% of Payment Slip Value</td>
-                                    <td style="border: 2px solid #000; padding: 8px; text-align: right;">(${Math.abs(thirtyPercent).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})})</td>
+                            </thead>
+                            <tbody>
+                                ${irdVatHtml}
+                                <tr style="background-color: #c4d79b; font-weight: bold;">
+                                    <td style="border: 2px solid #000; padding: 8px;">Total</td>
+                                    <td style="border: 2px solid #000; padding: 8px; text-align: right;">${totalIrdVal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                                    <td style="border: 2px solid #000; padding: 8px; text-align: right;">${totalIrdVat.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
                                 </tr>
-                                <tr>
-                                     <td style="padding: 10px 0; background-color: #92d050; border: 2px solid #000; border-right: none;">To be paid * (Refer Note 2)</td>
-                                    <td style="background-color: #92d050; border: 2px solid #000; padding: 8px; text-align: right;">(${Math.abs(thirtyPercent).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})})</td>
-                                </tr>
-                            </table>
-                        </div>
-                     </div>
+                            </tbody>
+                        </table>
+                        
+                        <table style="width: 100%; border-collapse: collapse; font-weight: bold;">
+                            <tr>
+                                <td style="padding: 10px 0; width: 60%;">Total VAT Payable (By Distributor)<br><small class="text-muted fw-normal">Output VAT - Input VAT</small></td>
+                                <td style="border: 2px solid #000; padding: 8px; text-align: right; color: ${irdVatPayable >= 0 ? 'red' : '#00b050'};">${irdVatPayable.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 10px 0;">Claim Amount (From CCBSL)</td>
+                                <td style="border: 2px solid #000; padding: 8px; text-align: right;">${irdClaim.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 10px 0;">70% of Payment Slip Value</td>
+                                <td style="border: 2px solid #000; padding: 8px; text-align: right;">${irdThirty.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 10px 0; background-color: #92d050; border: 2px solid #000; border-right: none;">To be paid * (Refer Note 2)</td>
+                                <td style="background-color: #92d050; border: 2px solid #000; padding: 8px; text-align: right;">${irdThirty.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                            </tr>
+                        </table>
+                    </div>
+
                 </div>
                 <div style="color: red; font-style: italic; font-weight: bold; margin-top: 20px; font-size: 12px;">
                     *Note 1- Sales value should be net of Discounts given to market On-invoice.<br>
@@ -2080,7 +2165,7 @@
         `;
 
         const container = document.getElementById('irdReportContainer');
-        document.getElementById('ssclReportContainer').classList.add('d-none'); // අනෙක් රිපෝට් එක සඟවන්න
+        document.getElementById('ssclReportContainer').classList.add('d-none');
         container.innerHTML = reportHtml;
         container.classList.remove('d-none');
         
