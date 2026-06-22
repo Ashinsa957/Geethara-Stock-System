@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="si" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coca-Cola Ultra Pro Max Stock Manager</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <style>
+        :root {
+            --coke-red: #E50014;
+            --coke-red-glow: rgba(229, 0, 20, 0.6);
+            --dark-bg: #0b0c10;
+            --card-bg: rgba(31, 40, 51, 0.85);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --text-main: #c5c6c7;
+            --text-light: #ffffff;
+            --accent-cyan: #66fcf1;
+        }
+
+        body { 
+            font-family: 'Outfit', sans-serif;
+            background: radial-gradient(circle at top, #1f2833 0%, var(--dark-bg) 100%);
+            color: var(--text-main);
+            min-height: 100vh;
+            background-attachment: fixed;
+        }
+
+        .text-gradient {
+            background: linear-gradient(90deg, #ff4b2b, #ff416c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+        }
+
+        .pro-card { 
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px; 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+        }
+        .pro-card:hover { 
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px var(--coke-red-glow); 
+            border-color: rgba(229, 0, 20, 0.3);
+        }
+
+        .nav-pills-main {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 10px;
+            border-radius: 50px;
+            box-shadow: inset 0 4px 15px rgba(0,0,0,0.5);
+            display: inline-flex;
+            border: 1px solid var(--glass-border);
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .nav-pills-main .nav-link { 
+            color: var(--text-main);
+            font-weight: 600; 
+            border-radius: 40px;
+            padding: 12px 25px;
+            transition: all 0.3s ease;
+            border: none;
+            letter-spacing: 0.5px;
+        }
+        .nav-pills-main .nav-link:hover { color: var(--text-light); background: rgba(229, 0, 20, 0.1); }
+        .nav-pills-main .nav-link.active { color: white; background: linear-gradient(45deg, var(--coke-red), #ff416c); box-shadow: 0 8px 20px var(--coke-red-glow); }
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--dark-bg); }
+        ::-webkit-scrollbar-thumb { background: #45a29e; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent-cyan); }
+
+        .table-container { 
+            max-height: 600px;
+            overflow-y: auto; 
+            border-radius: 15px; background: var(--card-bg); border: 1px solid var(--glass-border);
+        }
+        .table { color: var(--text-main); margin-bottom: 0; }
+        .table thead th { 
+            position: sticky;
+            top: 0; z-index: 10;
+            background: rgba(11, 12, 16, 0.95); backdrop-filter: blur(10px);
+            color: var(--accent-cyan); font-weight: 600; text-transform: uppercase; font-size: 13px;
+            border-bottom: 2px solid var(--accent-cyan); 
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+        .table thead th:hover { color: var(--text-light); }
+        .table tfoot th {
+            position: sticky;
+            bottom: 0; z-index: 10;
+            background: rgba(11, 12, 16, 0.95); backdrop-filter: blur(10px);
+            color: #fff; border-top: 2px solid var(--coke-red);
+        }
+        .table tbody tr { transition: all 0.2s; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .table tbody tr:hover { background-color: rgba(102, 252, 241, 0.1) !important; transform: scale(1.005); box-shadow: 0 2px 10px rgba(0,0,0,0.5);}
+
+        .discrepancy { color: #ff4757 !important; font-weight: 700; background-color: rgba(255, 71, 87, 0.1) !important; }
+        .match { color: #2ed573 !important; font-weight: 700; background-color: rgba(46, 213, 115, 0.1) !important; }
+        
+        .icon-box { 
+            display: inline-flex;
+            justify-content: center; align-items: center;
+            width: 80px; height: 80px; border-radius: 24px; 
+            background: linear-gradient(135deg, rgba(229,0,20,0.2) 0%, rgba(229,0,20,0.05) 100%); 
+            color: var(--coke-red); font-size: 35px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(229,0,20,0.3); box-shadow: 0 8px 30px rgba(229,0,20,0.2);
+        }
+        .btn-pro { border-radius: 12px; font-weight: 600; padding: 12px 25px; transition: all 0.3s; letter-spacing: 0.5px; }
+        .btn-pro-red { background: linear-gradient(45deg, var(--coke-red), #ff416c); color: white; border: none; }
+        .btn-pro-red:hover { box-shadow: 0 8px 25px var(--coke-red-glow); color: white; transform: translateY(-2px); }
+
+        .form-control, .form-select { 
+            background-color: rgba(0,0,0,0.3) !important;
+            border: 1px solid var(--glass-border); 
+            color: var(--text-light) !important; border-radius: 12px; padding: 10px 15px; font-size: 14px;
+        }
+        .form-control:focus, .form-select:focus { border-color: var(--accent-cyan); box-shadow: 0 0 0 0.25rem rgba(102, 252, 241, 0.2); }
+        .form-label { color: var(--accent-cyan); font-weight: 500; text-transform: uppercase; font-size: 11px; margin-bottom: 0.3rem;}
+        
+        .modal-content { background: var(--dark-bg); border-radius: 24px; border: 1px solid var(--glass-border); box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
+        .modal-header { background: rgba(0,0,0,0.5); border-bottom: 1px solid var(--glass-border); }
+        .modal-title { color: var(--text-light); }
+        .btn-close { filter: invert(1) grayscale(100%) brightness(200%); }
+        .edit-input { background: transparent; border: 1px solid #45a29e; color: white; width: 80px; text-align: center; border-radius: 5px; }
+        
+        .target-stat-box { cursor: pointer; border-left: 4px solid transparent; }
+        .target-stat-box:hover { border-left-color: var(--coke-red); }
+        
+        .math-step { padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.03); margin-bottom: 8px; border-left: 3px solid var(--accent-cyan); font-family: monospace; font-size: 15px;}
+        .math-highlight { color: #2ed573; font-weight: bold; }
+        .zero-profit { background: rgba(229,0,20,0.15) !important; color: #ff4757 !important; border-left: 4px solid var(--coke-red); }
+        
+        /* Print Styles */
+        @media print {
+            body * { visibility: hidden; }
+            .print-area, .print-area * { visibility: visible; }
+            .print-area { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none; border: none; background: white !important; color: black !important; }
+            .print-area table { border-collapse: collapse; width: 100%; }
+            .print-area table, .print-area th, .print-area td { border: 1px solid black; color: black !important; padding: 5px; }
+            .no-print, .btn-close, .modal-footer { display: none !important; }
+        }
+
+        .auth-warning {
+            border-left: 6px solid var(--coke-red) !important;
+            background: rgba(229, 0, 20, 0.05);
+        }
+    </style>
+</head>
+<body>
+
+<div id="loginOverlay">
+    <div class="pro-card p-5 text-center shadow-lg" style="max-width: 550px; margin: 10vh auto; border-top: 4px solid var(--coke-red);">
+        <div class="icon-box"><i class="fa-solid fa-shield-halved"></i></div>
+        <h3 class="fw-bold text-white mb-2">Security Gateway</h3>
+        <p class="text-muted small mb-4">මෙම පද්ධතිය පරිශීලනය කිරීමට ඔබගේ ආයතනික Google ගිණුමෙන් ලොග් වන්න.</p>
+        <button class="btn btn-pro btn-pro-red w-100 py-3" onclick="loginWithGoogle()">
+            <i class="fa-brands fa-google me-2"></i> 
+            Sign In with Google
+        </button>
+        
+        <div id="loginError" class="mt-4 text-start p-3 border border-danger rounded auth-warning animate__animated animate__shakeX" style="display:none;">
+            <h5 class="text-danger fw-bold mb-2"><i class="fa-solid fa-triangle-exclamation"></i> ACCESS DENIED / ප්‍රවේශය තහනම්!</h5>
+            <p class="text-light small mb-3" style="line-height: 1.6;"><b>අවවාදයි!</b> මෙය <b>ගීතාරා එන්ටර්ප්‍රයිසස් (Geethara Enterprises)</b> ආයතනය සතු පෞද්ගලික දත්ත පද්ධතියකි. ඔබගේ ගිණුමට මෙහි ප්‍රවේශ වීමට අවසර නොමැත. අනවසර ප්‍රවේශවීම් නීතිමය පියවර වලට යටත් විය හැක.</p>
+            <p class="text-warning small mb-0" style="font-size: 0.85rem; line-height: 1.5;"><b>WARNING!</b> This is a private data system belonging to <b>Geethara Enterprises</b>. Your account is not authorized to access this system. Unauthorized access attempts are strictly prohibited and may be subject to legal action.</p>
+        </div>
+    </div>
+</div>
+
+<div id="mainAppWrapper" style="display: none;">
+    <div class="container-fluid py-4 px-lg-5">
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+            <div>
+                <h1 class="fw-bold mb-0 text-gradient"><i class="fa-solid fa-bolt"></i> Ultra Pro Max Stock Manager</h1>
+                <p class="text-muted small mb-0 mt-2"><i class="fa-solid fa-microchip text-info"></i> Full ERP Edition (Firebase Live Sync Enabled)</p>
+            </div>
+            <div class="d-flex gap-2 align-items-center">
+                <button class="btn btn-sm btn-outline-info rounded-pill" onclick="exportBackup()"><i class="fa-solid fa-cloud-arrow-down"></i> Quick Backup</button>
+                <span class="badge bg-transparent text-success p-2 px-3 rounded-pill border border-success shadow heartbeat" id="statusBadge"><i class="fa-solid fa-cloud-bolt me-2"></i> Cloud Live Syncing...</span>
+            </div>
+        </div>
+
+        <div class="text-center mb-4">
+            <ul class="nav nav-pills-main gap-2" id="myTab" role="tablist">
+                <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#upload"><i class="fa-solid fa-cloud-arrow-up me-2"></i> Data Ingestion</button></li>
+                <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#master"><i class="fa-solid fa-server me-2"></i> Neural Database</button></li>
+                <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#profitView"><i class="fa-solid fa-sack-dollar me-2"></i> Profit Analytics</button></li>
+                <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#targetView"><i class="fa-solid fa-bullseye me-2"></i> Targets & KPIs</button></li>
+                <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#discountView"><i class="fa-solid fa-tags me-2"></i> Discount Hub</button></li>
+                <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#irdReportsView"><i class="fa-solid fa-file-invoice-dollar me-2"></i> IRD Reports</button></li>
+                <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#settings"><i class="fa-solid fa-shield-halved me-2"></i> Security</button></li>
+            </ul>
+        </div>
+
+        <div class="tab-content" id="myTabContent">
+            
+            <div class="tab-pane fade show active" id="upload">
+                <div class="row justify-content-center g-4">
+                    <div class="col-md-5">
+                        <div class="pro-card p-5 text-center h-100">
+                            <div class="icon-box"><i class="fa-solid fa-file-excel"></i></div>
+                            <h4 class="fw-bold text-white">Step 1: Price Master Sync</h4>
+                            <p class="text-muted small mb-3">Upload Excel containing exactly 4 columns: <br><strong>Code | Item | Unit Price | Sale Price</strong></p>
+                            <p id="pmStatusBadge" class="badge bg-danger mb-4">Not Loaded</p>
+                            <input type="file" class="form-control form-control-lg" id="priceFile" accept=".xlsx, .csv">
+                        </div>
+                    </div>
+                    <div class="col-md-5">
+                        <div class="pro-card p-5 text-center h-100 border-top border-4 border-danger">
+                            <div class="icon-box"><i class="fa-solid fa-truck-fast"></i></div>
+                            <h4 class="fw-bold text-white">Step 2: Process Daily Invoices</h4>
+                            <p class="text-muted small mb-4 mt-3">Upload today's stock delivery formatted Excel file to analyze values.</p>
+                            <input type="file" class="form-control form-control-lg" id="invoiceFile" accept=".xlsx, .csv">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="master">
+                <div class="pro-card p-4">
+                    <div class="d-flex justify-content-between align-items-end mb-4">
+                        <div class="d-flex gap-3 flex-wrap">
+                            <div><label class="form-label"><i class="fa-regular fa-calendar text-primary"></i> Date Filter</label><input type="date" id="filterDate" class="form-control form-control-sm" onchange="renderMasterData()"></div>
+                            <div><label class="form-label"><i class="fa-solid fa-calendar-days text-primary"></i> Coke Month</label><input type="text" id="filterCokeMonth" class="form-control form-control-sm" placeholder="Ex: 2026 March" oninput="renderMasterData()"></div>
+                            <div><label class="form-label"><i class="fa-solid fa-hashtag text-primary"></i> Invoice No</label><input type="text" id="filterInvoice" class="form-control form-control-sm" placeholder="Search Invoice..." oninput="renderMasterData()"></div>
+                            <div><label class="form-label"><i class="fa-solid fa-truck text-primary"></i> Vehicle No</label><input type="text" id="filterVehicle" class="form-control form-control-sm" placeholder="Search Vehicle..." oninput="renderMasterData()"></div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-success btn-sm" onclick="exportToCSV('masterTable', 'ERP_Master_Data.csv')"><i class="fa-solid fa-file-csv"></i> Export CSV</button>
+                            <button class="btn btn-secondary btn-sm" onclick="clearFilters()"><i class="fa-solid fa-rotate-right"></i> Reset</button>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table class="table mb-0 align-middle text-nowrap table-hover" id="masterTable">
+                            <thead>
+                                <tr>
+                                    <th class="text-center">A1</th><th class="text-center">A2</th><th class="text-center">A3</th>
+                                    <th>Date</th><th>Invoice No</th><th>Load No</th><th>Vehicle</th><th>Note</th>
+                                    <th class="text-end">Net Value</th><th class="text-end">VAT (18%)</th><th class="text-end text-white">Invoice Value</th>
+                                    <th class="text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                            <tfoot>
+                                <tr>
+                                    <th colspan="8" class="text-end fs-6">Grand Total (Filtered):</th>
+                                    <th class="text-end fs-6 text-info" id="totNetValue">0.00</th>
+                                    <th class="text-end fs-6 text-warning" id="totVat">0.00</th>
+                                    <th class="text-end fs-5 text-success" id="totInvValue">0.00</th>
+                                    <th></th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tab-pane fade" id="profitView">...</div>
+            <div class="tab-pane fade" id="targetView">...</div>
+            <div class="tab-pane fade" id="discountView">...</div>
+            <div class="tab-pane fade" id="irdReportsView">...</div>
+            <div class="tab-pane fade" id="settings">...</div>
+            </div>
+    </div>
+</div>
+
+<div class="modal fade" id="loadModal" data-bs-backdrop="static" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold"><i class="fa-solid fa-microchip text-info"></i> AI Audit & Edit Panel <span id="loadProgressBadge" class="badge bg-warning text-dark ms-3 shadow-sm" style="font-size: 14px;"></span></h5>
+            </div>
+            <div class="modal-body p-4">
+                <div class="row g-3 mb-4 p-3 rounded-4" style="background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border);">
+                    <div class="col-md-3"><label class="form-label">Date</label><input type="date" class="form-control" id="m-date" onchange="autoFillCalMonth()"></div>
+                    <div class="col-md-3"><label class="form-label">Cal Month</label><input type="text" class="form-control" id="m-calMonth"></div>
+                    <div class="col-md-3"><label class="form-label">Coke Month</label><input type="text" class="form-control" id="m-cokeMonth"></div>
+                    <div class="col-md-3"><label class="form-label">Coke Week</label><input type="text" class="form-control" id="m-cokeWeek" placeholder="e.g. 1"></div>
+                    <div class="col-md-3"><label class="form-label">Invoice No</label><input type="text" class="form-control text-warning fw-bold" id="m-invNo"></div>
+                    <div class="col-md-3"><label class="form-label">Load No</label><input type="text" class="form-control" id="m-loadNo"></div>
+                    <div class="col-md-3"><label class="form-label">Vehicle No</label><input type="text" class="form-control text-success fw-bold" id="m-vehicleNo"></div>
+                    <div class="col-md-3">
+                        <label class="form-label">Note Type</label>
+                        <select class="form-select text-white fw-bold bg-dark border-info" id="m-note" onchange="renderItemsAndCalculate()">
+                            <option value="Standard">Standard</option>
+                            <option value="Collection">Collection</option>
+                            <option value="FREE" class="text-success">FREE</option>
+                            <option value="Promotion">Promotion</option>
+                            <option value="Staff">Staff</option>
+                            <option value="Gas Out">Gas Out</option>
+                            <option value="Expiry">Expiry</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="table-container mb-4" style="max-height: 250px;">
+                    <table class="table table-sm text-center mb-0 align-middle">
+                        <thead class="table-dark"><tr><th>Item Code</th><th>Item Name</th><th>Item Type</th><th>Unit Price</th><th>Billed Qty</th><th>Line Total</th><th>Action</th></tr></thead>
+                        <tbody id="m-itemsBody"></tbody>
+                    </table>
+                </div>
+
+                <div class="pro-card border-0 mb-2">
+                    <div class="bg-dark text-white p-3 text-center rounded-top-4 fw-bold border-bottom border-secondary">Financial Cross-Check Matrix</div>
+                    <div class="table-responsive">
+                        <table class="table table-bordered border-secondary mb-0 text-center align-middle">
+                            <thead style="background: rgba(255,255,255,0.05);"><tr><th class="text-info">Parameter</th><th class="text-light">Excel Original</th><th class="text-warning">System Calc</th><th class="text-light">Variance</th></tr></thead>
+                            <tbody id="comparisonBody" class="fw-bold fs-6"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-top-0 d-flex justify-content-between">
+                <button type="button" class="btn btn-outline-danger btn-pro" onclick="skipCurrentLoad()">Discard Load</button>
+                <button type="button" class="btn btn-pro btn-pro-red px-5" onclick="saveAndNextLoad()">Verify & Save to DB</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="loadDetailsModal" tabindex="-1">...</div>
+<div class="modal fade" id="targetDetailsModal" tabindex="-1">...</div>
+<div class="modal fade" id="discountSplitModal" tabindex="-1">...</div>
+<div class="modal fade" id="itemProfitModal" tabindex="-1">...</div>
+<div class="modal fade" id="invoiceProfitModal" tabindex="-1">...</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
+<script>
+    // --- FIREBASE CONFIG ---
+    // Make sure to replace these details with your actual Firebase Project keys during deployment
+    const firebaseConfig = {
+        apiKey: "AIzaSyCVxDAK1wHoiWGSJKz5n2M5b6cSAjKNV1A",
+        authDomain: "geethara-stock-system.firebaseapp.com",
+        databaseURL: "https://geethara-stock-system-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "geethara-stock-system",
+        storageBucket: "geethara-stock-system.firebasestorage.app",
+        messagingSenderId: "829359169115",
+        appId: "1:829359169115:web:7e6b033326275cc2ed697e",
+        databaseURL: "https://coke-credit-system-default-rtdb.firebaseio.com"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
+
+    // මෙහි ඔබට අවසර දීමට අවශ්‍ය සේවකයන්ගේ Email ලිපින පමණක් ඇතුලත් කරන්න
+    const allowedEmails = ["ranjithu1234@gmail.com", "pkumara125@gmail.com", "1234kumarika@gmail.com", "ashinsasathsara@gmail.com"];
+    
+    auth.onAuthStateChanged(user => {
+        if (user && allowedEmails.includes(user.email.toLowerCase())) {
+            document.getElementById('loginOverlay').style.display = 'none';
+            document.getElementById('mainAppWrapper').style.display = 'block';
+            initLiveSync(); 
+        } else if (user) {
+            document.getElementById('loginError').style.display = 'block';
+            auth.signOut();
+        } else {
+            document.getElementById('loginOverlay').style.display = 'flex';
+            document.getElementById('mainAppWrapper').style.display = 'none';
+        }
+    });
+    
+    function loginWithGoogle() {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        auth.signInWithPopup(provider).catch(error => {
+            console.error("Login Error: ", error.message);
+            document.getElementById('loginError').style.display = 'block';
+        });
+    }
+
+    document.addEventListener('contextmenu', event => event.preventDefault());
+
+    // --- GLOBAL DATA ---
+    let priceMaster = {};
+    let pendingLoads = [];
+    let initialPendingCount = 0; // NEW: To track total loads uploaded
+    let masterData = [];
+    let targetMaster = {};
+    let discountData = []; 
+    let halfCaseItems = [];
+    let discountHeaders = []; 
+    let currentEditingLoad = null;
+    let isSyncing = false; 
+    
+    // ... (rest of the global variables and initialization functions remain same) ...
+    window.excludedIrdInvoices = [];
+    
+    // --> ONLY SHOWING MODIFIED SCRIPT SECTIONS TO SAVE SPACE <--
+    // ... Please keep your window.onload, initLiveSync(), saveToDatabase(), etc. exactly as they were.
+
+    // --- DAILY INVOICE PROCESSING ---
+    document.getElementById('invoiceFile').addEventListener('change', function(e) {
+        if(Object.keys(priceMaster).length === 0) return Swal.fire('Error', 'Please upload Price Master first.', 'error');
+        if(!e.target.files[0]) return;
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+            const data = new Uint8Array(evt.target.result); const workbook = XLSX.read(data, {type: 'array'});
+            const aoa = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], {header: 1, defval: ""});
+            pendingLoads = extractInvoicesSuperRobust(aoa); 
+            initialPendingCount = pendingLoads.length; // NEW: Save the count when file is read
+            e.target.value = '';
+            
+            if(pendingLoads.length > 0) processNextPendingLoad(); 
+            else Swal.fire('Warning', 'Could not identify invoice data.', 'warning');
+        };
+        reader.readAsArrayBuffer(e.target.files[0]);
+    });
+
+    function extractInvoicesSuperRobust(aoa) {
+        let loads = []; let current = null;
+        const findValInChunk = (start, end, keyword) => {
+            for(let r=start; r<=end && r<aoa.length; r++) { let row = aoa[r];
+                for(let c=0; c<row.length; c++) { let cellStr = String(row[c]).toLowerCase().replace(/[^a-z0-9]/g, ''); let keyClean = keyword.toLowerCase().replace(/[^a-z0-9]/g, '');
+                    if(cellStr.includes(keyClean)) { for(let i=c+1; i<row.length; i++) { if(String(row[i]).trim() !== "") return String(row[i]).trim(); }
+                        if(r+1 < aoa.length && String(aoa[r+1][c]).trim() !== "") return String(aoa[r+1][c]).trim();
+                    } 
+                } 
+            } return "";
+        };
+        const getNumFromRow = (row) => { let nums = row.map(x => cleanNum(x)).filter(x => !isNaN(x) && x !== 0); return nums.length > 0 ? nums[nums.length - 1] : 0; };
+        
+        for (let i = 0; i < aoa.length; i++) { let rowStr = aoa[i].join(" ").toLowerCase();
+            if (rowStr.includes("date") || rowStr.includes("invoice no") || rowStr.includes("load no")) {
+                if (current && current.items.length > 0) loads.push(current);
+                current = { headerRow: i, state: "HEADER", items: [], excelSummary: {} };
+            }
+            if (!current) continue;
+            
+            if (current.state === "HEADER") { let lowerRow = aoa[i].map(c => String(c).trim().toLowerCase());
+                if (lowerRow.some(c => c.includes("code") || c.includes("description") || c.includes("product"))) { 
+                    current.state = "ITEMS";
+                    current.nameIdx = lowerRow.findIndex(c => c.includes("code") || c.includes("product") || c.includes("description"));
+                    current.qtyIdx = lowerRow.findIndex(c => c.includes("qty") || c.includes("quantity") || c.includes("billed"));
+                    if(current.nameIdx === -1) current.nameIdx = 0; if(current.qtyIdx === -1) current.qtyIdx = 2;
+                    
+                    current.dateRaw = findValInChunk(current.headerRow, i, "Date");
+                    current.invNo = findValInChunk(current.headerRow, i, "Invoice"); 
+                    current.loadNo = findValInChunk(current.headerRow, i, "Load"); 
+                    current.vehicleNo = findValInChunk(current.headerRow, i, "Vehicle");
+                    current.cokeMonth = findValInChunk(current.headerRow, i, "Coke Month"); 
+                    current.cokeWeek = findValInChunk(current.headerRow, i, "Coke Week");
+                    
+                    // NEW: Extract Note Type automatically from the header chunk
+                    current.noteTypeRaw = findValInChunk(current.headerRow, i, "Note") || findValInChunk(current.headerRow, i, "Type") || findValInChunk(current.headerRow, i, "Note Type");
+                }
+            } else if (current.state === "ITEMS") { 
+                let firstCellStr = String(aoa[i][0] || "").trim().toLowerCase();
+                if (firstCellStr.includes("total") || firstCellStr.includes("net value") || firstCellStr.includes("discount")) { 
+                    current.state = "SUMMARY"; 
+                    if(firstCellStr.includes("net value")) current.excelSummary.netValue = getNumFromRow(aoa[i]);
+                } else {
+                    let code = cleanItemCode(aoa[i][current.nameIdx] || aoa[i][1] || aoa[i][0]);
+                    let qty = cleanNum(aoa[i][current.qtyIdx] || aoa[i][3] || aoa[i][2]);
+                    if (code && !code.toLowerCase().includes("code") && qty > 0) current.items.push({ code, qty });
+                } 
+            } 
+            if (current.state === "SUMMARY" || current.state === "ITEMS") { let rowStrLower = aoa[i].join(" ").toLowerCase();
+                if(rowStrLower.includes("cash discount")) current.excelSummary.cashDiscount = Math.abs(getNumFromRow(aoa[i]));
+                if(rowStrLower.includes("early settlement") || rowStrLower.includes("early set") || rowStrLower.includes("settlement discount")) { current.excelSummary.earlySet = Math.abs(getNumFromRow(aoa[i])); }
+                if(rowStrLower.includes("taxable")) current.excelSummary.taxable = getNumFromRow(aoa[i]);
+                if(rowStrLower.includes("vat")) current.excelSummary.vat = getNumFromRow(aoa[i]);
+                if(rowStrLower.includes("after tax") || rowStrLower.includes("invoice value")) current.excelSummary.finalValue = getNumFromRow(aoa[i]);
+            }
+        }
+        if (current && current.items.length > 0) loads.push(current);
+        return loads;
+    }
+
+    function processNextPendingLoad() {
+        if (pendingLoads.length === 0) {
+            loadModalInstance.hide();
+            renderMasterData(); updateTargetMonthDropdown(); renderDiscountDashboard(); renderHistoricalProfit(); saveToDatabase();
+            Swal.fire({ icon: 'success', title: 'Complete', text: 'All Invoices Saved.' }); return;
+        }
+        currentEditingLoad = pendingLoads[0]; 
+        
+        // NEW: Update the Progress Badge (E.g., "Load 2 of 5")
+        let currentIdx = initialPendingCount - pendingLoads.length + 1;
+        document.getElementById('loadProgressBadge').innerText = `Load ${currentIdx} of ${initialPendingCount}`;
+
+        let finalDate = convertExcelDate(currentEditingLoad.dateRaw);
+        document.getElementById('m-date').value = finalDate; autoFillCalMonth(finalDate);
+        document.getElementById('m-cokeMonth').value = currentEditingLoad.cokeMonth || ""; document.getElementById('m-cokeWeek').value = currentEditingLoad.cokeWeek || "";
+        document.getElementById('m-invNo').value = currentEditingLoad.invNo || ""; document.getElementById('m-loadNo').value = currentEditingLoad.loadNo || "";
+        document.getElementById('m-vehicleNo').value = currentEditingLoad.vehicleNo || "";
+        
+        // NEW: Auto-detect and set Note Type
+        let detectedNote = 'Standard';
+        let rawTypeStr = (currentEditingLoad.noteTypeRaw || "").toUpperCase();
+        
+        if (rawTypeStr.includes('FREE')) detectedNote = 'FREE';
+        else if (rawTypeStr.includes('COLLECTION') || rawTypeStr.includes('COLL')) detectedNote = 'Collection';
+        else if (rawTypeStr.includes('PROMO')) detectedNote = 'Promotion';
+        else if (rawTypeStr.includes('STAFF')) detectedNote = 'Staff';
+        else if (rawTypeStr.includes('GAS')) detectedNote = 'Gas Out';
+        else if (rawTypeStr.includes('EXPIR')) detectedNote = 'Expiry';
+
+        document.getElementById('m-note').value = detectedNote; 
+        
+        renderItemsAndCalculate(); 
+        loadModalInstance.show();
+    }
+    
+    // ... Keep all other functions perfectly intact ...
+</script>
+</body>
+</html>
