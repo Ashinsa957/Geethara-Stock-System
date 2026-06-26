@@ -72,120 +72,78 @@
             border: none;
             letter-spacing: 0.5px;
         }
-        .nav-pills-main .nav-link:hover { color: var(--text-light); background: rgba(229, 0, 20, 0.1);
-        }
-        .nav-pills-main .nav-link.active { color: white; background: linear-gradient(45deg, var(--coke-red), #ff416c);
-            box-shadow: 0 8px 20px var(--coke-red-glow); }
+        .nav-pills-main .nav-link:hover { color: var(--text-light); background: rgba(229, 0, 20, 0.1); }
+        .nav-pills-main .nav-link.active { color: white; background: linear-gradient(45deg, var(--coke-red), #ff416c); box-shadow: 0 8px 20px var(--coke-red-glow); }
 
-        ::-webkit-scrollbar { width: 8px; height: 8px;
-        }
-        ::-webkit-scrollbar-track { background: var(--dark-bg);
-        }
-        ::-webkit-scrollbar-thumb { background: #45a29e; border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb:hover { background: var(--accent-cyan);
-        }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--dark-bg); }
+        ::-webkit-scrollbar-thumb { background: #45a29e; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent-cyan); }
 
         .table-container { 
-            max-height: 600px;
-            overflow-y: auto; 
+            max-height: 600px; overflow-y: auto; 
             border-radius: 15px; background: var(--card-bg); border: 1px solid var(--glass-border);
         }
-        .table { color: var(--text-main); margin-bottom: 0;
-        }
+        .table { color: var(--text-main); margin-bottom: 0; }
         .table thead th { 
-            position: sticky;
-            top: 0; z-index: 10;
+            position: sticky; top: 0; z-index: 10;
             background: rgba(11, 12, 16, 0.95); backdrop-filter: blur(10px);
             color: var(--accent-cyan); font-weight: 600; text-transform: uppercase; font-size: 13px;
             border-bottom: 2px solid var(--accent-cyan); 
-            cursor: pointer;
-            transition: color 0.3s;
+            cursor: pointer; transition: color 0.3s;
         }
-        .table thead th:hover { color: var(--text-light);
-        }
+        .table thead th:hover { color: var(--text-light); }
         .table tfoot th {
-            position: sticky;
-            bottom: 0; z-index: 10;
+            position: sticky; bottom: 0; z-index: 10;
             background: rgba(11, 12, 16, 0.95); backdrop-filter: blur(10px);
             color: #fff; border-top: 2px solid var(--coke-red);
         }
-        .table tbody tr { transition: all 0.2s; cursor: pointer;
-            border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .table tbody tr:hover { background-color: rgba(102, 252, 241, 0.1) !important;
-            transform: scale(1.005); box-shadow: 0 2px 10px rgba(0,0,0,0.5);}
+        .table tbody tr { transition: all 0.2s; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .table tbody tr:hover { background-color: rgba(102, 252, 241, 0.1) !important; transform: scale(1.005); box-shadow: 0 2px 10px rgba(0,0,0,0.5);}
 
-        .discrepancy { color: #ff4757 !important;
-            font-weight: 700; background-color: rgba(255, 71, 87, 0.1) !important; }
-        .match { color: #2ed573 !important;
-            font-weight: 700; background-color: rgba(46, 213, 115, 0.1) !important; }
+        .discrepancy { color: #ff4757 !important; font-weight: 700; background-color: rgba(255, 71, 87, 0.1) !important; }
+        .match { color: #2ed573 !important; font-weight: 700; background-color: rgba(46, 213, 115, 0.1) !important; }
         
         .icon-box { 
-            display: inline-flex;
-            justify-content: center; align-items: center;
+            display: inline-flex; justify-content: center; align-items: center;
             width: 80px; height: 80px; border-radius: 24px; 
             background: linear-gradient(135deg, rgba(229,0,20,0.2) 0%, rgba(229,0,20,0.05) 100%); 
-            color: var(--coke-red); font-size: 35px;
-            margin-bottom: 20px;
+            color: var(--coke-red); font-size: 35px; margin-bottom: 20px;
             border: 1px solid rgba(229,0,20,0.3); box-shadow: 0 8px 30px rgba(229,0,20,0.2);
         }
-        .btn-pro { border-radius: 12px; font-weight: 600; padding: 12px 25px; transition: all 0.3s;
-            letter-spacing: 0.5px; }
-        .btn-pro-red { background: linear-gradient(45deg, var(--coke-red), #ff416c); color: white; border: none;
-        }
-        .btn-pro-red:hover { box-shadow: 0 8px 25px var(--coke-red-glow); color: white; transform: translateY(-2px);
-        }
+        .btn-pro { border-radius: 12px; font-weight: 600; padding: 12px 25px; transition: all 0.3s; letter-spacing: 0.5px; }
+        .btn-pro-red { background: linear-gradient(45deg, var(--coke-red), #ff416c); color: white; border: none; }
+        .btn-pro-red:hover { box-shadow: 0 8px 25px var(--coke-red-glow); color: white; transform: translateY(-2px); }
 
         .form-control, .form-select { 
             background-color: rgba(0,0,0,0.3) !important;
             border: 1px solid var(--glass-border); 
             color: var(--text-light) !important; border-radius: 12px; padding: 10px 15px; font-size: 14px;
         }
-        .form-control:focus, .form-select:focus { border-color: var(--accent-cyan);
-            box-shadow: 0 0 0 0.25rem rgba(102, 252, 241, 0.2); }
-        .form-label { color: var(--accent-cyan);
-            font-weight: 500; text-transform: uppercase; font-size: 11px; margin-bottom: 0.3rem;}
+        .form-control:focus, .form-select:focus { border-color: var(--accent-cyan); box-shadow: 0 0 0 0.25rem rgba(102, 252, 241, 0.2); }
+        .form-label { color: var(--accent-cyan); font-weight: 500; text-transform: uppercase; font-size: 11px; margin-bottom: 0.3rem;}
         
-        .modal-content { background: var(--dark-bg);
-            border-radius: 24px; border: 1px solid var(--glass-border); box-shadow: 0 25px 50px rgba(0,0,0,0.5);
-        }
-        .modal-header { background: rgba(0,0,0,0.5); border-bottom: 1px solid var(--glass-border);
-        }
-        .modal-title { color: var(--text-light);
-        }
-        .btn-close { filter: invert(1) grayscale(100%) brightness(200%);
-        }
-        .edit-input { background: transparent; border: 1px solid #45a29e; color: white; width: 80px;
-            text-align: center; border-radius: 5px; }
+        .modal-content { background: var(--dark-bg); border-radius: 24px; border: 1px solid var(--glass-border); box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
+        .modal-header { background: rgba(0,0,0,0.5); border-bottom: 1px solid var(--glass-border); }
+        .modal-title { color: var(--text-light); }
+        .btn-close { filter: invert(1) grayscale(100%) brightness(200%); }
+        .edit-input { background: transparent; border: 1px solid #45a29e; color: white; width: 80px; text-align: center; border-radius: 5px; }
         
-        .target-stat-box { cursor: pointer;
-            border-left: 4px solid transparent; }
-        .target-stat-box:hover { border-left-color: var(--coke-red);
-        }
+        .target-stat-box { cursor: pointer; border-left: 4px solid transparent; }
+        .target-stat-box:hover { border-left-color: var(--coke-red); }
         
-        .math-step { padding: 10px;
-            border-radius: 8px; background: rgba(255,255,255,0.03); margin-bottom: 8px; border-left: 3px solid var(--accent-cyan); font-family: monospace;
-            font-size: 15px;}
-        .math-highlight { color: #2ed573; font-weight: bold;
-        }
-        .zero-profit { background: rgba(229,0,20,0.15) !important; color: #ff4757 !important; border-left: 4px solid var(--coke-red);
-        }
+        .math-step { padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.03); margin-bottom: 8px; border-left: 3px solid var(--accent-cyan); font-family: monospace; font-size: 15px;}
+        .math-highlight { color: #2ed573; font-weight: bold; }
+        .zero-profit { background: rgba(229,0,20,0.15) !important; color: #ff4757 !important; border-left: 4px solid var(--coke-red); }
         
         /* Print Styles */
         @media print {
-            body * { visibility: hidden;
-            }
-            .print-area, .print-area * { visibility: visible;
-            }
-            .print-area { position: absolute; left: 0; top: 0;
-            width: 100%; box-shadow: none; border: none; background: white !important; color: black !important;
-            }
-            .print-area table { border-collapse: collapse; width: 100%;
-            }
-            .print-area table, .print-area th, .print-area td { border: 1px solid black;
-            color: black !important; padding: 5px; }
-            .no-print, .btn-close, .modal-footer { display: none !important;
-            }
+            body * { visibility: hidden; }
+            .print-area, .print-area * { visibility: visible; }
+            .print-area { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none; border: none; background: white !important; color: black !important; }
+            .print-area table { border-collapse: collapse; width: 100%; }
+            .print-area table, .print-area th, .print-area td { border: 1px solid black; color: black !important; padding: 5px; }
+            .no-print, .btn-close, .modal-footer { display: none !important; }
         }
 
         .auth-warning {
@@ -208,16 +166,13 @@
         <h3 class="fw-bold text-white mb-2">Security Gateway</h3>
         <p class="text-muted small mb-4">මෙම පද්ධතිය පරිශීලනය කිරීමට ඔබගේ ආයතනික Google ගිණුමෙන් ලොග් වන්න.</p>
         <button class="btn btn-pro btn-pro-red w-100 py-3" onclick="loginWithGoogle()">
-            <i class="fa-brands fa-google me-2"></i> 
-            Sign In with Google
+            <i class="fa-brands fa-google me-2"></i> Sign In with Google
         </button>
         
         <div id="loginError" class="mt-4 text-start p-3 border border-danger rounded auth-warning animate__animated animate__shakeX" style="display:none;">
             <h5 class="text-danger fw-bold mb-2"><i class="fa-solid fa-triangle-exclamation"></i> ACCESS DENIED / ප්‍රවේශය තහනම්!</h5>
-            <p class="text-light small mb-3" style="line-height: 1.6;"><b>අවවාදයි!</b> මෙය <b>ගීතාරා එන්ටර්ප්‍රයිසස් (Geethara Enterprises)</b> ආයතනය සතු පෞද්ගලික දත්ත පද්ධතියකි.
-            ඔබගේ ගිණුමට මෙහි ප්‍රවේශ වීමට අවසර නොමැත. අනවසර ප්‍රවේශවීම් නීතිමය පියවර වලට යටත් විය හැක.</p>
-            <p class="text-warning small mb-0" style="font-size: 0.85rem; line-height: 1.5;"><b>WARNING!</b> This is a private data system belonging to <b>Geethara Enterprises</b>.
-            Your account is not authorized to access this system. Unauthorized access attempts are strictly prohibited and may be subject to legal action.</p>
+            <p class="text-light small mb-3" style="line-height: 1.6;"><b>අවවාදයි!</b> මෙය <b>ගීතාරා එන්ටර්ප්‍රයිසස් (Geethara Enterprises)</b> ආයතනය සතු පෞද්ගලික දත්ත පද්ධතියකි. ඔබගේ ගිණුමට මෙහි ප්‍රවේශ වීමට අවසර නොමැත. අනවසර ප්‍රවේශවීම් නීතිමය පියවර වලට යටත් විය හැක.</p>
+            <p class="text-warning small mb-0" style="font-size: 0.85rem; line-height: 1.5;"><b>WARNING!</b> This is a private data system belonging to <b>Geethara Enterprises</b>. Your account is not authorized to access this system. Unauthorized access attempts are strictly prohibited and may be subject to legal action.</p>
         </div>
     </div>
 </div>
@@ -290,8 +245,14 @@
                             <thead>
                                 <tr>
                                     <th class="text-center">A1</th><th class="text-center">A2</th><th class="text-center">A3</th>
-                                    <th>Date</th><th>Invoice No</th><th>Load No</th><th>Vehicle</th><th>Note</th>
-                                    <th class="text-end">Net Value</th><th class="text-end">VAT (18%)</th><th class="text-end text-white">Invoice Value</th>
+                                    <th onclick="sortTable('masterTable', 3)">Date <i class="fa-solid fa-sort ms-1"></i></th>
+                                    <th onclick="sortTable('masterTable', 4)">Invoice No <i class="fa-solid fa-sort ms-1"></i></th>
+                                    <th onclick="sortTable('masterTable', 5)">Load No <i class="fa-solid fa-sort ms-1"></i></th>
+                                    <th onclick="sortTable('masterTable', 6)">Vehicle <i class="fa-solid fa-sort ms-1"></i></th>
+                                    <th onclick="sortTable('masterTable', 7)">Note <i class="fa-solid fa-sort ms-1"></i></th>
+                                    <th class="text-end" onclick="sortTable('masterTable', 8)">Net Value <i class="fa-solid fa-sort ms-1"></i></th>
+                                    <th class="text-end" onclick="sortTable('masterTable', 9)">VAT (18%) <i class="fa-solid fa-sort ms-1"></i></th>
+                                    <th class="text-end text-white" onclick="sortTable('masterTable', 10)">Invoice Value <i class="fa-solid fa-sort ms-1"></i></th>
                                     <th class="text-center">Action</th>
                                 </tr>
                             </thead>
@@ -610,11 +571,9 @@
                     </div>
                 </div>
 
-                <div id="irdReportContainer" class="card bg-white text-dark d-none mb-4 print-area" style="border-radius: 8px; padding: 40px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); overflow-x: auto;">
-                </div>
+                <div id="irdReportContainer" class="card bg-white text-dark d-none mb-4 print-area" style="border-radius: 8px; padding: 40px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); overflow-x: auto;"></div>
                 
-                <div id="ssclReportContainer" class="card bg-white text-dark d-none mb-4 print-area" style="border-radius: 8px; padding: 40px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); overflow-x: auto;">
-                </div>
+                <div id="ssclReportContainer" class="card bg-white text-dark d-none mb-4 print-area" style="border-radius: 8px; padding: 40px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); overflow-x: auto;"></div>
 
             </div>
 
@@ -624,14 +583,14 @@
                         <div class="pro-card p-5 h-100 text-center border-top border-4 border-info">
                              <div class="mb-3 text-info fs-1"><i class="fa-solid fa-cloud-arrow-down"></i></div>
                             <h4 class="fw-bold text-white">System Backup</h4>
-                            <button class="btn btn-outline-info btn-pro w-100 mt-auto" onclick="exportBackup()">Download Full JSON Backup</button>
+                             <button class="btn btn-outline-info btn-pro w-100 mt-auto" onclick="exportBackup()">Download Full JSON Backup</button>
                          </div>
                     </div>
                     <div class="col-md-5">
                         <div class="pro-card p-5 h-100 text-center border-top border-4 border-success">
                              <div class="mb-3 text-success fs-1"><i class="fa-solid fa-rotate-left"></i></div>
                             <h4 class="fw-bold text-white">Restore Engine</h4>
-                            <input type="file" class="form-control mb-3" id="backupFile" accept=".json">
+                             <input type="file" class="form-control mb-3" id="backupFile" accept=".json">
                              <button class="btn btn-outline-success btn-pro w-100" onclick="importBackup()">Restore Database</button>
                          </div>
                     </div>
@@ -721,7 +680,7 @@
             </div>
             <div class="modal-body p-0 table-container">
                 <table class="table table-hover mb-0 text-center align-middle">
-                    <thead class="table-dark"><tr><th>Date</th><th>Invoice No (Click to Open)</th><th>Vehicle</th><th>Coke Week</th><th>Actual Qty</th><th class="text-warning border-start">Target Calc Cases</th></tr></thead>
+                    <thead class="table-dark"><tr><th>Date</th><th>Invoice No (Click to Open)</th><th>Vehicle</th><th>Coke Week</th><th>Actual Qty</th><th class="text-warning border-start">Target Calc Cases</th><th class="text-danger">Action</th></tr></thead>
                     <tbody id="targetDetailsBody"></tbody>
                     <tfoot id="targetDetailsFoot"></tfoot>
                 </table>
@@ -813,11 +772,10 @@
     const db = firebase.database();
     
     const allowedEmails = ["ranjithu1234@gmail.com", "pkumara125@gmail.com", "1234kumarika@gmail.com", "ashinsasathsara@gmail.com"];
-    
     auth.onAuthStateChanged(user => {
         if (user && allowedEmails.includes(user.email.toLowerCase())) {
             document.getElementById('loginOverlay').style.display = 'none';
-            document.getElementById('globalLoader').style.display = 'flex'; // Show loading screen on login
+            document.getElementById('globalLoader').style.display = 'flex';
             document.getElementById('mainAppWrapper').style.display = 'block';
             initLiveSync(); 
         } else if (user) {
@@ -845,13 +803,12 @@
     let initialPendingCount = 0;
     let masterData = [];
     let targetMaster = {};
-    let discountData = []; 
+    let discountData = [];
     let halfCaseItems = [];
     let discountHeaders = []; 
     let currentEditingLoad = null;
     let isSyncing = false; 
     let refreshTimeout = null;
-    
     let loadModalInstance, detailsModalInstance, targetDetailsModalInstance, discountModalInstance;
     let itemProfitModalInstance, invoiceProfitModalInstance;
     window.excludedIrdInvoices = [];
@@ -863,14 +820,11 @@
         discountModalInstance = new bootstrap.Modal(document.getElementById('discountSplitModal'));
         itemProfitModalInstance = new bootstrap.Modal(document.getElementById('itemProfitModal'));
         invoiceProfitModalInstance = new bootstrap.Modal(document.getElementById('invoiceProfitModal'));
-        
-        // Removed heavy localStorage load here to avoid freezing before Firebase syncs.
-        // Data will load from Firebase directly to keep all PCs in sync.
     };
 
     function initLiveSync() {
         db.ref('geethara_db/cokeSysUltraData').on('value', (snapshot) => {
-            if(isSyncing) return; // Prevent loop if this specific PC pushed the update
+            if(isSyncing) return;
             const data = snapshot.val();
             
             if(data) {
@@ -880,8 +834,7 @@
                 discountData = data.discountData || [];
                 halfCaseItems = data.halfCaseItems || []; 
                 discountHeaders = data.discountHeaders || [];
-                
-                // Debounce UI refresh to stop browser hang on big DB loads
+ 
                 clearTimeout(refreshTimeout);
                 refreshTimeout = setTimeout(() => {
                     try {
@@ -889,8 +842,7 @@
                     } catch (e) {
                         console.error("UI Refreshing Error: ", e);
                     } finally {
-                        document.getElementById('globalLoader').style.display = 'none'; // අනිවාර්යයෙන්ම ලෝඩරය ඉවත් කිරීම
-                        
+                        document.getElementById('globalLoader').style.display = 'none';
                         let badge = document.getElementById('statusBadge');
                         badge.classList.add('bg-success', 'text-white');
                         badge.innerText = "Live Update Received!";
@@ -901,10 +853,9 @@
                     }
                 }, 300);
             } else {
-                document.getElementById('globalLoader').style.display = 'none'; // හිස් ඩේටාබේස් එකක් නම් ලෝඩරය ඉවත් කිරීම
+                document.getElementById('globalLoader').style.display = 'none';
             }
         }, (error) => {
-            // දත්ත ගෙන්වා ගැනීමේදී දෝෂයක් ආවොත් ලෝඩරය ඉවත් කර Error මැසේජ් එකක් පෙන්වීම
             console.error("Firebase Sync Error: ", error);
             document.getElementById('globalLoader').style.display = 'none';
             Swal.fire('Database Connection Error', 'දත්ත ලබාගැනීමේදී දෝෂයක් ඇතිවිය: ' + error.message, 'error');
@@ -940,8 +891,7 @@
         if(Object.keys(priceMaster).length > 0) {
             pmBadge.className = 'badge bg-success mb-4';
             pmBadge.innerText = `Loaded (${Object.keys(priceMaster).length} Items)`;
-        } else { pmBadge.className = 'badge bg-danger mb-4'; pmBadge.innerText = 'Not Loaded';
-        }
+        } else { pmBadge.className = 'badge bg-danger mb-4'; pmBadge.innerText = 'Not Loaded'; }
     }
 
     // --- UTILS ---
@@ -953,8 +903,7 @@
         return date.toISOString().split('T')[0]; }
         return String(excelDate).trim();
     }
-    function cleanNum(val) { if(!val) return 0; let cleaned = String(val).replace(/,/g, '').trim(); return parseFloat(cleaned) || 0;
-    }
+    function cleanNum(val) { if(!val) return 0; let cleaned = String(val).replace(/,/g, '').trim(); return parseFloat(cleaned) || 0; }
     function cleanItemCode(code) { let c = String(code || "").trim().toUpperCase();
         if (c.endsWith(".0")) { c = c.substring(0, c.length - 2); } return c;
     }
@@ -1042,8 +991,7 @@
                 let row = aoa[i];
                 if(row.length === 0) continue;
                 let aVal = String(row[0] || "").trim(); let bVal = String(row[1] || "").trim();
-                if(aVal !== "" && !aVal.toLowerCase().includes("date")) { currDate = convertExcelDate(row[0]) || currDate;
-                }
+                if(aVal !== "" && !aVal.toLowerCase().includes("date")) { currDate = convertExcelDate(row[0]) || currDate; }
                 if (bVal && validRoutes.some(r => bVal.toLowerCase().includes(r.toLowerCase()))) {
                      let route = bVal;
                      let saleVal = cleanNum(row[2]); let rd = cleanNum(row[3]);
@@ -1432,7 +1380,7 @@
         for (let i = 0; i < aoa.length; i++) { let rowStr = aoa[i].join(" ").toLowerCase();
             if (rowStr.includes("date") || rowStr.includes("invoice no") || rowStr.includes("load no")) {
                 if (current && current.items.length > 0) loads.push(current);
-                current = { headerRow: i, state: "HEADER", items: [], excelSummary: {} };
+                current = { headerRow: i, state: "HEADER", items: [], excelSummary: {}, excludeFromTarget: false };
             }
             if (!current) continue;
             if (current.state === "HEADER") { let lowerRow = aoa[i].map(c => String(c).trim().toLowerCase());
@@ -1449,8 +1397,7 @@
                     current.cokeMonth = findValInChunk(current.headerRow, i, "Coke Month"); 
                     current.cokeWeek = findValInChunk(current.headerRow, i, "Coke Week");
                     
-                    current.noteTypeRaw = findValInChunk(current.headerRow, i, "Note") ||
-                        findValInChunk(current.headerRow, i, "Type") || findValInChunk(current.headerRow, i, "Note Type");
+                    current.noteTypeRaw = findValInChunk(current.headerRow, i, "Note") || findValInChunk(current.headerRow, i, "Type") || findValInChunk(current.headerRow, i, "Note Type");
                 }
             } else if (current.state === "ITEMS") { 
                 let firstCellStr = String(aoa[i][0] || "").trim().toLowerCase();
@@ -1532,10 +1479,8 @@
             sys.finalValue = sys.taxable + sys.vat; }
         currentEditingLoad.sysTotals = sys; renderComparisonMatrix();
     }
-    function updateItemQty(index, newQty) { currentEditingLoad.items[index].qty = cleanNum(newQty); renderItemsAndCalculate();
-    }
-    function removeItem(index) { currentEditingLoad.items.splice(index, 1); renderItemsAndCalculate();
-    }
+    function updateItemQty(index, newQty) { currentEditingLoad.items[index].qty = cleanNum(newQty); renderItemsAndCalculate(); }
+    function removeItem(index) { currentEditingLoad.items.splice(index, 1); renderItemsAndCalculate(); }
 
     function renderComparisonMatrix() {
         let e = currentEditingLoad.excelSummary;
@@ -1548,8 +1493,7 @@
     function saveAndNextLoad() {
         let newInvNo = document.getElementById('m-invNo').value.trim();
         let isDuplicate = masterData.some(l => l.invNo && l.invNo.toLowerCase() === newInvNo.toLowerCase());
-        if (isDuplicate && newInvNo !== "") { Swal.fire('Error!', 'මෙම Invoice අංකය දැනටමත් සිස්ටම් එකට ඇතුලත් කර ඇත: ' + newInvNo, 'error');
-            return; }
+        if (isDuplicate && newInvNo !== "") { Swal.fire('Error!', 'මෙම Invoice අංකය දැනටමත් සිස්ටම් එකට ඇතුලත් කර ඇත: ' + newInvNo, 'error'); return; }
         currentEditingLoad.date = document.getElementById('m-date').value; currentEditingLoad.calMonth = document.getElementById('m-calMonth').value; currentEditingLoad.cokeMonth = document.getElementById('m-cokeMonth').value;
         currentEditingLoad.cokeWeek = document.getElementById('m-cokeWeek').value; currentEditingLoad.invNo = newInvNo; currentEditingLoad.loadNo = document.getElementById('m-loadNo').value; currentEditingLoad.vehicleNo = document.getElementById('m-vehicleNo').value; currentEditingLoad.note = document.getElementById('m-note').value;
         currentEditingLoad.items.forEach(item => { let lookupCode = cleanItemCode(item.code); let p = priceMaster[lookupCode];
@@ -1568,12 +1512,16 @@
             if (fDate && l.date !== fDate) return; if (fCokeMonth && !(l.cokeMonth||"").toLowerCase().includes(fCokeMonth)) return; if (fInv && !(l.invNo||"").toLowerCase().includes(fInv)) return; if (fVeh && !(l.vehicleNo||"").toLowerCase().includes(fVeh)) return;
             totNet += l.sysTotals.netValue; totVat += l.sysTotals.vat; totFinal += l.sysTotals.finalValue;
             let badgeColor = "bg-transparent border border-warning text-warning"; if(String(l.note).toUpperCase() === 'FREE') badgeColor = "bg-success text-white fw-bold";
-            tbody.innerHTML += `<tr onclick="showLoadDetails(${i})">
+            
+            // Exclude mark styling
+            let trStyle = l.excludeFromTarget ? 'opacity: 0.7; border-left: 3px solid var(--coke-red);' : '';
+
+            tbody.innerHTML += `<tr onclick="showLoadDetails(${i})" style="${trStyle}">
                 <td class="text-center" onclick="event.stopPropagation()"><input class="form-check-input" type="checkbox" ${l.audit1 ? 'checked':''} onchange="toggleAudit(${i},1)"></td>
                 <td class="text-center" onclick="event.stopPropagation()"><input class="form-check-input" type="checkbox" ${l.audit2 ? 'checked':''} onchange="toggleAudit(${i},2)"></td>
                 <td class="text-center" onclick="event.stopPropagation()"><input class="form-check-input" type="checkbox" ${l.audit3 ? 'checked':''} onchange="toggleAudit(${i},3)"></td>
                 <td><span class="badge bg-dark border">${l.date}</span></td><td class="text-info fw-bold">${l.invNo || '-'}</td><td>${l.loadNo || '-'}</td>
-                <td><span class="badge bg-secondary text-light">${l.vehicleNo || '-'}</span></td><td><span class="badge ${badgeColor}">${l.note}</span></td>
+                <td><span class="badge bg-secondary text-light">${l.vehicleNo || '-'}</span></td><td><span class="badge ${badgeColor}">${l.note}</span> ${l.excludeFromTarget ? '<i class="fa-solid fa-ban text-danger ms-1" title="Excluded from Targets"></i>' : ''}</td>
                 <td class="text-end font-monospace">${l.sysTotals.netValue.toLocaleString('en-US',{minimumFractionDigits:2})}</td><td class="text-end font-monospace text-warning">${l.sysTotals.vat.toLocaleString('en-US',{minimumFractionDigits:2})}</td>
                 <td class="text-end font-monospace text-success fw-bold">Rs. ${l.sysTotals.finalValue.toLocaleString('en-US',{minimumFractionDigits:2})}</td>
                 <td class="text-center"><button class="btn btn-sm btn-outline-danger" onclick="event.stopPropagation(); deleteLoad(${i})"><i class="fa-solid fa-trash"></i></button></td></tr>`;
@@ -1584,10 +1532,8 @@
         Swal.fire({ title: 'Delete Load?', text: `Invoice ${masterData[index].invNo} will be removed.`, icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', cancelButtonColor: '#3085d6', confirmButtonText: 'Yes, delete'
         }).then((result) => { if (result.isConfirmed) { masterData.splice(index, 1); saveToDatabase(); renderMasterData(); renderDiscountDashboard(); renderHistoricalProfit(); Swal.fire('Deleted!', 'Load has been removed.', 'success'); } });
     }
-    function clearFilters() { document.getElementById('filterDate').value = ""; document.getElementById('filterCokeMonth').value = ""; document.getElementById('filterInvoice').value = ""; document.getElementById('filterVehicle').value = ""; renderMasterData();
-    }
-    function toggleAudit(index, level) { masterData[index][`audit${level}`] = !masterData[index][`audit${level}`]; saveToDatabase();
-    }
+    function clearFilters() { document.getElementById('filterDate').value = ""; document.getElementById('filterCokeMonth').value = ""; document.getElementById('filterInvoice').value = ""; document.getElementById('filterVehicle').value = ""; renderMasterData(); }
+    function toggleAudit(index, level) { masterData[index][`audit${level}`] = !masterData[index][`audit${level}`]; saveToDatabase(); }
 
     window.recalcEditSysTotals = function() {
         let newNote = document.getElementById('editNote').value.toUpperCase();
@@ -1599,6 +1545,7 @@
         document.getElementById('e_cd').innerText = `Sys: ${cd.toLocaleString('en-US',{minimumFractionDigits:2})}`; document.getElementById('e_es').innerText = `Sys: ${es.toLocaleString('en-US',{minimumFractionDigits:2})}`; document.getElementById('e_vat').innerText = `Sys: ${vat.toLocaleString('en-US',{minimumFractionDigits:2})}`;
         document.getElementById('e_fin').innerText = `Sys: ${fin.toLocaleString('en-US',{minimumFractionDigits:2})}`;
     };
+
     function showLoadDetails(index) {
         let l = masterData[index];
         let itemRows = l.items.map(i => { let lookupCode = cleanItemCode(i.code); let p = priceMaster[lookupCode];
@@ -1610,7 +1557,36 @@
         let exc = l.excelSummary || {}; let sys = l.sysTotals || {};
         document.getElementById('detailsModalBody').innerHTML = `
             <input type="hidden" id="editLoadIndex" value="${index}">
-            <div class="row g-2 mb-3 bg-dark p-3 rounded border border-secondary"><div class="col-md-3"><label class="form-label mb-1">Invoice No</label><input type="text" class="form-control form-control-sm text-info fw-bold" id="editInvNo" value="${l.invNo || ''}"></div><div class="col-md-3"><label class="form-label mb-1">Load No</label><input type="text" class="form-control form-control-sm" id="editLoadNo" value="${l.loadNo || ''}"></div><div class="col-md-3"><label class="form-label mb-1">Date</label><input type="date" class="form-control form-control-sm" id="editDate" value="${l.date || ''}"></div><div class="col-md-3"><label class="form-label mb-1">Vehicle</label><input type="text" class="form-control form-control-sm text-warning" id="editVehicle" value="${l.vehicleNo || ''}"></div><div class="col-md-3 mt-2"><label class="form-label mb-1">Coke Month</label><input type="text" class="form-control form-control-sm" id="editCokeMonth" value="${l.cokeMonth || ''}"></div><div class="col-md-3 mt-2"><label class="form-label mb-1">Coke Week</label><input type="text" class="form-control form-control-sm" id="editCokeWeek" value="${l.cokeWeek || ''}"></div><div class="col-md-3 mt-2"><label class="form-label mb-1">Note Type</label><select class="form-select form-select-sm text-white bg-dark border-info" id="editNote" onchange="recalcEditSysTotals()"><option value="Standard" ${l.note==='Standard'?'selected':''}>Standard</option><option value="Collection" ${l.note==='Collection'?'selected':''}>Collection</option><option value="FREE" class="text-success" ${l.note==='FREE'?'selected':''}>FREE</option><option value="Promotion" ${l.note==='Promotion'?'selected':''}>Promotion</option><option value="Staff" ${l.note==='Staff'?'selected':''}>Staff</option><option value="Gas Out" ${l.note==='Gas Out'?'selected':''}>Gas Out</option><option value="Expiry" ${l.note==='Expiry'?'selected':''}>Expiry</option></select></div><div class="col-md-3 mt-2 d-flex align-items-end"><button class="btn btn-success btn-sm w-100 py-2 fw-bold" onclick="saveEditedLoad()"><i class="fa-solid fa-floppy-disk"></i> Update Data</button></div></div>
+            <div class="row g-2 mb-3 bg-dark p-3 rounded border border-secondary">
+                <div class="col-md-3"><label class="form-label mb-1">Invoice No</label><input type="text" class="form-control form-control-sm text-info fw-bold" id="editInvNo" value="${l.invNo || ''}"></div>
+                <div class="col-md-3"><label class="form-label mb-1">Load No</label><input type="text" class="form-control form-control-sm" id="editLoadNo" value="${l.loadNo || ''}"></div>
+                <div class="col-md-3"><label class="form-label mb-1">Date</label><input type="date" class="form-control form-control-sm" id="editDate" value="${l.date || ''}"></div>
+                <div class="col-md-3"><label class="form-label mb-1">Vehicle</label><input type="text" class="form-control form-control-sm text-warning" id="editVehicle" value="${l.vehicleNo || ''}"></div>
+                <div class="col-md-3 mt-2"><label class="form-label mb-1">Coke Month</label><input type="text" class="form-control form-control-sm" id="editCokeMonth" value="${l.cokeMonth || ''}"></div>
+                <div class="col-md-3 mt-2"><label class="form-label mb-1">Coke Week</label><input type="text" class="form-control form-control-sm" id="editCokeWeek" value="${l.cokeWeek || ''}"></div>
+                <div class="col-md-3 mt-2">
+                    <label class="form-label mb-1">Note Type</label>
+                    <select class="form-select form-select-sm text-white bg-dark border-info" id="editNote" onchange="recalcEditSysTotals()">
+                        <option value="Standard" ${l.note==='Standard'?'selected':''}>Standard</option>
+                        <option value="Collection" ${l.note==='Collection'?'selected':''}>Collection</option>
+                        <option value="FREE" class="text-success" ${l.note==='FREE'?'selected':''}>FREE</option>
+                        <option value="Promotion" ${l.note==='Promotion'?'selected':''}>Promotion</option>
+                        <option value="Staff" ${l.note==='Staff'?'selected':''}>Staff</option>
+                        <option value="Gas Out" ${l.note==='Gas Out'?'selected':''}>Gas Out</option>
+                        <option value="Expiry" ${l.note==='Expiry'?'selected':''}>Expiry</option>
+                    </select>
+                </div>
+                <div class="col-md-3 mt-2">
+                    <label class="form-label mb-1">Target Calc Status</label>
+                    <select class="form-select form-select-sm bg-dark text-white ${l.excludeFromTarget ? 'border-danger' : 'border-success'}" id="editExcludeTarget">
+                        <option value="false" ${!l.excludeFromTarget ? 'selected' : ''}>Included in Target</option>
+                        <option value="true" ${l.excludeFromTarget ? 'selected' : ''}>Excluded (Removed)</option>
+                    </select>
+                </div>
+                <div class="col-12 mt-3 d-flex align-items-end">
+                    <button class="btn btn-success btn-sm w-100 py-2 fw-bold" onclick="saveEditedLoad()"><i class="fa-solid fa-floppy-disk"></i> Update Data</button>
+                </div>
+            </div>
             <h6 class="text-warning mb-2 mt-3"><i class="fa-solid fa-scale-balanced"></i> Financial Overview (Excel Original vs System Calc)</h6>
             <div class="row g-2 text-center mb-4 font-monospace fs-6">
                 <div class="col-md-2"><div class="p-2 border border-secondary rounded bg-dark">Net Value<br><span class="text-light">Rs. ${(exc.netValue||0).toLocaleString('en-US',{minimumFractionDigits:2})}</span><br><small class="text-warning" style="font-size:0.75em;" id="e_net">Sys: ${(sys.netValue||0).toLocaleString('en-US',{minimumFractionDigits:2})}</small></div></div><div class="col-md-2"><div class="p-2 border border-secondary rounded bg-dark">Cash Discount<br><span class="text-light">Rs. ${(exc.cashDiscount||0).toLocaleString('en-US',{minimumFractionDigits:2})}</span><br><small class="text-warning" style="font-size:0.75em;" id="e_cd">Sys: ${(sys.cashDiscount||0).toLocaleString('en-US',{minimumFractionDigits:2})}</small></div></div><div class="col-md-3"><div class="p-2 border border-secondary rounded bg-dark">Early Settlement<br><span class="text-light">Rs. ${(exc.earlySet||0).toLocaleString('en-US',{minimumFractionDigits:2})}</span><br><small class="text-warning" style="font-size:0.75em;" id="e_es">Sys: ${(sys.earlySet||0).toLocaleString('en-US',{minimumFractionDigits:2})}</small></div></div><div class="col-md-2"><div class="p-2 border border-secondary rounded bg-dark">VAT (18%)<br><span class="text-light">Rs. ${(exc.vat||0).toLocaleString('en-US',{minimumFractionDigits:2})}</span><br><small class="text-warning" style="font-size:0.75em;" id="e_vat">Sys: ${(sys.vat||0).toLocaleString('en-US',{minimumFractionDigits:2})}</small></div></div><div class="col-md-3"><div class="p-2 border border-success rounded bg-dark">Final Invoice Value<br><span class="text-success fw-bold">Rs. ${(exc.finalValue||0).toLocaleString('en-US',{minimumFractionDigits:2})}</span><br><small class="text-warning" style="font-size:0.75em;" id="e_fin">Sys: ${(sys.finalValue||0).toLocaleString('en-US',{minimumFractionDigits:2})}</small></div></div></div>
@@ -1621,8 +1597,7 @@
     function saveEditedLoad() {
         let idx = document.getElementById('editLoadIndex').value;
         let l = masterData[idx]; let editInvNo = document.getElementById('editInvNo').value.trim(); let editNote = document.getElementById('editNote').value;
-        if (l.invNo !== editInvNo && masterData.some((data, i) => i !== parseInt(idx) && data.invNo === editInvNo)) { Swal.fire('Error!', 'මෙම Invoice අංකය වෙනත් වාර්තාවකට දැනටමත් ලබා දී ඇත!', 'error');
-            return; }
+        if (l.invNo !== editInvNo && masterData.some((data, i) => i !== parseInt(idx) && data.invNo === editInvNo)) { Swal.fire('Error!', 'මෙම Invoice අංකය වෙනත් වාර්තාවකට දැනටමත් ලබා දී ඇත!', 'error'); return; }
         let net = l.sysTotals.netValue; let qty = l.sysTotals.totalQty;
         if(editNote.toUpperCase() === 'FREE') { l.sysTotals.cashDiscount = 0; l.sysTotals.earlySet = 0; l.sysTotals.taxable = 0; l.sysTotals.vat = 0; l.sysTotals.finalValue = net;
         } else {
@@ -1631,20 +1606,25 @@
             l.sysTotals.finalValue = l.sysTotals.taxable + l.sysTotals.vat; }
         l.invNo = editInvNo; l.loadNo = document.getElementById('editLoadNo').value;
         l.date = document.getElementById('editDate').value; l.vehicleNo = document.getElementById('editVehicle').value; l.cokeMonth = document.getElementById('editCokeMonth').value; l.cokeWeek = document.getElementById('editCokeWeek').value; l.note = editNote;
+        
+        l.excludeFromTarget = document.getElementById('editExcludeTarget').value === 'true';
+
         saveToDatabase(); renderMasterData(); renderDiscountDashboard(); renderHistoricalProfit();
         Swal.fire({icon: 'success', title: 'Saved!', toast: true, position: 'top-end', showConfirmButton: false, timer: 1500}); updateTargetMonthDropdown();
+        renderTargetProgress(l.cokeMonth); // Live target updates if viewing targets
     }
 
     // --- TARGET MODULE ---
     async function promptHalfCaseItems() {
         const { value: codes } = await Swal.fire({ title: 'Define Half-Case Items', input: 'textarea', inputLabel: 'Enter item codes that should be divided by 2 (comma separated):', inputValue: halfCaseItems.join(', '), showCancelButton: true, background: '#1f2833', color: '#fff' });
         if (codes !== undefined) { halfCaseItems = codes.split(',').map(c => cleanItemCode(c)).filter(c => c); saveToDatabase();
-            Swal.fire('Saved!', 'Target calculations will now use these codes.', 'success'); loadTargetConfig();
+        Swal.fire('Saved!', 'Target calculations will now use these codes.', 'success'); loadTargetConfig();
         }
     }
     function calculateTargetCases(items) { let cases = 0;
         items.forEach(item => { let lookup = cleanItemCode(item.code); let isHalf = halfCaseItems.some(hCode => lookup.includes(hCode)); if(isHalf) cases += (item.qty / 2); else cases += item.qty; });
-        return cases; }
+        return cases; 
+    }
     function updateTargetMonthDropdown() {
         const select = document.getElementById('targetMonthSelect');
         const currentVal = select.value; let months = new Set();
@@ -1654,8 +1634,7 @@
     }
     function loadTargetConfig() {
         const month = document.getElementById('targetMonthSelect').value;
-        if(!month) { document.getElementById('weeklyTargetContainer').style.display = 'none'; document.getElementById('saveTargetBtnDiv').style.display = 'none'; document.getElementById('targetProgressArea').style.display = 'none'; return;
-        }
+        if(!month) { document.getElementById('weeklyTargetContainer').style.display = 'none'; document.getElementById('saveTargetBtnDiv').style.display = 'none'; document.getElementById('targetProgressArea').style.display = 'none'; return; }
         const config = targetMaster[month] || { total: '', weeksCount: 4, weeklyTargets: {} };
         document.getElementById('targetTotal').value = config.total; document.getElementById('targetWeeksCount').value = config.weeksCount || 4; generateWeeklyInputs(config.weeklyTargets); renderTargetProgress(month);
     }
@@ -1663,8 +1642,7 @@
         const month = document.getElementById('targetMonthSelect').value;
         const total = parseFloat(document.getElementById('targetTotal').value) || 0; const weeksCount = parseInt(document.getElementById('targetWeeksCount').value) || 4;
         if(!month || total <= 0) return;
-        let weeksArray = []; for (let i = 1; i <= weeksCount; i++) { weeksArray.push("Week " + i);
-        }
+        let weeksArray = []; for (let i = 1; i <= weeksCount; i++) { weeksArray.push("Week " + i); }
         const container = document.getElementById('weeklyTargetContainer'); container.innerHTML = ''; container.style.display = 'flex';
         let defaultWeekly = Math.round(total / weeksCount);
         weeksArray.forEach(weekName => { let val = (existingWeekly && existingWeekly[weekName] !== undefined) ? existingWeekly[weekName] : defaultWeekly;
@@ -1678,8 +1656,8 @@
         targetMaster[month] = { total: total, weeksCount: weeksCount, weeklyTargets: weeklyTargets }; saveToDatabase();
         Swal.fire({ icon: 'success', title: 'Target Configured', timer: 1500, showConfirmButton: false }); renderTargetProgress(month);
     }
-    function showMonthTargetDetails() { const month = document.getElementById('targetMonthSelect').value; showTargetDetails(month, null);
-    }
+    function showMonthTargetDetails() { const month = document.getElementById('targetMonthSelect').value; showTargetDetails(month, null); }
+    
     function renderTargetProgress(month) {
         const config = targetMaster[month]; if(!config) return;
         document.getElementById('targetProgressArea').style.display = 'block'; document.getElementById('displayTargetMonth').innerHTML = `<i class="fa-solid fa-chart-pie text-danger"></i> ${month} Performance Analytics`;
@@ -1687,6 +1665,8 @@
         masterData.forEach(load => {
             // "FREE" බීම ඉවත් කිරීම
             if(load.note && load.note.toUpperCase() === 'FREE') return;
+            // විශේෂිතව ඉවත් කළ ඒවා (Excluded) අත් හැරීම
+            if(load.excludeFromTarget) return; 
             
             if(load.cokeMonth === month) { let loadCases = calculateTargetCases(load.items); monthActual += loadCases; let rawWk = String(load.cokeWeek || "").trim(); let wk = "Uncategorized";
                 if (rawWk.match(/^\d+$/)) { wk = "Week " + rawWk; } else if (rawWk.toLowerCase().includes("week")) { let match = rawWk.match(/\d+/); if (match) wk = "Week " + match[0]; else wk = rawWk; } else if (rawWk) { wk = rawWk; }
@@ -1705,9 +1685,34 @@
             wContainer.innerHTML += `<div class="col-md-6"><div class="pro-card p-4 target-stat-box shadow-sm" onclick="showTargetDetails('${month}', '${weekName}')"><div class="d-flex justify-content-between align-items-center mb-3"><h6 class="fw-bold mb-0 text-white"><i class="fa-regular fa-calendar-check text-secondary me-2"></i>${weekName}</h6><span class="badge ${bgClass} rounded-pill px-3 shadow-sm text-dark">${wPct.toFixed(1)}%</span></div><p class="small text-muted mb-2 fw-medium">${wActual.toLocaleString(undefined,{maximumFractionDigits:1})} / ${wTarget.toLocaleString()} Cases</p><div class="progress" style="height: 12px; background-color: #1f2833;"><div class="progress-bar ${bgClass}" role="progressbar" style="width: ${Math.min(wPct, 100)}%;"></div></div></div></div>`;
         });
     }
+
     window.openLoadFromTarget = function(invNo) { let idx = masterData.findIndex(l => l.invNo === invNo);
-        if(idx !== -1) { targetDetailsModalInstance.hide(); setTimeout(() => { showLoadDetails(idx); }, 300); } };
-    
+        if(idx !== -1) { targetDetailsModalInstance.hide(); setTimeout(() => { showLoadDetails(idx); }, 300); } 
+    };
+
+    window.excludeLoadFromTarget = function(invNo, month, week) {
+        Swal.fire({
+            title: 'ටාර්ගට් ගණනයෙන් ඉවත් කරන්නද?',
+            text: `Invoice ${invNo} ටාර්ගට් එකෙන් ඉවත් කෙරේ. (නමුත් Master Database හි සුරක්ෂිතව පවතියි)`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'ඔව්, ඉවත් කරන්න!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                let idx = masterData.findIndex(l => l.invNo === invNo);
+                if (idx !== -1) {
+                    masterData[idx].excludeFromTarget = true;
+                    saveToDatabase();
+                    renderTargetProgress(month);
+                    showTargetDetails(month, week ? week : null);
+                    Swal.fire('සාර්ථකයි!', 'මෙම බීම තොගය ටාර්ගට් ගණනයෙන් ඉවත් කරන ලදී.', 'success');
+                }
+            }
+        });
+    }
+
     window.showTargetDetails = function(month, week = null) {
         document.getElementById('targetModalTitle').innerHTML = week ? `${month} • <span class="text-danger">${week}</span> Deep Dive` : `${month} • Full Month Deep Dive`;
         const tbody = document.getElementById('targetDetailsBody'); tbody.innerHTML = '';
@@ -1715,16 +1720,20 @@
         masterData.forEach(load => { 
             // "FREE" බීම ඉවත් කිරීම
             if(load.note && load.note.toUpperCase() === 'FREE') return;
+            // විශේෂිතව ඉවත් කළ ඒවා (Excluded) අත් හැරීම
+            if(load.excludeFromTarget) return;
 
             let rawWk = String(load.cokeWeek || "").trim(); let wk = "Uncategorized";
             if (rawWk.match(/^\d+$/)) { wk = "Week " + rawWk; } else if (rawWk.toLowerCase().includes("week")) { let match = rawWk.match(/\d+/); if (match) wk = "Week " + match[0]; else wk = rawWk; } else if (rawWk) { wk = rawWk; }
             let match = week ? (load.cokeMonth === month && wk === week) : (load.cokeMonth === month);
     
             if(match) { let loadCalcCases = calculateTargetCases(load.items); totalQty += load.sysTotals.totalQty; totalCalcCases += loadCalcCases;
-                tbody.innerHTML += `<tr><td><span class="badge bg-secondary">${load.date}</span></td><td class="fw-bold"><a href="javascript:void(0)" class="text-info text-decoration-none" style="border-bottom: 1px dashed;" onclick="openLoadFromTarget('${load.invNo}')">${load.invNo}</a></td><td><span class="badge bg-dark">${load.vehicleNo}</span></td><td><span class="badge bg-transparent border border-secondary">${wk || '-'}</span></td><td>${load.sysTotals.totalQty.toLocaleString(undefined,{maximumFractionDigits:1})}</td><td class="text-warning fw-bold border-start">${loadCalcCases.toLocaleString(undefined,{maximumFractionDigits:1})}</td></tr>`;
+                let actionBtn = `<button class="btn btn-sm btn-outline-danger" onclick="excludeLoadFromTarget('${load.invNo}', '${month}', '${week || ''}')" title="Remove from Target"><i class="fa-solid fa-ban"></i></button>`;
+
+                tbody.innerHTML += `<tr><td><span class="badge bg-secondary">${load.date}</span></td><td class="fw-bold"><a href="javascript:void(0)" class="text-info text-decoration-none" style="border-bottom: 1px dashed;" onclick="openLoadFromTarget('${load.invNo}')">${load.invNo}</a></td><td><span class="badge bg-dark">${load.vehicleNo}</span></td><td><span class="badge bg-transparent border border-secondary">${wk || '-'}</span></td><td>${load.sysTotals.totalQty.toLocaleString(undefined,{maximumFractionDigits:1})}</td><td class="text-warning fw-bold border-start">${loadCalcCases.toLocaleString(undefined,{maximumFractionDigits:1})}</td><td>${actionBtn}</td></tr>`;
             }
         });
-        document.getElementById('targetDetailsFoot').innerHTML = `<tr><th colspan="4" class="text-end pe-4">Verified Grand Total:</th><th class="fs-6">${totalQty.toLocaleString(undefined,{maximumFractionDigits:1})}</th><th class="text-warning fs-5 border-start">${totalCalcCases.toLocaleString(undefined,{maximumFractionDigits:1})}</th></tr>`;
+        document.getElementById('targetDetailsFoot').innerHTML = `<tr><th colspan="4" class="text-end pe-4">Verified Grand Total:</th><th class="fs-6">${totalQty.toLocaleString(undefined,{maximumFractionDigits:1})}</th><th class="text-warning fs-5 border-start">${totalCalcCases.toLocaleString(undefined,{maximumFractionDigits:1})}</th><th></th></tr>`;
         targetDetailsModalInstance.show();
     }
 
@@ -1741,7 +1750,7 @@
         const reader = new FileReader();
         reader.onload = function(e) {
             try { const data = JSON.parse(e.target.result);
-            db.ref('geethara_db/cokeSysUltraData').set(data); Swal.fire('Success', 'Database Restored! Syncing...', 'success').then(() => location.reload()); } catch(err) { Swal.fire('Error', 'Invalid Backup File', 'error');
+                db.ref('geethara_db/cokeSysUltraData').set(data); Swal.fire('Success', 'Database Restored! Syncing...', 'success').then(() => location.reload()); } catch(err) { Swal.fire('Error', 'Invalid Backup File', 'error');
             }
         };
         reader.readAsText(fileInput.files[0]);
@@ -1756,7 +1765,8 @@
         });
         if (pin) {
             if (parseInt(pin) === (num1 + num2)) {
-                priceMaster = {}; masterData = []; targetMaster = {}; halfCaseItems = []; discountData = []; discountHeaders = [];
+                priceMaster = {};
+                masterData = []; targetMaster = {}; halfCaseItems = []; discountData = []; discountHeaders = [];
                 db.ref('geethara_db/cokeSysUltraData').set({});
                 Swal.fire('Database Wiped!', 'Your system is completely clean.', 'success').then(() => { location.reload(); });
             } else { Swal.fire('Incorrect', 'Math pin failed. Database wipe canceled.', 'error');
@@ -1877,7 +1887,7 @@
         container.classList.remove('d-none');
         
         Swal.fire({
-            icon: 'success', title: 'Report Generated!',
+             icon: 'success', title: 'Report Generated!',
             text: 'SSCL රිපෝට් එක සාර්ථකව සකස් කරන ලදී.',
             timer: 2000, showConfirmButton: false
         });
@@ -1900,10 +1910,10 @@
         }
 
         const iFrom = new Date(inputFrom); iFrom.setHours(0,0,0,0);
-        const iTo = new Date(inputTo); iTo.setHours(23,59,59,999);
+        const iTo = new Date(inputTo);
+        iTo.setHours(23,59,59,999);
         const oFrom = new Date(outputFrom); oFrom.setHours(0,0,0,0);
         const oTo = new Date(outputTo); oTo.setHours(23,59,59,999);
-
         // --- 1. Distributor Input VAT ---
         let inputVatHtml = '';
         let totalInputVal = 0;
@@ -1979,11 +1989,10 @@
             let compVat = netSale * (18 / 118);
 
             // IRD Output Variables
-            let val1 = netSale; 
+            let val1 = netSale;
             let val2 = (val1 * 18) / 118;
             let irdSalesValue = val1 - val2;
             let irdVat = irdSalesValue * 0.18;
-
             if(dayData.cases > 0 || netSale > 0) {
                 // Company VAT Update
                 totalCompCases += dayData.cases;
@@ -1997,7 +2006,6 @@
                     <td style="border: 1px solid #000; padding: 6px; text-align: right;">${netSale.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
                     <td style="border: 1px solid #000; padding: 6px; text-align: right;">${compVat.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
                 </tr>`;
-
                 // IRD VAT Update
                 totalIrdVal += irdSalesValue;
                 totalIrdVat += irdVat;
@@ -2022,16 +2030,13 @@
         let compVatPayable = totalCompVat - totalInputVat;
         let compClaim = compVatPayable * 0.70;
         let compThirty = compVatPayable * 0.30;
-
         // IRD Summary
         let irdVatPayable = totalIrdVat - totalInputVat;
         let irdClaim = irdVatPayable * 0.70;
         let irdThirty = irdVatPayable * 0.30;
-
         let formatter = new Intl.DateTimeFormat('en', { month: 'short', year: '2-digit' });
         let parts = formatter.formatToParts(iFrom);
         const periodStr = `${parts.find(p => p.type === 'month').value}-${parts.find(p => p.type === 'year').value}`;
-
         // --- 4. HTML Generation ---
         let reportHtml = `
             <div style="font-family: Arial, sans-serif; color: #000; font-size: 13px;">
@@ -2170,6 +2175,7 @@
                     </div>
 
                 </div>
+ 
                 <div style="color: red; font-style: italic; font-weight: bold; margin-top: 20px; font-size: 12px;">
                     *Note 1- Sales value should be net of Discounts given to market On-invoice.<br>
                     *Note 2- Reimburse lowest value of claim amount and 70% of payment slip value
