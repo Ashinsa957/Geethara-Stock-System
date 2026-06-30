@@ -822,8 +822,8 @@
                 <div class="row g-2 mb-4 p-3 rounded bg-dark border border-secondary align-items-end">
                     <div class="col-md-2"><label class="form-label text-warning mb-1 small">Item Code</label><input type="text" id="pmAddCode" class="form-control form-control-sm" placeholder="Ex: COKE1"></div>
                     <div class="col-md-4"><label class="form-label text-warning mb-1 small">Item Name</label><input type="text" id="pmAddName" class="form-control form-control-sm" placeholder="Ex: Coca-Cola 250ML"></div>
-                    <div class="col-md-2"><label class="form-label text-warning mb-1 small">Unit Price</label><input type="number" id="pmAddUPrice" class="form-control form-control-sm"></div>
-                    <div class="col-md-2"><label class="form-label text-warning mb-1 small">Sale Price</label><input type="number" id="pmAddSPrice" class="form-control form-control-sm"></div>
+                    <div class="col-md-2"><label class="form-label text-warning mb-1 small">Unit Price</label><input type="number" step="0.01" id="pmAddUPrice" class="form-control form-control-sm"></div>
+                    <div class="col-md-2"><label class="form-label text-warning mb-1 small">Sale Price</label><input type="number" step="0.01" id="pmAddSPrice" class="form-control form-control-sm"></div>
                     <div class="col-md-2">
                         <button class="btn btn-success btn-sm w-100 fw-bold py-2" onclick="addNewItemToPriceMaster()"><i class="fa-solid fa-plus me-1"></i> Add</button>
                     </div>
@@ -1091,9 +1091,9 @@
                 <label>Item Name</label>
                 <input id="swal-pm-name" class="swal2-input" value="${p.itemName}">
                 <label>New Unit Price</label>
-                <input id="swal-pm-uprice" class="swal2-input" type="number" value="${p.unitPrice}">
+                <input id="swal-pm-uprice" class="swal2-input" type="number" step="0.01" value="${p.unitPrice}">
                 <label>New Sale Price</label>
-                <input id="swal-pm-sprice" class="swal2-input" type="number" value="${p.salePrice}">
+                <input id="swal-pm-sprice" class="swal2-input" type="number" step="0.01" value="${p.salePrice}">
                 <label>Effective Date</label>
                 <input id="swal-pm-date" class="swal2-input" type="date">
             `,
