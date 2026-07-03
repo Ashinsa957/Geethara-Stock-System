@@ -229,6 +229,8 @@
             <p class="text-muted small mb-0 mt-2"><i class="fa-solid fa-microchip text-info"></i> Full ERP Edition (Firebase Live Sync Enabled)</p>
             </div>
             <div class="d-flex gap-2 align-items-center">
+                <button class="btn btn-sm btn-outline-light rounded-pill" id="undoActionBtn" onclick="undoAction()" title="Undo (Ctrl+Z)" disabled><i class="fa-solid fa-rotate-left"></i> Undo</button>
+                <button class="btn btn-sm btn-outline-light rounded-pill" id="redoActionBtn" onclick="redoAction()" title="Redo (Ctrl+Y)" disabled><i class="fa-solid fa-rotate-right"></i> Redo</button>
                 <button class="btn btn-sm btn-outline-info rounded-pill" onclick="exportBackup()"><i class="fa-solid fa-cloud-arrow-down"></i> Quick Backup</button>
                 <span class="badge bg-transparent text-success p-2 px-3 rounded-pill border border-success shadow heartbeat" id="statusBadge"><i class="fa-solid fa-cloud-bolt me-2"></i> Cloud Live Syncing...</span>
             </div>
@@ -561,6 +563,7 @@
                                             <th class="text-primary text-end border-start" onclick="sortTable('discountMasterTable', 4)">Eligible Discount <i class="fa-solid fa-sort ms-1"></i></th>
                                             <th class="text-danger text-end" onclick="sortTable('discountMasterTable', 5)">Special Outlet <i class="fa-solid fa-sort ms-1"></i></th>
                                             <th class="text-success text-end border-start" onclick="sortTable('discountMasterTable', 6)">Total Discount <i class="fa-solid fa-sort ms-1"></i></th>
+                                            <th class="text-center no-print">Action</th>
                                         </tr>
                                     </thead>
                                     <tbody></tbody>
@@ -572,6 +575,7 @@
                                             <th id="totDiscEligible" class="text-primary text-end fs-6 border-start">0.00</th>
                                             <th id="totDiscSpecial" class="text-danger text-end fs-6">0.00</th>
                                             <th id="totDiscAmt" class="text-success text-end fs-5 border-start">0.00</th>
+                                            <th></th>
                                         </tr>
                                     </tfoot>
                                 </table>
@@ -1051,6 +1055,12 @@
     let emptyTransactions = { shellReturns: [], deposits: [], emptyReturns: [] };
     window.irdExcludedInvoices = [];
     let currentEditingLoad = null;
+    // --- UNDO / REDO STATE ---
+    let undoStack = [];
+    let redoStack = [];
+    const MAX_UNDO_STEPS = 20;
+    let isUndoRedoAction = false;
+    let lastSavedSnapshot = null;
     let isSyncing = false; 
     let refreshTimeout = null;
     let loadModalInstance, detailsModalInstance, targetDetailsModalInstance, discountModalInstance;
@@ -1081,6 +1091,9 @@
                 discountHeaders = data.discountHeaders || [];
                 emptySettings = data.emptySettings || { openingBalance: 0 };
                 emptyTransactions = data.emptyTransactions || { shellReturns: [], deposits: [], emptyReturns: [] };
+
+                // Undo/Redo baseline එක අලුතින් පැමිණි දත්ත වලට යාවත්කාලීන කරයි
+                lastSavedSnapshot = JSON.stringify({ priceMaster, masterData, targetMaster, discountData, halfCaseItems, discountHeaders, emptySettings, emptyTransactions });
  
                 clearTimeout(refreshTimeout);
                 refreshTimeout = setTimeout(() => {
@@ -1112,6 +1125,17 @@
     function saveToDatabase() {
         isSyncing = true;
         const data = { priceMaster, masterData, targetMaster, discountData, halfCaseItems, discountHeaders, emptySettings, emptyTransactions };
+        const newSnapshot = JSON.stringify(data);
+
+        // Undo/Redo: වෙනසක් සිදු වූ විට පෙර තත්වය undoStack එකට එකතු කරයි
+        if (!isUndoRedoAction && lastSavedSnapshot && lastSavedSnapshot !== newSnapshot) {
+            undoStack.push(lastSavedSnapshot);
+            if (undoStack.length > MAX_UNDO_STEPS) undoStack.shift();
+            redoStack = [];
+        }
+        lastSavedSnapshot = newSnapshot;
+        updateUndoRedoButtons();
+
         db.ref('geethara_db/cokeSysUltraData').set(data).then(() => {
             setTimeout(() => { isSyncing = false; }, 800); 
         }).catch(e => {
@@ -1134,6 +1158,7 @@
         renderEmptyDashboard();
         updateGlassItemDropdown();
         renderNewIRDTable(); // අලුත් IRD වගුව
+        updateUndoRedoButtons();
         if(document.getElementById('priceMasterManageModal').classList.contains('show')) {
             renderPriceMasterManageTable();
         }
@@ -1442,7 +1467,7 @@
             if(headerRowIdx !== -1) discountHeaders = aoa[headerRowIdx];
             else discountHeaders = aoa[0] || [];
 
-            let currDate = ""; let addedCount = 0;
+            let currDate = ""; let addedCount = 0; let skippedCount = 0;
             const validRoutes = ['Port', 'Peoples Park', 'Borella', 'Armour St', 'Sea St', 'Maradana', 'Deans Rd', 'Stores', 'Cross St 01', 'Fort', 'Cross St 2', 'Other 1', 'Other 2'];
             
             for(let i=0; i<aoa.length; i++) {
@@ -1465,16 +1490,20 @@
                          }
                      }
                      
+                     // දැනටමත් සිස්ටම් එකේ Save වී ඇති (Date + Route) record එකක් නම් නැවත එකතු නොකර Skip කරයි
                      let existingIdx = discountData.findIndex(d => d.date === currDate && d.route === route);
-                     let dataObj = { date: currDate, route: route, saleValue: saleVal, rd: rd, specialOutlet: specialOutlet, eligibleDiscount: totalRowDiscount, itemBreakdown: itemBreakdown };
-                     if (existingIdx !== -1) discountData[existingIdx] = dataObj; 
-                     else discountData.push(dataObj);
-                     addedCount++;
+                     if (existingIdx !== -1) {
+                         skippedCount++;
+                     } else {
+                         let dataObj = { date: currDate, route: route, saleValue: saleVal, rd: rd, specialOutlet: specialOutlet, eligibleDiscount: totalRowDiscount, itemBreakdown: itemBreakdown };
+                         discountData.push(dataObj);
+                         addedCount++;
+                     }
                 }
             }
             saveToDatabase();
             updateRouteDropdown(); renderDiscountDashboard(); renderDiscountMasterTable();
-            Swal.fire({ icon: 'success', title: 'Discounts Uploaded', text: `Successfully processed ${addedCount} discount records.` });
+            Swal.fire({ icon: 'success', title: 'Discounts Uploaded', html: `අලුතින් එකතු කළ Records: <b class="text-success">${addedCount}</b><br>දැනටමත් Save වී තිබූ නිසා මඟහැරුණු (Skipped) Records: <b class="text-warning">${skippedCount}</b>` });
             e.target.value = '';
         };
         reader.readAsArrayBuffer(e.target.files[0]);
@@ -1545,6 +1574,7 @@
                 <td class="text-primary text-end font-monospace border-start">${eligVal.toLocaleString('en-US',{minimumFractionDigits:2})}</td>
                 <td class="text-danger text-end font-monospace">${specVal.toLocaleString('en-US',{minimumFractionDigits:2})}</td>
                 <td class="text-success fw-bold text-end font-monospace border-start">${totalRowDisc.toLocaleString('en-US',{minimumFractionDigits:2})}</td>
+                <td class="text-center no-print" onclick="event.stopPropagation()"><button class="btn btn-sm btn-outline-danger" onclick="deleteDiscountRecord('${d.date}','${d.route}')" title="Delete this record so a corrected Excel row can be re-uploaded"><i class="fa-solid fa-trash"></i></button></td>
             </tr>`;
         });
         
@@ -1553,6 +1583,21 @@
         document.getElementById('totDiscEligible').innerText = totEligible.toLocaleString('en-US',{minimumFractionDigits:2});
         document.getElementById('totDiscSpecial').innerText = totSpecial.toLocaleString('en-US',{minimumFractionDigits:2});
         document.getElementById('totDiscAmt').innerText = totAll.toLocaleString('en-US',{minimumFractionDigits:2});
+    }
+
+    function deleteDiscountRecord(date, route) {
+        Swal.fire({ title: 'Delete Record?', text: `${route} | ${date} සඳහා වූ Discount record එක ඉවත් කරනු ලැබේ. (නිවැරදි කළ Excel එකක් නැවත Upload කළ හැක)`, icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', cancelButtonColor: '#3085d6', confirmButtonText: 'Yes, delete'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                let idx = discountData.findIndex(d => d.date === date && d.route === route);
+                if (idx !== -1) {
+                    discountData.splice(idx, 1);
+                    saveToDatabase();
+                    updateRouteDropdown(); renderDiscountDashboard(); renderDiscountMasterTable();
+                    Swal.fire('Deleted!', 'Record ඉවත් කරන ලදී. (Undo බොත්තමෙන් ආපසු ගත හැක)', 'success');
+                }
+            }
+        });
     }
 
     window.showDiscountBreakdown = function(date, route) {
@@ -2907,6 +2952,70 @@
 
         doc.save("IRD_VAT_Report.pdf");
     }
+
+    // ==========================================
+    // UNDO / REDO SYSTEM
+    // ==========================================
+    // ක්‍රියාකාරීත්වය: saveToDatabase() call වන සෑම විටම දත්ත වෙනස් වීමට පෙර
+    // තිබූ තත්වය undoStack එකට ස්නැප්ෂොට් එකක් ලෙස ගබඩා වේ. Undo කළ විට එම
+    // ස්නැප්ෂොට් එක ආපසු load කර, වර්තමාන තත්වය redoStack එකට යවනු ලැබේ.
+
+    function updateUndoRedoButtons() {
+        let undoBtn = document.getElementById('undoActionBtn');
+        let redoBtn = document.getElementById('redoActionBtn');
+        if (undoBtn) undoBtn.disabled = undoStack.length === 0;
+        if (redoBtn) redoBtn.disabled = redoStack.length === 0;
+    }
+
+    function restoreSnapshot(snapshotStr) {
+        let snap = JSON.parse(snapshotStr);
+        priceMaster = snap.priceMaster || {};
+        masterData = snap.masterData || [];
+        targetMaster = snap.targetMaster || {};
+        discountData = snap.discountData || [];
+        halfCaseItems = snap.halfCaseItems || [];
+        discountHeaders = snap.discountHeaders || [];
+        emptySettings = snap.emptySettings || { openingBalance: 0 };
+        emptyTransactions = snap.emptyTransactions || { shellReturns: [], deposits: [], emptyReturns: [] };
+
+        isUndoRedoAction = true;
+        saveToDatabase();
+        isUndoRedoAction = false;
+
+        refreshAllUIs();
+        updateUndoRedoButtons();
+    }
+
+    function undoAction() {
+        if (undoStack.length === 0) return;
+        let currentSnapshot = lastSavedSnapshot || JSON.stringify({ priceMaster, masterData, targetMaster, discountData, halfCaseItems, discountHeaders, emptySettings, emptyTransactions });
+        redoStack.push(currentSnapshot);
+        let prevSnapshot = undoStack.pop();
+        restoreSnapshot(prevSnapshot);
+        Swal.fire({ icon: 'info', title: 'Undo Successful', text: 'පෙර තත්වයට ආපසු හරවන ලදී.', timer: 1200, showConfirmButton: false });
+    }
+
+    function redoAction() {
+        if (redoStack.length === 0) return;
+        let currentSnapshot = lastSavedSnapshot || JSON.stringify({ priceMaster, masterData, targetMaster, discountData, halfCaseItems, discountHeaders, emptySettings, emptyTransactions });
+        undoStack.push(currentSnapshot);
+        let nextSnapshot = redoStack.pop();
+        restoreSnapshot(nextSnapshot);
+        Swal.fire({ icon: 'info', title: 'Redo Successful', text: 'නැවත ක්‍රියාත්මක කරන ලදී.', timer: 1200, showConfirmButton: false });
+    }
+
+    // Keyboard Shortcuts: Ctrl+Z = Undo, Ctrl+Y / Ctrl+Shift+Z = Redo
+    document.addEventListener('keydown', function(e) {
+        if (!document.getElementById('mainAppWrapper') || document.getElementById('mainAppWrapper').style.display === 'none') return;
+        let tag = (document.activeElement && document.activeElement.tagName) || '';
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return; // form fields වල ටයිප් කරන විට බාධා නොකරයි
+
+        if (e.ctrlKey && !e.shiftKey && e.key.toLowerCase() === 'z') {
+            e.preventDefault(); undoAction();
+        } else if (e.ctrlKey && (e.key.toLowerCase() === 'y' || (e.shiftKey && e.key.toLowerCase() === 'z'))) {
+            e.preventDefault(); redoAction();
+        }
+    });
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
