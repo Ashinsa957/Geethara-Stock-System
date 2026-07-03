@@ -10,6 +10,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- PDF Export Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     
     <style>
         :root {
@@ -239,6 +242,7 @@
                 <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#targetView"><i class="fa-solid fa-bullseye me-2"></i> Targets & KPIs</button></li>
                 <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#discountView"><i class="fa-solid fa-tags me-2"></i> Discount Hub</button></li>
                 <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#irdReportsView"><i class="fa-solid fa-file-invoice-dollar me-2"></i> VAT And SSCL</button></li>
+                <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#emptyManagementView"><i class="fa-solid fa-wine-bottle me-2"></i> Empty Bottles</button></li>
                 <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#settings"><i class="fa-solid fa-shield-halved me-2"></i> Security</button></li>
             </ul>
         </div>
@@ -301,6 +305,7 @@
                                     <th class="text-end" onclick="sortTable('masterTable', 8)">Net Value <i class="fa-solid fa-sort ms-1"></i></th>
                                     <th class="text-end" onclick="sortTable('masterTable', 9)">VAT (18%) <i class="fa-solid fa-sort ms-1"></i></th>
                                     <th class="text-end text-white" onclick="sortTable('masterTable', 10)">Invoice Value <i class="fa-solid fa-sort ms-1"></i></th>
+                                    <th class="text-end text-info">Empty Value</th>
                                     <th class="text-center">Action</th>
                                 </tr>
                             </thead>
@@ -312,6 +317,7 @@
                                     <th class="text-end fs-6 text-info" id="totNetValue">0.00</th>
                                     <th class="text-end fs-6 text-warning" id="totVat">0.00</th>
                                     <th class="text-end fs-5 text-success" id="totInvValue">0.00</th>
+                                    <th class="text-end fs-6 text-info" id="totEmptyValue">0.00</th>
                                     <th></th>
                                 </tr>
                             </tfoot>
@@ -633,6 +639,135 @@
                 <div id="irdReportContainer" class="card bg-white text-dark d-none mb-4 print-area" style="border-radius: 8px; padding: 40px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); overflow-x: auto;"></div>
                 
                 <div id="ssclReportContainer" class="card bg-white text-dark d-none mb-4 print-area" style="border-radius: 8px; padding: 40px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); overflow-x: auto;"></div>
+
+                <!-- අලුත් IRD රිපෝට් වගුව -->
+                <div class="card bg-dark mb-4 border border-info" id="newIRDReportSection">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="text-info fw-bold"><i class="fa-solid fa-table"></i> Official IRD Format Report</h5>
+                            <div>
+                                <button class="btn btn-outline-success btn-sm me-2" onclick="exportIRDExcel()"><i class="fa-solid fa-file-excel"></i> Export Excel</button>
+                                <button class="btn btn-outline-danger btn-sm" onclick="exportIRDPDF()"><i class="fa-solid fa-file-pdf"></i> Export PDF</button>
+                            </div>
+                        </div>
+                        <div class="row mb-3 align-items-end">
+                            <div class="col-md-3"><label class="form-label small">From Date</label><input type="date" id="newIrdFrom" class="form-control form-control-sm" onchange="renderNewIRDTable()"></div>
+                            <div class="col-md-3"><label class="form-label small">To Date</label><input type="date" id="newIrdTo" class="form-control form-control-sm" onchange="renderNewIRDTable()"></div>
+                        </div>
+                        <div class="table-container" style="max-height: 400px; overflow-x: auto;">
+                            <table class="table table-sm table-bordered text-center align-middle bg-white text-dark" id="newIrdTable">
+                                <thead style="background: #e0e0e0; color: #000; font-size: 12px;">
+                                    <tr>
+                                        <th>Serial No</th><th>Invoice Date</th><th>Tax Invoice No</th><th>Supplier's TIN</th>
+                                        <th>Name of the Supplier</th><th>Description</th><th>Value of purchase</th>
+                                        <th>VAT Amount</th><th>Disallowed VAT Amount</th><th class="no-print text-danger">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="newIrdBody" style="font-size: 13px;"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- EMPTY MANAGEMENT TAB -->
+            <div class="tab-pane fade" id="emptyManagementView">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h2 class="text-white mb-0"><i class="fa-solid fa-wine-bottle text-info"></i> Empty Bottles Management</h2>
+                        <p class="text-muted small">සිස්ටම් ආරම්භක අගය සහ දෛනික එම්ප්ටි රිටර්න් විස්තර</p>
+                    </div>
+                    <div class="bg-dark p-3 rounded border border-info text-center shadow-lg">
+                        <h6 class="text-info mb-1">Current Empty Value Balance</h6>
+                        <h3 class="text-white fw-bold mb-0 font-monospace" id="displayCurrentEmptyVal">Rs. 0.00</h3>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-12">
+                        <div class="pro-card p-4 border-top border-4 border-primary">
+                            <div class="d-flex justify-content-between align-items-end mb-3">
+                                <div class="d-flex gap-3 align-items-end">
+                                    <div><label class="form-label text-warning">Opening Empty Value (Rs.)</label><input type="number" id="openingEmptyValInput" class="form-control"></div>
+                                    <button class="btn btn-warning fw-bold" onclick="saveOpeningEmptyValue()"><i class="fa-solid fa-floppy-disk"></i> Set Initial Balance</button>
+                                </div>
+                                <div>
+                                    <label class="form-label">Filter Date Range</label>
+                                    <div class="input-group">
+                                        <input type="date" id="emptyFilterFrom" class="form-control" onchange="renderEmptyDashboard()">
+                                        <input type="date" id="emptyFilterTo" class="form-control" onchange="renderEmptyDashboard()">
+                                        <button class="btn btn-outline-secondary" onclick="document.getElementById('emptyFilterFrom').value=''; document.getElementById('emptyFilterTo').value=''; renderEmptyDashboard();"><i class="fa-solid fa-rotate-right"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <h5 class="text-white mt-4 mb-3"><i class="fa-solid fa-truck-ramp-box text-success"></i> Received Loads (Empty Values)</h5>
+                            <div class="table-container mb-4" style="max-height: 250px;">
+                                <table class="table table-hover text-center align-middle" id="emptyLoadsTable">
+                                    <thead class="table-dark sticky-top">
+                                        <tr><th>Date</th><th>Load No</th><th>Vehicle No</th><th class="text-info text-end">Calculated Empty Value</th></tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+
+                            <!-- 3 Sub Tabs for Returns/Deposits -->
+                            <ul class="nav nav-tabs border-secondary mt-5" role="tablist">
+                                <li class="nav-item"><button class="nav-link active text-white" data-bs-toggle="tab" data-bs-target="#subEmptyReturn">1. Empty Return</button></li>
+                                <li class="nav-item"><button class="nav-link text-white" data-bs-toggle="tab" data-bs-target="#subShellReturn">2. Empty Shell Return</button></li>
+                                <li class="nav-item"><button class="nav-link text-white" data-bs-toggle="tab" data-bs-target="#subDeposit">3. Add Deposit</button></li>
+                            </ul>
+
+                            <div class="tab-content mt-3 p-3 bg-dark border border-secondary rounded-bottom">
+                                <!-- 1. Empty Return -->
+                                <div class="tab-pane fade show active" id="subEmptyReturn">
+                                    <h6 class="text-info"><i class="fa-solid fa-recycle"></i> හිස් බෝතල් සහ ශෙල් රිටර්න් කිරීම</h6>
+                                    <div class="row g-2 align-items-end mt-2">
+                                        <div class="col-md-2"><label class="form-label small">Date</label><input type="date" id="erDate" class="form-control"></div>
+                                        <div class="col-md-2"><label class="form-label small">Vehicle No</label><input type="text" id="erVehicle" class="form-control"></div>
+                                        <div class="col-md-3"><label class="form-label small">Item (Glass Only)</label><select id="erItemSelect" class="form-select"></select></div>
+                                        <div class="col-md-2"><label class="form-label small">Cases Qty</label><input type="number" id="erQty" class="form-control"></div>
+                                        <div class="col-md-2 d-flex align-items-center">
+                                            <div class="form-check mt-3"><input class="form-check-input" type="checkbox" id="erAudit"><label class="form-check-label text-warning small">Audit Verified</label></div>
+                                        </div>
+                                        <div class="col-md-1"><button class="btn btn-success w-100 fw-bold" onclick="saveEmptyReturn()"><i class="fa-solid fa-plus"></i> Add</button></div>
+                                    </div>
+                                    <div class="table-responsive mt-3" style="max-height:150px;"><table class="table table-sm text-center" id="emptyReturnTable"><thead class="table-secondary"><tr><th>Date</th><th>Vehicle</th><th>Item</th><th>Qty</th><th>Value</th><th>Audit</th></tr></thead><tbody></tbody></table></div>
+                                </div>
+
+                                <!-- 2. Shell Return -->
+                                <div class="tab-pane fade" id="subShellReturn">
+                                    <h6 class="text-warning"><i class="fa-solid fa-box"></i> හිස් ශෙල් පමණක් රිටර්න් කිරීම</h6>
+                                    <div class="row g-2 align-items-end mt-2">
+                                        <div class="col-md-3"><label class="form-label small">Date</label><input type="date" id="srDate" class="form-control"></div>
+                                        <div class="col-md-3"><label class="form-label small">Case Value</label><select id="srValue" class="form-select"><option value="150">Rs. 150</option><option value="250">Rs. 250</option><option value="500">Rs. 500</option></select></div>
+                                        <div class="col-md-2"><label class="form-label small">Cases Qty</label><input type="number" id="srQty" class="form-control"></div>
+                                        <div class="col-md-2 d-flex align-items-center">
+                                            <div class="form-check mt-3"><input class="form-check-input" type="checkbox" id="srAudit"><label class="form-check-label text-warning small">Audit Verified</label></div>
+                                        </div>
+                                        <div class="col-md-2"><button class="btn btn-warning w-100 fw-bold" onclick="saveShellReturn()"><i class="fa-solid fa-plus"></i> Add</button></div>
+                                    </div>
+                                    <div class="table-responsive mt-3" style="max-height:150px;"><table class="table table-sm text-center" id="shellReturnTable"><thead class="table-secondary"><tr><th>Date</th><th>Case Value</th><th>Qty</th><th>Total Value</th><th>Audit</th></tr></thead><tbody></tbody></table></div>
+                                </div>
+
+                                <!-- 3. Add Deposit -->
+                                <div class="tab-pane fade" id="subDeposit">
+                                    <h6 class="text-success"><i class="fa-solid fa-money-bill-transfer"></i> ඩිපොසිට් ලබා ගැනීම</h6>
+                                    <div class="row g-2 align-items-end mt-2">
+                                        <div class="col-md-3"><label class="form-label small">Date</label><input type="date" id="depDate" class="form-control"></div>
+                                        <div class="col-md-4"><label class="form-label small">Shop/Route Name</label><input type="text" id="depShop" class="form-control"></div>
+                                        <div class="col-md-2"><label class="form-label small">Deposit Value</label><input type="number" id="depValue" class="form-control"></div>
+                                        <div class="col-md-2 d-flex align-items-center">
+                                            <div class="form-check mt-3"><input class="form-check-input" type="checkbox" id="depAudit"><label class="form-check-label text-warning small">Audit Verified</label></div>
+                                        </div>
+                                        <div class="col-md-1"><button class="btn btn-success w-100 fw-bold" onclick="saveDeposit()"><i class="fa-solid fa-plus"></i> Add</button></div>
+                                    </div>
+                                    <div class="table-responsive mt-3" style="max-height:150px;"><table class="table table-sm text-center" id="depositTable"><thead class="table-secondary"><tr><th>Date</th><th>Shop Name</th><th>Value</th><th>Audit</th></tr></thead><tbody></tbody></table></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="tab-pane fade" id="settings">
@@ -821,11 +956,21 @@
             <div class="modal-body p-4">
                 <div class="row g-2 mb-4 p-3 rounded bg-dark border border-secondary align-items-end">
                     <div class="col-md-2"><label class="form-label text-warning mb-1 small">Item Code</label><input type="text" id="pmAddCode" class="form-control form-control-sm" placeholder="Ex: COKE1"></div>
-                    <div class="col-md-4"><label class="form-label text-warning mb-1 small">Item Name</label><input type="text" id="pmAddName" class="form-control form-control-sm" placeholder="Ex: Coca-Cola 250ML"></div>
-                    <div class="col-md-2"><label class="form-label text-warning mb-1 small">Unit Price</label><input type="number" step="0.01" id="pmAddUPrice" class="form-control form-control-sm"></div>
-                    <div class="col-md-2"><label class="form-label text-warning mb-1 small">Sale Price</label><input type="number" step="0.01" id="pmAddSPrice" class="form-control form-control-sm"></div>
-                    <div class="col-md-2">
-                        <button class="btn btn-success btn-sm w-100 fw-bold py-2" onclick="addNewItemToPriceMaster()"><i class="fa-solid fa-plus me-1"></i> Add</button>
+                    <div class="col-md-3"><label class="form-label text-warning mb-1 small">Item Name</label><input type="text" id="pmAddName" class="form-control form-control-sm" placeholder="Ex: Coca-Cola 250ML"></div>
+                    <div class="col-md-1"><label class="form-label text-warning mb-1 small">Unit P</label><input type="number" step="0.01" id="pmAddUPrice" class="form-control form-control-sm"></div>
+                    <div class="col-md-1"><label class="form-label text-warning mb-1 small">Sale P</label><input type="number" step="0.01" id="pmAddSPrice" class="form-control form-control-sm"></div>
+
+                    <!-- නව එකතු කිරීම් -->
+                    <div class="col-md-2 text-center border-start border-secondary">
+                        <label class="form-label text-info mb-1 small">Is Glass?</label>
+                        <div class="form-check form-switch d-flex justify-content-center">
+                            <input class="form-check-input" type="checkbox" id="pmAddIsGlass" style="transform: scale(1.3);">
+                        </div>
+                    </div>
+                    <div class="col-md-2"><label class="form-label text-info mb-1 small">Empty Val (Case)</label><input type="number" step="0.01" id="pmAddEmptyVal" class="form-control form-control-sm" placeholder="Rs. 0.00" value="0"></div>
+
+                    <div class="col-md-1">
+                        <button class="btn btn-success btn-sm w-100 fw-bold py-2" onclick="addNewItemToPriceMaster()"><i class="fa-solid fa-plus"></i></button>
                     </div>
                 </div>
                 
@@ -902,6 +1047,9 @@
     let discountData = [];
     let halfCaseItems = [];
     let discountHeaders = []; 
+    let emptySettings = { openingBalance: 0 };
+    let emptyTransactions = { shellReturns: [], deposits: [], emptyReturns: [] };
+    window.irdExcludedInvoices = [];
     let currentEditingLoad = null;
     let isSyncing = false; 
     let refreshTimeout = null;
@@ -931,6 +1079,8 @@
                 discountData = data.discountData || [];
                 halfCaseItems = data.halfCaseItems || []; 
                 discountHeaders = data.discountHeaders || [];
+                emptySettings = data.emptySettings || { openingBalance: 0 };
+                emptyTransactions = data.emptyTransactions || { shellReturns: [], deposits: [], emptyReturns: [] };
  
                 clearTimeout(refreshTimeout);
                 refreshTimeout = setTimeout(() => {
@@ -961,7 +1111,7 @@
 
     function saveToDatabase() {
         isSyncing = true;
-        const data = { priceMaster, masterData, targetMaster, discountData, halfCaseItems, discountHeaders };
+        const data = { priceMaster, masterData, targetMaster, discountData, halfCaseItems, discountHeaders, emptySettings, emptyTransactions };
         db.ref('geethara_db/cokeSysUltraData').set(data).then(() => {
             setTimeout(() => { isSyncing = false; }, 800); 
         }).catch(e => {
@@ -981,6 +1131,9 @@
         updateAIInsights();
         renderProfitMasterTable();
         renderHistoricalProfit();
+        renderEmptyDashboard();
+        updateGlassItemDropdown();
+        renderNewIRDTable(); // අලුත් IRD වගුව
         if(document.getElementById('priceMasterManageModal').classList.contains('show')) {
             renderPriceMasterManageTable();
         }
@@ -1072,15 +1225,21 @@
         let name = document.getElementById('pmAddName').value.trim();
         let uprice = cleanNum(document.getElementById('pmAddUPrice').value);
         let sprice = cleanNum(document.getElementById('pmAddSPrice').value);
+
+        // නව යාවත්කාලීන
+        let isGlass = document.getElementById('pmAddIsGlass').checked;
+        let emptyVal = cleanNum(document.getElementById('pmAddEmptyVal').value);
+
         if(!code || !name) return Swal.fire('Error', 'Code and Name required', 'error');
-        priceMaster[code] = { unitPrice: uprice, salePrice: sprice, itemName: name, itemType: 'Standard' };
+        priceMaster[code] = { unitPrice: uprice, salePrice: sprice, itemName: name, itemType: 'Standard', isGlass: isGlass, emptyValue: emptyVal };
         saveToDatabase();
         renderPriceMasterManageTable();
-        updateAIInsights(); renderProfitMasterTable();
+        updateAIInsights(); renderProfitMasterTable(); updateGlassItemDropdown();
         Swal.fire('Added', 'New item added', 'success');
-        
+
         document.getElementById('pmAddCode').value = ''; document.getElementById('pmAddName').value = '';
         document.getElementById('pmAddUPrice').value = ''; document.getElementById('pmAddSPrice').value = '';
+        document.getElementById('pmAddIsGlass').checked = false; document.getElementById('pmAddEmptyVal').value = '0';
     }
 
     async function editPriceMasterItem(code) {
@@ -1094,7 +1253,15 @@
                 <input id="swal-pm-uprice" class="swal2-input" type="number" step="0.01" value="${p.unitPrice}">
                 <label>New Sale Price</label>
                 <input id="swal-pm-sprice" class="swal2-input" type="number" step="0.01" value="${p.salePrice}">
-                <label>Effective Date</label>
+
+                <div style="margin-top:15px; border:1px solid #45a29e; padding:10px; border-radius:5px;">
+                    <label style="color:#66fcf1;">Is Glass Bottle?</label>
+                    <input type="checkbox" id="swal-pm-glass" ${p.isGlass ? 'checked' : ''} style="transform: scale(1.5); margin-left: 10px;">
+                    <br><label style="color:#66fcf1; margin-top:10px;">Empty Value per Case</label>
+                    <input id="swal-pm-emptyval" class="swal2-input mt-1" type="number" step="0.01" value="${p.emptyValue || 0}">
+                </div>
+
+                <label class="mt-3">Effective Date</label>
                 <input id="swal-pm-date" class="swal2-input" type="date">
             `,
             focusConfirm: false,
@@ -1109,14 +1276,17 @@
                     name: document.getElementById('swal-pm-name').value,
                     uprice: cleanNum(document.getElementById('swal-pm-uprice').value),
                     sprice: cleanNum(document.getElementById('swal-pm-sprice').value),
+                    isGlass: document.getElementById('swal-pm-glass').checked,
+                    emptyValue: cleanNum(document.getElementById('swal-pm-emptyval').value),
                     date: date
                 }
             }
         });
         if (formValues) {
             let tempItems = {};
-            tempItems[code] = { unitPrice: formValues.uprice, salePrice: formValues.sprice, itemName: formValues.name, itemType: p.itemType };
+            tempItems[code] = { unitPrice: formValues.uprice, salePrice: formValues.sprice, itemName: formValues.name, itemType: p.itemType, isGlass: formValues.isGlass, emptyValue: formValues.emptyValue };
             applyPriceUpdates(tempItems, formValues.date);
+            updateGlassItemDropdown();
             Swal.fire('Updated!', 'Item price updated successfully.', 'success');
         }
     }
@@ -1126,12 +1296,14 @@
         for (let code in newItems) {
             let newItem = newItems[code];
             if (priceMaster[code]) {
-                if (priceMaster[code].unitPrice !== newItem.unitPrice || priceMaster[code].salePrice !== newItem.salePrice) {
+                if (priceMaster[code].unitPrice !== newItem.unitPrice || priceMaster[code].salePrice !== newItem.salePrice || priceMaster[code].isGlass !== newItem.isGlass || priceMaster[code].emptyValue !== newItem.emptyValue) {
                     priceMaster[code].prevUnitPrice = priceMaster[code].unitPrice;
                     priceMaster[code].prevSalePrice = priceMaster[code].salePrice;
                     priceMaster[code].unitPrice = newItem.unitPrice;
                     priceMaster[code].salePrice = newItem.salePrice;
                     if(newItem.itemName) priceMaster[code].itemName = newItem.itemName;
+                    if(newItem.isGlass !== undefined) priceMaster[code].isGlass = newItem.isGlass;
+                    if(newItem.emptyValue !== undefined) priceMaster[code].emptyValue = newItem.emptyValue;
                     hasChanges = true;
                 }
             } else {
@@ -1191,6 +1363,17 @@
         load.sysTotals.taxable = tax;
         load.sysTotals.vat = vat;
         load.sysTotals.finalValue = fin;
+
+        // Empty Value Calculation අලුතින් එක් කළ කොටස
+        let totalEmptyVal = 0;
+        load.items.forEach(item => {
+            let lookupCode = cleanItemCode(item.code);
+            let p = priceMaster[lookupCode];
+            if (p && p.isGlass) {
+                totalEmptyVal += (item.qty * (parseFloat(p.emptyValue) || 0));
+            }
+        });
+        load.sysTotals.emptyValue = totalEmptyVal;
     }
 
     document.getElementById('priceFile').addEventListener('change', function(e) {
@@ -1794,10 +1977,10 @@
         let tbody = document.querySelector('#masterTable tbody');
         tbody.innerHTML = "";
         let fDate = document.getElementById('filterDate').value; let fCokeMonth = document.getElementById('filterCokeMonth').value.toLowerCase(); let fInv = document.getElementById('filterInvoice').value.toLowerCase(); let fVeh = document.getElementById('filterVehicle').value.toLowerCase();
-        let totNet = 0, totVat = 0, totFinal = 0;
+        let totNet = 0, totVat = 0, totFinal = 0, totEmpty = 0;
         masterData.forEach((l, i) => {
             if (fDate && l.date !== fDate) return; if (fCokeMonth && !(l.cokeMonth||"").toLowerCase().includes(fCokeMonth)) return; if (fInv && !(l.invNo||"").toLowerCase().includes(fInv)) return; if (fVeh && !(l.vehicleNo||"").toLowerCase().includes(fVeh)) return;
-            totNet += l.sysTotals.netValue; totVat += l.sysTotals.vat; totFinal += l.sysTotals.finalValue;
+            totNet += l.sysTotals.netValue; totVat += l.sysTotals.vat; totFinal += l.sysTotals.finalValue; totEmpty += (l.sysTotals.emptyValue || 0);
             let badgeColor = "bg-transparent border border-warning text-warning"; if(String(l.note).toUpperCase() === 'FREE') badgeColor = "bg-success text-white fw-bold";
             
             // Exclude mark styling
@@ -1811,9 +1994,10 @@
                 <td><span class="badge bg-secondary text-light">${l.vehicleNo || '-'}</span></td><td><span class="badge ${badgeColor}">${l.note}</span> ${l.excludeFromTarget ? '<i class="fa-solid fa-ban text-danger ms-1" title="Excluded from Targets"></i>' : ''}</td>
                 <td class="text-end font-monospace">${l.sysTotals.netValue.toLocaleString('en-US',{minimumFractionDigits:2})}</td><td class="text-end font-monospace text-warning">${l.sysTotals.vat.toLocaleString('en-US',{minimumFractionDigits:2})}</td>
                 <td class="text-end font-monospace text-success fw-bold">Rs. ${l.sysTotals.finalValue.toLocaleString('en-US',{minimumFractionDigits:2})}</td>
+                <td class="text-info font-monospace text-end">Rs. ${(l.sysTotals.emptyValue || 0).toLocaleString('en-US',{minimumFractionDigits:2})}</td>
                 <td class="text-center"><button class="btn btn-sm btn-outline-danger" onclick="event.stopPropagation(); deleteLoad(${i})"><i class="fa-solid fa-trash"></i></button></td></tr>`;
         });
-        document.getElementById('totNetValue').innerText = totNet.toLocaleString('en-US',{minimumFractionDigits:2}); document.getElementById('totVat').innerText = totVat.toLocaleString('en-US',{minimumFractionDigits:2}); document.getElementById('totInvValue').innerText = `Rs. ${totFinal.toLocaleString('en-US',{minimumFractionDigits:2})}`;
+        document.getElementById('totNetValue').innerText = totNet.toLocaleString('en-US',{minimumFractionDigits:2}); document.getElementById('totVat').innerText = totVat.toLocaleString('en-US',{minimumFractionDigits:2}); document.getElementById('totInvValue').innerText = `Rs. ${totFinal.toLocaleString('en-US',{minimumFractionDigits:2})}`; document.getElementById('totEmptyValue').innerText = totEmpty.toLocaleString('en-US',{minimumFractionDigits:2});
     }
     function deleteLoad(index) {
         Swal.fire({ title: 'Delete Load?', text: `Invoice ${masterData[index].invNo} will be removed.`, icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', cancelButtonColor: '#3085d6', confirmButtonText: 'Yes, delete'
@@ -2489,6 +2673,239 @@
             text: 'IRD VAT රිපෝට් එක සාර්ථකව සකස් කරන ලදී.',
             timer: 2000, showConfirmButton: false
         });
+    }
+
+    // ==========================================
+    // EMPTY BOTTLES MANAGEMENT LOGIC
+    // ==========================================
+
+    function updateGlassItemDropdown() {
+        let sel = document.getElementById('erItemSelect');
+        if(!sel) return;
+        sel.innerHTML = '<option value="">-- තෝරන්න --</option>';
+        Object.keys(priceMaster).forEach(code => {
+            if(priceMaster[code].isGlass) {
+                sel.innerHTML += `<option value="${code}">${code} - ${priceMaster[code].itemName}</option>`;
+            }
+        });
+    }
+
+    function saveOpeningEmptyValue() {
+        let val = cleanNum(document.getElementById('openingEmptyValInput').value);
+        emptySettings.openingBalance = val;
+        saveToDatabase();
+        renderEmptyDashboard();
+        Swal.fire('Saved', 'Opening Balance Updated Successfully.', 'success');
+    }
+
+    function renderEmptyDashboard() {
+        if(!document.getElementById('openingEmptyValInput')) return;
+        document.getElementById('openingEmptyValInput').value = emptySettings.openingBalance || 0;
+        let fFrom = document.getElementById('emptyFilterFrom').value;
+        let fTo = document.getElementById('emptyFilterTo').value;
+
+        // 1. Render Loads
+        let loadsBody = document.querySelector('#emptyLoadsTable tbody');
+        loadsBody.innerHTML = '';
+        let totalLoadEmpties = 0;
+
+        masterData.forEach(l => {
+            if (fFrom && l.date < fFrom) return;
+            if (fTo && l.date > fTo) return;
+            if (l.sysTotals && l.sysTotals.emptyValue > 0) {
+                totalLoadEmpties += l.sysTotals.emptyValue;
+                loadsBody.innerHTML += `<tr onclick="showLoadEmptyBreakdown('${l.invNo}')" title="Click for Breakdown" style="cursor:pointer;">
+                    <td>${l.date}</td><td>${l.loadNo}</td><td>${l.vehicleNo}</td>
+                    <td class="text-info text-end font-monospace">Rs. ${l.sysTotals.emptyValue.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+                </tr>`;
+            }
+        });
+
+        // 2. Render Returns & Deposits Tables
+        renderEmptySubTables(fFrom, fTo);
+
+        // 3. Calculate Current Overall Value
+        // Opening + Loads - Empty Returns - Deposits
+        let totalEmptyReturns = emptyTransactions.emptyReturns.reduce((sum, val) => sum + val.totalValue, 0);
+        let totalDeposits = emptyTransactions.deposits.reduce((sum, val) => sum + val.depositValue, 0);
+
+        let currentVal = (emptySettings.openingBalance || 0) + totalLoadEmpties - totalEmptyReturns - totalDeposits;
+        document.getElementById('displayCurrentEmptyVal').innerText = `Rs. ${currentVal.toLocaleString('en-US', {minimumFractionDigits:2})}`;
+    }
+
+    window.showLoadEmptyBreakdown = function(invNo) {
+        let load = masterData.find(l => l.invNo === invNo);
+        if(!load) return;
+        let html = `<table class="table table-dark text-center"><thead><tr><th>Item</th><th>Qty</th><th>Val/Case</th><th>Total</th></tr></thead><tbody>`;
+        load.items.forEach(item => {
+            let p = priceMaster[cleanItemCode(item.code)];
+            if(p && p.isGlass) {
+                html += `<tr><td>${p.itemName}</td><td>${item.qty}</td><td>Rs. ${p.emptyValue}</td><td class="text-warning">Rs. ${item.qty * p.emptyValue}</td></tr>`;
+            }
+        });
+        html += `</tbody></table>`;
+        Swal.fire({ title: 'Empty Value Breakdown', html: html, width: '600px', background: '#1f2833', color: '#fff' });
+    }
+
+    function renderEmptySubTables(fFrom, fTo) {
+        // Render Empty Returns
+        let erBody = document.querySelector('#emptyReturnTable tbody'); erBody.innerHTML = '';
+        emptyTransactions.emptyReturns.forEach(er => {
+            if(fFrom && er.date < fFrom) return; if(fTo && er.date > fTo) return;
+            erBody.innerHTML += `<tr><td>${er.date}</td><td>${er.vehicle}</td><td>${er.item}</td><td>${er.qty}</td><td class="text-danger fw-bold">Rs. ${er.totalValue}</td><td>${er.audit ? '<i class="fa-solid fa-check text-success"></i>' : '-'}</td></tr>`;
+        });
+
+        // Render Shell Returns
+        let srBody = document.querySelector('#shellReturnTable tbody'); srBody.innerHTML = '';
+        emptyTransactions.shellReturns.forEach(sr => {
+            if(fFrom && sr.date < fFrom) return; if(fTo && sr.date > fTo) return;
+            srBody.innerHTML += `<tr><td>${sr.date}</td><td>Rs. ${sr.caseValue}</td><td>${sr.qty}</td><td class="text-warning fw-bold">Rs. ${sr.totalValue}</td><td>${sr.audit ? '<i class="fa-solid fa-check text-success"></i>' : '-'}</td></tr>`;
+        });
+
+        // Render Deposits
+        let depBody = document.querySelector('#depositTable tbody'); depBody.innerHTML = '';
+        emptyTransactions.deposits.forEach(dep => {
+            if(fFrom && dep.date < fFrom) return; if(fTo && dep.date > fTo) return;
+            depBody.innerHTML += `<tr><td>${dep.date}</td><td>${dep.shop}</td><td class="text-success fw-bold">Rs. ${dep.depositValue}</td><td>${dep.audit ? '<i class="fa-solid fa-check text-success"></i>' : '-'}</td></tr>`;
+        });
+    }
+
+    function saveEmptyReturn() {
+        let d = document.getElementById('erDate').value;
+        let v = document.getElementById('erVehicle').value;
+        let item = document.getElementById('erItemSelect').value;
+        let qty = cleanNum(document.getElementById('erQty').value);
+        let audit = document.getElementById('erAudit').checked;
+
+        if(!d || !item || qty<=0) return Swal.fire('Error', 'Please fill required fields correctly.', 'error');
+
+        let p = priceMaster[item];
+        let totalVal = qty * (parseFloat(p.emptyValue) || 0);
+
+        emptyTransactions.emptyReturns.push({ date: d, vehicle: v, item: item, qty: qty, totalValue: totalVal, audit: audit, timestamp: Date.now() });
+        saveToDatabase(); renderEmptyDashboard();
+        document.getElementById('erQty').value = ''; document.getElementById('erAudit').checked = false;
+    }
+
+    function saveShellReturn() {
+        let d = document.getElementById('srDate').value;
+        let cv = cleanNum(document.getElementById('srValue').value);
+        let qty = cleanNum(document.getElementById('srQty').value);
+        let audit = document.getElementById('srAudit').checked;
+
+        if(!d || qty<=0) return Swal.fire('Error', 'Invalid data.', 'error');
+
+        emptyTransactions.shellReturns.push({ date: d, caseValue: cv, qty: qty, totalValue: cv * qty, audit: audit, timestamp: Date.now() });
+        saveToDatabase(); renderEmptyDashboard();
+        document.getElementById('srQty').value = ''; document.getElementById('srAudit').checked = false;
+    }
+
+    function saveDeposit() {
+        let d = document.getElementById('depDate').value;
+        let shop = document.getElementById('depShop').value;
+        let val = cleanNum(document.getElementById('depValue').value);
+        let audit = document.getElementById('depAudit').checked;
+
+        if(!d || !shop || val<=0) return Swal.fire('Error', 'Invalid data.', 'error');
+
+        emptyTransactions.deposits.push({ date: d, shop: shop, depositValue: val, audit: audit, timestamp: Date.now() });
+        saveToDatabase(); renderEmptyDashboard();
+        document.getElementById('depShop').value = ''; document.getElementById('depValue').value = ''; document.getElementById('depAudit').checked = false;
+    }
+
+    // ==========================================
+    // NEW IRD REPORT LOGIC
+    // ==========================================
+
+    function formatIRDDate(dateStr) {
+        if(!dateStr) return "";
+        let d = new Date(dateStr);
+        return `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`;
+    }
+
+    function removeIRDInvoice(invNo) {
+        window.irdExcludedInvoices.push(invNo);
+        renderNewIRDTable();
+    }
+
+    function renderNewIRDTable() {
+        let tbody = document.getElementById('newIrdBody');
+        if(!tbody) return;
+        tbody.innerHTML = '';
+
+        let fFrom = document.getElementById('newIrdFrom').value;
+        let fTo = document.getElementById('newIrdTo').value;
+
+        let serial = 1;
+        masterData.forEach(l => {
+            if(fFrom && l.date < fFrom) return;
+            if(fTo && l.date > fTo) return;
+            if(window.irdExcludedInvoices.includes(l.invNo)) return;
+
+            // ගත යුත්තේ වැට් අගයක් සහිත බීම තොග පමණි
+            if(l.sysTotals && l.sysTotals.vat > 0) {
+                // VAT And SSCL හි ආකෘතියට ඉන්වොයිස් අංකය
+                let taxInvNo = "TAX-" + l.invNo; // ඔබගේ අවශ්‍යතාවය අනුව මෙහි Format එක වෙනස් කරගන්න
+
+                let vatAmt = l.sysTotals.vat;
+                let valueOfPurchase = (vatAmt / 18) * 100;
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${serial}</td>
+                        <td>${formatIRDDate(l.date)}</td>
+                        <td>${taxInvNo}</td>
+                        <td>124002907</td>
+                        <td class="text-start">Coca Cola Beverages Sri Lanka Limited</td>
+                        <td>Cool Drinks</td>
+                        <td class="text-end">${valueOfPurchase.toFixed(2)}</td>
+                        <td class="text-end">${vatAmt.toFixed(2)}</td>
+                        <td>0.00</td>
+                        <td class="no-print"><button class="btn btn-sm btn-danger py-0 px-1" onclick="removeIRDInvoice('${l.invNo}')"><i class="fa-solid fa-xmark"></i></button></td>
+                    </tr>
+                `;
+                serial++;
+            }
+        });
+    }
+
+    function exportIRDExcel() {
+        let table = document.getElementById("newIrdTable");
+        let cloneTable = table.cloneNode(true);
+        let ths = cloneTable.querySelectorAll('.no-print');
+        ths.forEach(el => el.remove());
+
+        let wb = XLSX.utils.table_to_book(cloneTable, {sheet:"IRD Report"});
+        XLSX.writeFile(wb, "IRD_VAT_Report.xlsx");
+    }
+
+    function exportIRDPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('l', 'pt', 'a4'); // Landscape layout
+
+        doc.text("Official IRD VAT Report", 40, 40);
+
+        doc.autoTable({
+            html: '#newIrdTable',
+            startY: 50,
+            theme: 'grid',
+            styles: { fontSize: 8 },
+            columns: [
+                { header: 'Serial No', dataKey: '0' },
+                { header: 'Invoice Date', dataKey: '1' },
+                { header: 'Tax Invoice No', dataKey: '2' },
+                { header: 'Supplier TIN', dataKey: '3' },
+                { header: 'Supplier Name', dataKey: '4' },
+                { header: 'Description', dataKey: '5' },
+                { header: 'Value of Purchase', dataKey: '6' },
+                { header: 'VAT Amount', dataKey: '7' },
+                { header: 'Disallowed VAT', dataKey: '8' }
+            ],
+            // Hide the action column index 9
+            columnStyles: { 9: { cellWidth: 0, fontSize: 0, textColor: [255,255,255] } } 
+        });
+
+        doc.save("IRD_VAT_Report.pdf");
     }
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
