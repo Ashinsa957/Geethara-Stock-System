@@ -1184,12 +1184,20 @@
     }
     function cleanNum(val) { if(!val) return 0; let cleaned = String(val).replace(/,/g, '').trim(); return parseFloat(cleaned) || 0;
     }
-    // මිල ගණන් ක්ෂේත්‍ර වල කුඩා ඊතල (spinner) නොමැතිව, කෙලින්ම ඕනෑම මුදලක් ටයිප් කළ හැකි වන පරිදි පිරිසිදු කරයි
+    // මිල ගණන් ක්ෂේත්‍ර වල කුඩා ඊතල (spinner) නොමැතිව, කෙලින්ම ඕනෑම මුදලක් ටයිප්/එඩිට් කළ හැකි වන පරිදි පිරිසිදු කරයි
     function sanitizeDecimalInput(el) {
-        let v = el.value.replace(/[^0-9.]/g, '');
-        let parts = v.split('.');
-        if (parts.length > 2) v = parts[0] + '.' + parts.slice(1).join('');
-        el.value = v;
+        let original = el.value;
+        let cleaned = original.replace(/[^0-9.]/g, '');
+        let firstDot = cleaned.indexOf('.');
+        if (firstDot !== -1) {
+            cleaned = cleaned.slice(0, firstDot + 1) + cleaned.slice(firstDot + 1).replace(/\./g, '');
+        }
+        // වැරදි character එකක් නැත්නම් value එක නැවත set නොකරයි - cursor එක ස්වභාවිකව එහිම තියෙනවා
+        if (cleaned === original) return;
+        let cursorPos = el.selectionStart;
+        el.value = cleaned;
+        let newPos = Math.max(0, cursorPos - (original.length - cleaned.length));
+        el.setSelectionRange(newPos, newPos);
     }
     function cleanItemCode(code) { let c = String(code || "").trim().toUpperCase();
         if (c.endsWith(".0")) { c = c.substring(0, c.length - 2); } return c;
