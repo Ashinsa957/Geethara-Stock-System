@@ -726,17 +726,31 @@
                                 <!-- 1. Empty Return -->
                                 <div class="tab-pane fade show active" id="subEmptyReturn">
                                     <h6 class="text-info"><i class="fa-solid fa-recycle"></i> හිස් බෝතල් සහ ශෙල් රිටර්න් කිරීම</h6>
+                                    <p class="text-muted small mb-2">එකම තොගය (Date + Vehicle) එකකට බීම වර්ග කිහිපයක් තිබේ නම්, එකින් එක "Add Item to Batch" කර, පසුව "Save Batch" කරන්න.</p>
                                     <div class="row g-2 align-items-end mt-2">
-                                        <div class="col-md-2"><label class="form-label small">Date</label><input type="date" id="erDate" class="form-control"></div>
-                                        <div class="col-md-2"><label class="form-label small">Vehicle No</label><input type="text" id="erVehicle" class="form-control"></div>
-                                        <div class="col-md-3"><label class="form-label small">Item (Glass Only)</label><select id="erItemSelect" class="form-select"></select></div>
+                                        <div class="col-md-3"><label class="form-label small">Date</label><input type="date" id="erDate" class="form-control"></div>
+                                        <div class="col-md-3"><label class="form-label small">Vehicle No</label><input type="text" id="erVehicle" class="form-control"></div>
+                                        <div class="col-md-4"><label class="form-label small">Item (Glass Only)</label><select id="erItemSelect" class="form-select"></select></div>
                                         <div class="col-md-2"><label class="form-label small">Cases Qty</label><input type="number" id="erQty" class="form-control"></div>
-                                        <div class="col-md-2 d-flex align-items-center">
-                                            <div class="form-check mt-3"><input class="form-check-input" type="checkbox" id="erAudit"><label class="form-check-label text-warning small">Audit Verified</label></div>
-                                        </div>
-                                        <div class="col-md-1"><button class="btn btn-success w-100 fw-bold" onclick="saveEmptyReturn()"><i class="fa-solid fa-plus"></i> Add</button></div>
                                     </div>
-                                    <div class="table-responsive mt-3" style="max-height:150px;"><table class="table table-sm text-center" id="emptyReturnTable"><thead class="table-secondary"><tr><th>Date</th><th>Vehicle</th><th>Item</th><th>Qty</th><th>Value</th><th>Audit</th></tr></thead><tbody></tbody></table></div>
+                                    <div class="text-end mt-2">
+                                        <button class="btn btn-outline-info fw-bold" onclick="addItemToERBatch()"><i class="fa-solid fa-layer-group"></i> Add Item to Batch</button>
+                                    </div>
+
+                                    <div class="mt-3" id="erBatchPreviewWrap" style="display:none;">
+                                        <div class="table-responsive border border-info rounded">
+                                            <table class="table table-sm table-dark text-center mb-0">
+                                                <thead><tr><th>Item</th><th>Qty</th><th>Value</th><th></th></tr></thead>
+                                                <tbody id="erBatchPreviewBody"></tbody>
+                                                <tfoot><tr class="fw-bold"><th class="text-end" colspan="2">Batch Total:</th><th class="text-info" id="erBatchPreviewTotal">Rs. 0.00</th><th></th></tr></tfoot>
+                                            </table>
+                                        </div>
+                                        <div class="text-end mt-2">
+                                            <button class="btn btn-success fw-bold" onclick="saveEmptyReturnBatch()"><i class="fa-solid fa-floppy-disk"></i> Save Batch to System</button>
+                                        </div>
+                                    </div>
+
+                                    <div class="table-responsive mt-4" style="max-height:150px;"><table class="table table-sm text-center" id="emptyReturnTable"><thead class="table-secondary"><tr><th>Date</th><th>Vehicle</th><th class="text-start">Items (Qty)</th><th>Total Qty</th><th>Value</th><th>Audit</th></tr></thead><tbody></tbody></table></div>
                                 </div>
 
                                 <!-- 2. Shell Return -->
@@ -745,11 +759,8 @@
                                     <div class="row g-2 align-items-end mt-2">
                                         <div class="col-md-3"><label class="form-label small">Date</label><input type="date" id="srDate" class="form-control"></div>
                                         <div class="col-md-3"><label class="form-label small">Case Value</label><select id="srValue" class="form-select"><option value="150">Rs. 150</option><option value="250">Rs. 250</option><option value="500">Rs. 500</option></select></div>
-                                        <div class="col-md-2"><label class="form-label small">Cases Qty</label><input type="number" id="srQty" class="form-control"></div>
-                                        <div class="col-md-2 d-flex align-items-center">
-                                            <div class="form-check mt-3"><input class="form-check-input" type="checkbox" id="srAudit"><label class="form-check-label text-warning small">Audit Verified</label></div>
-                                        </div>
-                                        <div class="col-md-2"><button class="btn btn-warning w-100 fw-bold" onclick="saveShellReturn()"><i class="fa-solid fa-plus"></i> Add</button></div>
+                                        <div class="col-md-3"><label class="form-label small">Cases Qty</label><input type="number" id="srQty" class="form-control"></div>
+                                        <div class="col-md-3"><button class="btn btn-warning w-100 fw-bold" onclick="saveShellReturn()"><i class="fa-solid fa-plus"></i> Add</button></div>
                                     </div>
                                     <div class="table-responsive mt-3" style="max-height:150px;"><table class="table table-sm text-center" id="shellReturnTable"><thead class="table-secondary"><tr><th>Date</th><th>Case Value</th><th>Qty</th><th>Total Value</th><th>Audit</th></tr></thead><tbody></tbody></table></div>
                                 </div>
@@ -759,16 +770,14 @@
                                     <h6 class="text-success"><i class="fa-solid fa-money-bill-transfer"></i> ඩිපොසිට් ලබා ගැනීම</h6>
                                     <div class="row g-2 align-items-end mt-2">
                                         <div class="col-md-3"><label class="form-label small">Date</label><input type="date" id="depDate" class="form-control"></div>
-                                        <div class="col-md-4"><label class="form-label small">Shop/Route Name</label><input type="text" id="depShop" class="form-control"></div>
+                                        <div class="col-md-5"><label class="form-label small">Shop/Route Name</label><input type="text" id="depShop" class="form-control"></div>
                                         <div class="col-md-2"><label class="form-label small">Deposit Value</label><input type="number" id="depValue" class="form-control"></div>
-                                        <div class="col-md-2 d-flex align-items-center">
-                                            <div class="form-check mt-3"><input class="form-check-input" type="checkbox" id="depAudit"><label class="form-check-label text-warning small">Audit Verified</label></div>
-                                        </div>
-                                        <div class="col-md-1"><button class="btn btn-success w-100 fw-bold" onclick="saveDeposit()"><i class="fa-solid fa-plus"></i> Add</button></div>
+                                        <div class="col-md-2"><button class="btn btn-success w-100 fw-bold" onclick="saveDeposit()"><i class="fa-solid fa-plus"></i> Add</button></div>
                                     </div>
                                     <div class="table-responsive mt-3" style="max-height:150px;"><table class="table table-sm text-center" id="depositTable"><thead class="table-secondary"><tr><th>Date</th><th>Shop Name</th><th>Value</th><th>Audit</th></tr></thead><tbody></tbody></table></div>
                                 </div>
                             </div>
+                            <p class="text-muted small mt-2"><i class="fa-solid fa-circle-info text-info"></i> Audit Verified checkbox එක දැන් Save කිරීමෙන් පසුව, පහත table එකේදී ටික් කිරීමට හැකියි (add කරන අවස්ථාවේ නොවේ).</p>
                         </div>
                     </div>
                 </div>
@@ -2072,6 +2081,7 @@
             
             return `<tr><td class="text-start ps-3 fw-bold">${i.code}</td><td class="text-light text-start">${name}</td><td class="text-info">${type}</td><td>${i.qty}</td><td>Rs. ${uPrice.toFixed(2)}</td><td class="text-success text-end pe-3">Rs. ${(i.qty * uPrice).toLocaleString('en-US',{minimumFractionDigits:2})}</td></tr>`;
         }).join('');
+        let totalQty = l.items.reduce((sum, i) => sum + (parseFloat(i.qty) || 0), 0);
         let exc = l.excelSummary || {}; let sys = l.sysTotals || {};
         document.getElementById('detailsModalBody').innerHTML = `
             <input type="hidden" id="editLoadIndex" value="${index}">
@@ -2109,7 +2119,7 @@
             <div class="row g-2 text-center mb-4 font-monospace fs-6">
                 <div class="col-md-2"><div class="p-2 border border-secondary rounded bg-dark">Net Value<br><span class="text-light">Rs. ${(exc.netValue||0).toLocaleString('en-US',{minimumFractionDigits:2})}</span><br><small class="text-warning" style="font-size:0.75em;" id="e_net">Sys: ${(sys.netValue||0).toLocaleString('en-US',{minimumFractionDigits:2})}</small></div></div><div class="col-md-2"><div class="p-2 border border-secondary rounded bg-dark">Cash Discount<br><span class="text-light">Rs. ${(exc.cashDiscount||0).toLocaleString('en-US',{minimumFractionDigits:2})}</span><br><small class="text-warning" style="font-size:0.75em;" id="e_cd">Sys: ${(sys.cashDiscount||0).toLocaleString('en-US',{minimumFractionDigits:2})}</small></div></div><div class="col-md-3"><div class="p-2 border border-secondary rounded bg-dark">Early Settlement<br><span class="text-light">Rs. ${(exc.earlySet||0).toLocaleString('en-US',{minimumFractionDigits:2})}</span><br><small class="text-warning" style="font-size:0.75em;" id="e_es">Sys: ${(sys.earlySet||0).toLocaleString('en-US',{minimumFractionDigits:2})}</small></div></div><div class="col-md-2"><div class="p-2 border border-secondary rounded bg-dark">VAT (18%)<br><span class="text-light">Rs. ${(exc.vat||0).toLocaleString('en-US',{minimumFractionDigits:2})}</span><br><small class="text-warning" style="font-size:0.75em;" id="e_vat">Sys: ${(sys.vat||0).toLocaleString('en-US',{minimumFractionDigits:2})}</small></div></div><div class="col-md-3"><div class="p-2 border border-success rounded bg-dark">Final Invoice Value<br><span class="text-success fw-bold">Rs. ${(exc.finalValue||0).toLocaleString('en-US',{minimumFractionDigits:2})}</span><br><small class="text-warning" style="font-size:0.75em;" id="e_fin">Sys: ${(sys.finalValue||0).toLocaleString('en-US',{minimumFractionDigits:2})}</small></div></div></div>
             <h6 class="text-info mb-2"><i class="fa-solid fa-boxes-stacked"></i> Items Delivered</h6>
-            <div class="table-responsive border border-secondary rounded" style="max-height: 220px;"><table class="table table-sm text-center mb-0"><thead class="table-dark sticky-top"><tr><th>Code</th><th>Item Name</th><th>Item Type</th><th>Qty</th><th>Unit Price</th><th class="text-end pe-3">Line Total</th></tr></thead><tbody>${itemRows}</tbody></table></div>`;
+            <div class="table-responsive border border-secondary rounded" style="max-height: 220px;"><table class="table table-sm text-center mb-0"><thead class="table-dark sticky-top"><tr><th>Code</th><th>Item Name</th><th>Item Type</th><th>Qty</th><th>Unit Price</th><th class="text-end pe-3">Line Total</th></tr></thead><tbody>${itemRows}</tbody><tfoot class="table-dark"><tr class="fw-bold"><th colspan="3" class="text-end">Total Quantity:</th><th class="text-warning">${totalQty}</th><th></th><th></th></tr></tfoot></table></div>`;
         detailsModalInstance.show();
     }
     function saveEditedLoad() {
@@ -2793,69 +2803,121 @@
     }
 
     function renderEmptySubTables(fFrom, fTo) {
-        // Render Empty Returns
+        // Render Empty Returns (batch aware: each record may have multiple items in one lot)
         let erBody = document.querySelector('#emptyReturnTable tbody'); erBody.innerHTML = '';
         emptyTransactions.emptyReturns.forEach(er => {
             if(fFrom && er.date < fFrom) return; if(fTo && er.date > fTo) return;
-            erBody.innerHTML += `<tr><td>${er.date}</td><td>${er.vehicle}</td><td>${er.item}</td><td>${er.qty}</td><td class="text-danger fw-bold">Rs. ${er.totalValue}</td><td>${er.audit ? '<i class="fa-solid fa-check text-success"></i>' : '-'}</td></tr>`;
+            // Backward compatibility: old records had a single `item`/`qty`, new records have an `items` array (batch)
+            let items = er.items || [{ item: er.item, itemName: (priceMaster[er.item] ? priceMaster[er.item].itemName : er.item), qty: er.qty }];
+            let itemsHtml = items.map(i => `${i.itemName || (priceMaster[i.item] ? priceMaster[i.item].itemName : i.item)} <span class="text-info">(${i.qty})</span>`).join('<br>');
+            let totalQty = items.reduce((s, i) => s + (parseFloat(i.qty) || 0), 0);
+            erBody.innerHTML += `<tr><td>${er.date}</td><td>${er.vehicle || ''}</td><td class="text-start">${itemsHtml}</td><td>${totalQty}</td><td class="text-danger fw-bold">Rs. ${parseFloat(er.totalValue || 0).toFixed(2)}</td><td><input type="checkbox" class="form-check-input" ${er.audit ? 'checked' : ''} onchange="toggleAuditStatus('emptyReturns', ${er.timestamp})" title="Save කිරීමෙන් පසු Audit Verify කිරීමට Click කරන්න"></td></tr>`;
         });
 
         // Render Shell Returns
         let srBody = document.querySelector('#shellReturnTable tbody'); srBody.innerHTML = '';
         emptyTransactions.shellReturns.forEach(sr => {
             if(fFrom && sr.date < fFrom) return; if(fTo && sr.date > fTo) return;
-            srBody.innerHTML += `<tr><td>${sr.date}</td><td>Rs. ${sr.caseValue}</td><td>${sr.qty}</td><td class="text-warning fw-bold">Rs. ${sr.totalValue}</td><td>${sr.audit ? '<i class="fa-solid fa-check text-success"></i>' : '-'}</td></tr>`;
+            srBody.innerHTML += `<tr><td>${sr.date}</td><td>Rs. ${sr.caseValue}</td><td>${sr.qty}</td><td class="text-warning fw-bold">Rs. ${sr.totalValue}</td><td><input type="checkbox" class="form-check-input" ${sr.audit ? 'checked' : ''} onchange="toggleAuditStatus('shellReturns', ${sr.timestamp})" title="Save කිරීමෙන් පසු Audit Verify කිරීමට Click කරන්න"></td></tr>`;
         });
 
         // Render Deposits
         let depBody = document.querySelector('#depositTable tbody'); depBody.innerHTML = '';
         emptyTransactions.deposits.forEach(dep => {
             if(fFrom && dep.date < fFrom) return; if(fTo && dep.date > fTo) return;
-            depBody.innerHTML += `<tr><td>${dep.date}</td><td>${dep.shop}</td><td class="text-success fw-bold">Rs. ${dep.depositValue}</td><td>${dep.audit ? '<i class="fa-solid fa-check text-success"></i>' : '-'}</td></tr>`;
+            depBody.innerHTML += `<tr><td>${dep.date}</td><td>${dep.shop}</td><td class="text-success fw-bold">Rs. ${dep.depositValue}</td><td><input type="checkbox" class="form-check-input" ${dep.audit ? 'checked' : ''} onchange="toggleAuditStatus('deposits', ${dep.timestamp})" title="Save කිරීමෙන් පසු Audit Verify කිරීමට Click කරන්න"></td></tr>`;
         });
     }
 
-    function saveEmptyReturn() {
-        let d = document.getElementById('erDate').value;
-        let v = document.getElementById('erVehicle').value;
-        let item = document.getElementById('erItemSelect').value;
+    // --- Empty Return: Batch (multi-item, same lot) add ---
+    let erBatchItems = [];
+
+    function addItemToERBatch() {
+        let itemCode = document.getElementById('erItemSelect').value;
         let qty = cleanNum(document.getElementById('erQty').value);
-        let audit = document.getElementById('erAudit').checked;
+        if(!itemCode || qty <= 0) return Swal.fire('Error', 'Item සහ නිවැරදි Qty එකක් තෝරන්න.', 'error');
 
-        if(!d || !item || qty<=0) return Swal.fire('Error', 'Please fill required fields correctly.', 'error');
-
-        let p = priceMaster[item];
+        let p = priceMaster[itemCode];
         let totalVal = qty * (parseFloat(p.emptyValue) || 0);
 
-        emptyTransactions.emptyReturns.push({ date: d, vehicle: v, item: item, qty: qty, totalValue: totalVal, audit: audit, timestamp: Date.now() });
-        saveToDatabase(); renderEmptyDashboard();
-        document.getElementById('erQty').value = ''; document.getElementById('erAudit').checked = false;
+        // එකම item එක දැනටමත් Batch එකේ තිබේ නම්, Qty එකතු කරන්න
+        let existing = erBatchItems.find(i => i.item === itemCode);
+        if(existing) { existing.qty += qty; existing.totalValue += totalVal; }
+        else erBatchItems.push({ item: itemCode, itemName: p.itemName, qty: qty, totalValue: totalVal });
+
+        document.getElementById('erQty').value = '';
+        document.getElementById('erItemSelect').value = '';
+        renderERBatchPreview();
+    }
+
+    function removeItemFromERBatch(idx) {
+        erBatchItems.splice(idx, 1);
+        renderERBatchPreview();
+    }
+
+    function renderERBatchPreview() {
+        let wrap = document.getElementById('erBatchPreviewWrap');
+        let body = document.getElementById('erBatchPreviewBody');
+        if(erBatchItems.length === 0) { wrap.style.display = 'none'; body.innerHTML = ''; return; }
+        wrap.style.display = 'block';
+        body.innerHTML = '';
+        let total = 0;
+        erBatchItems.forEach((it, idx) => {
+            total += it.totalValue;
+            body.innerHTML += `<tr><td class="text-start">${it.itemName}</td><td>${it.qty}</td><td>Rs. ${it.totalValue.toFixed(2)}</td><td><button class="btn btn-sm btn-outline-danger" onclick="removeItemFromERBatch(${idx})"><i class="fa-solid fa-trash"></i></button></td></tr>`;
+        });
+        document.getElementById('erBatchPreviewTotal').innerText = `Rs. ${total.toLocaleString('en-US', {minimumFractionDigits:2})}`;
+    }
+
+    function saveEmptyReturnBatch() {
+        let d = document.getElementById('erDate').value;
+        let v = document.getElementById('erVehicle').value;
+        if(!d) return Swal.fire('Error', 'Date එක අනිවාර්යයි.', 'error');
+        if(erBatchItems.length === 0) return Swal.fire('Error', 'අවම වශයෙන් item එකක් Batch එකට එකතු කරන්න.', 'error');
+
+        let totalValue = erBatchItems.reduce((sum, i) => sum + i.totalValue, 0);
+        emptyTransactions.emptyReturns.push({ date: d, vehicle: v, items: erBatchItems, totalValue: totalValue, audit: false, timestamp: Date.now() });
+        saveToDatabase();
+
+        erBatchItems = [];
+        document.getElementById('erVehicle').value = '';
+        renderERBatchPreview();
+        renderEmptyDashboard();
+        Swal.fire({ icon: 'success', title: 'Saved!', text: 'Empty Return Batch එක System එකට Save විය. Audit Verify කිරීම පහත table එකෙන් කරන්න.', timer: 2200, showConfirmButton: false });
+    }
+
+    // Audit ticking is now done AFTER saving to the system (from the table), not at add-time.
+    function toggleAuditStatus(arrName, timestamp) {
+        let rec = emptyTransactions[arrName].find(r => r.timestamp === timestamp);
+        if(!rec) return;
+        rec.audit = !rec.audit;
+        saveToDatabase();
+        renderEmptyDashboard();
+        Swal.fire({ icon: 'success', title: rec.audit ? 'Audit Verified' : 'Audit Unmarked', toast: true, position: 'top-end', showConfirmButton: false, timer: 1000 });
     }
 
     function saveShellReturn() {
         let d = document.getElementById('srDate').value;
         let cv = cleanNum(document.getElementById('srValue').value);
         let qty = cleanNum(document.getElementById('srQty').value);
-        let audit = document.getElementById('srAudit').checked;
 
         if(!d || qty<=0) return Swal.fire('Error', 'Invalid data.', 'error');
 
-        emptyTransactions.shellReturns.push({ date: d, caseValue: cv, qty: qty, totalValue: cv * qty, audit: audit, timestamp: Date.now() });
+        emptyTransactions.shellReturns.push({ date: d, caseValue: cv, qty: qty, totalValue: cv * qty, audit: false, timestamp: Date.now() });
         saveToDatabase(); renderEmptyDashboard();
-        document.getElementById('srQty').value = ''; document.getElementById('srAudit').checked = false;
+        document.getElementById('srQty').value = '';
     }
 
     function saveDeposit() {
         let d = document.getElementById('depDate').value;
         let shop = document.getElementById('depShop').value;
         let val = cleanNum(document.getElementById('depValue').value);
-        let audit = document.getElementById('depAudit').checked;
 
         if(!d || !shop || val<=0) return Swal.fire('Error', 'Invalid data.', 'error');
 
-        emptyTransactions.deposits.push({ date: d, shop: shop, depositValue: val, audit: audit, timestamp: Date.now() });
+        emptyTransactions.deposits.push({ date: d, shop: shop, depositValue: val, audit: false, timestamp: Date.now() });
         saveToDatabase(); renderEmptyDashboard();
-        document.getElementById('depShop').value = ''; document.getElementById('depValue').value = ''; document.getElementById('depAudit').checked = false;
+        document.getElementById('depShop').value = ''; document.getElementById('depValue').value = '';
     }
 
     // ==========================================
