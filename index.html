@@ -1062,6 +1062,19 @@
     let discountHeaders = []; 
     let emptySettings = { openingBalance: 0 };
     let emptyTransactions = { shellReturns: [], deposits: [], emptyReturns: [] };
+
+    // Firebase Realtime Database එකේ හිස් Array එකක් (`[]`) Save කළාම, ඒක RTDB එකෙන් ස්වයංක්‍රීයව
+    // ඉවත් වෙනවා (prune වෙනවා). ඒ නිසා shellReturns/deposits/emptyReturns වලින් එකක් හිස්ව තිබෙද්දී
+    // Save කළොත්, ආපහු load කරාම ඒ key එකම object එකෙන් අතුරුදහන් වෙනවා (undefined වෙනවා).
+    // මේ function එකෙන් load වෙන හැම වෙලාවකම, 3 array එකම නැත්නම් [] විදිහට reset කරලා safe කරනවා.
+    function normalizeEmptyTransactions(obj) {
+        obj = obj || {};
+        return {
+            shellReturns: Array.isArray(obj.shellReturns) ? obj.shellReturns : [],
+            deposits: Array.isArray(obj.deposits) ? obj.deposits : [],
+            emptyReturns: Array.isArray(obj.emptyReturns) ? obj.emptyReturns : []
+        };
+    }
     window.irdExcludedInvoices = [];
     let currentEditingLoad = null;
     // --- UNDO / REDO STATE ---
@@ -1099,7 +1112,7 @@
                 halfCaseItems = data.halfCaseItems || []; 
                 discountHeaders = data.discountHeaders || [];
                 emptySettings = data.emptySettings || { openingBalance: 0 };
-                emptyTransactions = data.emptyTransactions || { shellReturns: [], deposits: [], emptyReturns: [] };
+                emptyTransactions = normalizeEmptyTransactions(data.emptyTransactions);
 
                 // Undo/Redo baseline එක අලුතින් පැමිණි දත්ත වලට යාවත්කාලීන කරයි
                 lastSavedSnapshot = JSON.stringify({ priceMaster, masterData, targetMaster, discountData, halfCaseItems, discountHeaders, emptySettings, emptyTransactions });
@@ -1150,6 +1163,8 @@
         }).catch(e => {
             console.error("Firebase save error", e);
             isSyncing = false;
+            // දත්ත local browser එකේ පෙන්නුවත්, Cloud එකට save වුනේ නැති බව user ට පෙන්වන්න
+            Swal.fire({ icon: 'error', title: 'Cloud Save Failed!', text: 'දත්ත Server එකට Save කිරීමේදී දෝෂයක් ඇතිවිය: ' + (e && e.message ? e.message : e) + '. Internet Connection එක සහ Login Status එක පරීක්ෂා කර නැවත උත්සාහ කරන්න.' });
         });
         checkPriceMasterStatus();
     }
@@ -2755,6 +2770,7 @@
 
     function renderEmptyDashboard() {
         if(!document.getElementById('openingEmptyValInput')) return;
+        emptyTransactions = normalizeEmptyTransactions(emptyTransactions); // safety net
         document.getElementById('openingEmptyValInput').value = emptySettings.openingBalance || 0;
         let fFrom = document.getElementById('emptyFilterFrom').value;
         let fTo = document.getElementById('emptyFilterTo').value;
@@ -2876,6 +2892,7 @@
         if(erBatchItems.length === 0) return Swal.fire('Error', 'අවම වශයෙන් item එකක් Batch එකට එකතු කරන්න.', 'error');
 
         let totalValue = erBatchItems.reduce((sum, i) => sum + i.totalValue, 0);
+        if(!Array.isArray(emptyTransactions.emptyReturns)) emptyTransactions.emptyReturns = [];
         emptyTransactions.emptyReturns.push({ date: d, vehicle: v, items: erBatchItems, totalValue: totalValue, audit: false, timestamp: Date.now() });
         saveToDatabase();
 
@@ -2888,6 +2905,7 @@
 
     // Audit ticking is now done AFTER saving to the system (from the table), not at add-time.
     function toggleAuditStatus(arrName, timestamp) {
+        if(!Array.isArray(emptyTransactions[arrName])) return;
         let rec = emptyTransactions[arrName].find(r => r.timestamp === timestamp);
         if(!rec) return;
         rec.audit = !rec.audit;
@@ -2903,6 +2921,7 @@
 
         if(!d || qty<=0) return Swal.fire('Error', 'Invalid data.', 'error');
 
+        if(!Array.isArray(emptyTransactions.shellReturns)) emptyTransactions.shellReturns = [];
         emptyTransactions.shellReturns.push({ date: d, caseValue: cv, qty: qty, totalValue: cv * qty, audit: false, timestamp: Date.now() });
         saveToDatabase(); renderEmptyDashboard();
         document.getElementById('srQty').value = '';
@@ -2915,6 +2934,7 @@
 
         if(!d || !shop || val<=0) return Swal.fire('Error', 'Invalid data.', 'error');
 
+        if(!Array.isArray(emptyTransactions.deposits)) emptyTransactions.deposits = [];
         emptyTransactions.deposits.push({ date: d, shop: shop, depositValue: val, audit: false, timestamp: Date.now() });
         saveToDatabase(); renderEmptyDashboard();
         document.getElementById('depShop').value = ''; document.getElementById('depValue').value = '';
@@ -3038,7 +3058,7 @@
         halfCaseItems = snap.halfCaseItems || [];
         discountHeaders = snap.discountHeaders || [];
         emptySettings = snap.emptySettings || { openingBalance: 0 };
-        emptyTransactions = snap.emptyTransactions || { shellReturns: [], deposits: [], emptyReturns: [] };
+        emptyTransactions = normalizeEmptyTransactions(snap.emptyTransactions);
 
         isUndoRedoAction = true;
         saveToDatabase();
