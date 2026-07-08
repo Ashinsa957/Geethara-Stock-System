@@ -967,8 +967,13 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4">
+                <div id="pmMissingCodeAlert" class="alert alert-warning fw-bold" style="display:none;"></div>
                 <div class="row g-2 mb-4 p-3 rounded bg-dark border border-secondary align-items-end">
-                    <div class="col-md-2"><label class="form-label text-warning mb-1 small">Item Code</label><input type="text" id="pmAddCode" class="form-control form-control-sm" placeholder="Ex: COKE1"></div>
+                    <div class="col-md-2">
+                        <label class="form-label text-warning mb-1 small">Item Code</label>
+                        <input type="text" id="pmAddCode" class="form-control form-control-sm" placeholder="Ex: COKE1">
+                        <small class="text-info d-block mt-1" id="pmMissingCodeInvoiceHint" style="display:none;"></small>
+                    </div>
                     <div class="col-md-3"><label class="form-label text-warning mb-1 small">Item Name</label><input type="text" id="pmAddName" class="form-control form-control-sm" placeholder="Ex: Coca-Cola 250ML"></div>
                     <div class="col-md-1"><label class="form-label text-warning mb-1 small">Unit P</label><input type="text" inputmode="decimal" autocomplete="off" id="pmAddUPrice" class="form-control form-control-sm" placeholder="0.00"></div>
                     <div class="col-md-1"><label class="form-label text-warning mb-1 small">Sale P</label><input type="text" inputmode="decimal" autocomplete="off" id="pmAddSPrice" class="form-control form-control-sm" placeholder="0.00"></div>
@@ -1244,6 +1249,10 @@
     // --- PRICE MASTER SYNCHRONIZATION AND MANAGEMENT ---
     
     function openPriceMasterManageModal() {
+        // Manually open කරන විට, ස්වයංක්‍රීය Missing Code Flow එකට අදාළ UI reset කරයි
+        document.getElementById('pmMissingCodeAlert').style.display = 'none';
+        document.getElementById('pmMissingCodeInvoiceHint').style.display = 'none';
+        document.getElementById('pmAddCode').readOnly = false;
         renderPriceMasterManageTable();
         priceMasterManageModalInstance.show();
     }
@@ -1284,11 +1293,24 @@
         saveToDatabase();
         renderPriceMasterManageTable();
         updateAIInsights(); renderProfitMasterTable(); updateGlassItemDropdown();
-        Swal.fire('Added', 'New item added', 'success');
 
         document.getElementById('pmAddCode').value = ''; document.getElementById('pmAddName').value = '';
         document.getElementById('pmAddUPrice').value = ''; document.getElementById('pmAddSPrice').value = '';
         document.getElementById('pmAddIsGlass').checked = false; document.getElementById('pmAddEmptyVal').value = '0';
+        document.getElementById('pmAddCode').readOnly = false;
+
+        // --- AUTO MISSING-CODE FLOW ---
+        // Process Daily Invoices මගින් ෆද්දතියේ නොතිබූ කේතයක් හමුවී මෙම Modal එක
+        // ස්වයංක්‍රීයව open වී තිබෙනවා නම්, එකතු කරන ලද කේත එකම නම් ඊළඟ නොතිබූ
+        // කේතයට යොමු වේ. සියල්ල අවසන් වූ පසු ස්වයංක්‍රීයව ඉන්වොයිසි Load Review
+        // popup එකට නැවත යොමු වේ.
+        if (window.pendingMissingCodes && window.pendingMissingCodes.length > 0 && window.pendingMissingCodes[0] === code) {
+            window.pendingMissingCodes.shift();
+            Swal.fire({ icon: 'success', title: 'Added', text: `'${code}' item එක Price Master එකට එකතු කරන ලදී.`, timer: 1300, showConfirmButton: false })
+                .then(() => { promptNextMissingCode(); });
+        } else {
+            Swal.fire('Added', 'New item added', 'success');
+        }
     }
 
     async function editPriceMasterItem(code) {
@@ -1959,14 +1981,99 @@
         return loads;
     }
 
+    // --- AUTO MISSING PRICE-MASTER CODE DETECTION ---
+    // Invoice එකක් Process කරද්දී, එහි ඇති යම් Item Code එකක් Price Master එකේ
+    // දත්ත සතු නොවේ නම්, ස්වයංක්‍රීයව "Manage Price Master Data" Modal එක open
+    // කර, එම කේතයට අදාළ දත්ත (Item Name, Unit P, Sale P, Is Glass?, Empty Val)
+    // ඇතුළත් කරගැනීමට ඉඩ සලසයි. එම කේත සියල්ල ඇතුළත් කළ පසු, ස්වයංක්‍රීයව නැවත
+    // එම Invoice Load එකේ සමාලෝචන (Review) Popup එකට යොමු කරයි.
+    window.pendingMissingCodes = [];
+    window.missingCodeInvoiceInfo = "";
+
+    function getMissingCodesForLoad(load) {
+        let missing = []; let seen = new Set();
+        (load.items || []).forEach(item => {
+            let lookupCode = cleanItemCode(item.code);
+            if (!lookupCode) return;
+            let p = priceMaster[lookupCode];
+            if (!p) {
+                let fk = Object.keys(priceMaster).find(k => k === lookupCode || k.includes(lookupCode) || lookupCode.includes(k));
+                p = fk ? priceMaster[fk] : null;
+            }
+            if (!p && !seen.has(lookupCode)) { seen.add(lookupCode); missing.push(lookupCode); }
+        });
+        return missing;
+    }
+
+    function startMissingCodeFlow(missingCodes, load) {
+        window.pendingMissingCodes = missingCodes.slice();
+        window.missingCodeInvoiceInfo = load.invNo || load.loadNo || convertExcelDate(load.dateRaw) || 'N/A';
+        promptNextMissingCode();
+    }
+
+    function promptNextMissingCode() {
+        // සියලුම නොතිබූ කේත ඇතුළත් කර අවසන් නම්, Modal එක වසා, Invoice Review Popup එකට යොමු කරයි
+        if (!window.pendingMissingCodes || window.pendingMissingCodes.length === 0) {
+            document.getElementById('pmMissingCodeAlert').style.display = 'none';
+            document.getElementById('pmMissingCodeInvoiceHint').style.display = 'none';
+            priceMasterManageModalInstance.hide();
+            showLoadReviewModal();
+            return;
+        }
+
+        let code = window.pendingMissingCodes[0];
+        renderPriceMasterManageTable();
+
+        let alertBox = document.getElementById('pmMissingCodeAlert');
+        alertBox.style.display = 'block';
+        alertBox.innerHTML = `<i class="fa-solid fa-triangle-exclamation me-2"></i> නව Item Code එකක් හමුවිය: <span class="text-warning">${code}</span> — කරුණාකර පහත Item Name, Unit P, Sale P, Is Glass? සහ Empty Val (Case) දත්ත ඇතුළත් කර <b>+</b> බොත්තම ඔබන්න. (ඉතිරි ${window.pendingMissingCodes.length} කේත)`;
+
+        let hint = document.getElementById('pmMissingCodeInvoiceHint');
+        hint.style.display = 'block';
+        hint.innerHTML = `<i class="fa-solid fa-file-invoice"></i> අදාළ Invoice No: <b>${window.missingCodeInvoiceInfo}</b>`;
+
+        document.getElementById('pmAddCode').value = code;
+        document.getElementById('pmAddCode').readOnly = true;
+        document.getElementById('pmAddName').value = '';
+        document.getElementById('pmAddUPrice').value = '';
+        document.getElementById('pmAddSPrice').value = '';
+        document.getElementById('pmAddIsGlass').checked = false;
+        document.getElementById('pmAddEmptyVal').value = '0';
+
+        priceMasterManageModalInstance.show();
+        setTimeout(() => { let nameInput = document.getElementById('pmAddName'); if(nameInput) nameInput.focus(); }, 400);
+    }
+
+    // Missing Code Flow එක අතරමැදදී User විසින් Modal එක Cancel/Close කළහොත්,
+    // ඉතිරිව ඇති කේත (ශුන්‍ය මිලකින්) සමගම Invoice Review Popup එකට ඉදිරියට යයි
+    document.getElementById('priceMasterManageModal').addEventListener('hidden.bs.modal', function () {
+        if (window.pendingMissingCodes && window.pendingMissingCodes.length > 0) {
+            window.pendingMissingCodes = [];
+            document.getElementById('pmAddCode').readOnly = false;
+            document.getElementById('pmMissingCodeAlert').style.display = 'none';
+            document.getElementById('pmMissingCodeInvoiceHint').style.display = 'none';
+            if (currentEditingLoad) showLoadReviewModal();
+        }
+    });
+
     function processNextPendingLoad() {
         if (pendingLoads.length === 0) {
             loadModalInstance.hide();
             renderMasterData(); updateTargetMonthDropdown(); renderDiscountDashboard(); renderHistoricalProfit(); saveToDatabase();
             Swal.fire({ icon: 'success', title: 'Complete', text: 'All Invoices Saved.' }); return;
         }
-        currentEditingLoad = pendingLoads[0]; 
-        
+        currentEditingLoad = pendingLoads[0];
+
+        let missingCodes = getMissingCodesForLoad(currentEditingLoad);
+        if (missingCodes.length > 0) {
+            startMissingCodeFlow(missingCodes, currentEditingLoad);
+            return; // Price Master දත්ත ඇතුළත් වූ පසු ස්වයංක්‍රීයව showLoadReviewModal() call වේ
+        }
+
+        showLoadReviewModal();
+    }
+
+    function showLoadReviewModal() {
         let currentIdx = initialPendingCount - pendingLoads.length + 1;
         document.getElementById('loadProgressBadge').innerText = `Load ${currentIdx} of ${initialPendingCount}`;
 
