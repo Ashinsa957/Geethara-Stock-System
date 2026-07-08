@@ -1094,6 +1094,46 @@
     let itemProfitModalInstance, invoiceProfitModalInstance, priceMasterManageModalInstance;
     window.excludedIrdInvoices = [];
 
+    // --- LOCAL (BROWSER) BACKUP LAYER ---
+    // Cloud (Firebase) එකට Save කිරීම Network එක මත රඳා පවතින නිසා, ඇතැම් විට Save
+    // සිදුවීමට පෙර User විසින් Tab එක වසා දැමීම හෝ Network එක විසන්ධි වීම වැනි හේතූන්
+    // නිසා (උදා: Upload Discounts කළ පසු) දත්ත අහිමි විය හැක. එය වළක්වා ගැනීමට, දත්ත
+    // වෙනස් වන සෑම අවස්ථාවකම, එම දත්ත Browser එකේම (localStorage) ක්ෂණිකව ගබඩා කරයි.
+    // මෙමගින් Cloud Save එක ප්‍රමාද වුවත්, අසාර්ථක වුවත්, හෝ User Internet නොමැතිව
+    // සිටියත් ඇතුළත් කළ දත්ත කිසිදා නැති නොවේ.
+    const LOCAL_BACKUP_KEY = 'geetharaStockSystem_localBackup_v1';
+
+    function saveLocalBackup() {
+        try {
+            const snapshot = { priceMaster, masterData, targetMaster, discountData, halfCaseItems, discountHeaders, emptySettings, emptyTransactions, savedAt: new Date().toISOString() };
+            localStorage.setItem(LOCAL_BACKUP_KEY, JSON.stringify(snapshot));
+        } catch (e) {
+            console.error('Local backup save failed:', e);
+        }
+    }
+
+    function loadLocalBackup() {
+        try {
+            const raw = localStorage.getItem(LOCAL_BACKUP_KEY);
+            if (!raw) return null;
+            return JSON.parse(raw);
+        } catch (e) {
+            console.error('Local backup load failed:', e);
+            return null;
+        }
+    }
+
+    function applyDataSnapshot(snap) {
+        priceMaster = snap.priceMaster || {};
+        masterData = snap.masterData || [];
+        targetMaster = snap.targetMaster || {};
+        discountData = snap.discountData || [];
+        halfCaseItems = snap.halfCaseItems || [];
+        discountHeaders = snap.discountHeaders || [];
+        emptySettings = snap.emptySettings || { openingBalance: 0 };
+        emptyTransactions = normalizeEmptyTransactions(snap.emptyTransactions);
+    }
+
     window.onload = function() {
         loadModalInstance = new bootstrap.Modal(document.getElementById('loadModal'));
         detailsModalInstance = new bootstrap.Modal(document.getElementById('loadDetailsModal'));
@@ -1105,7 +1145,25 @@
     };
     
     function initLiveSync() {
+        let localBackupUsed = false;
+        // Cloud එකෙන් Response එකක් තත්පර 6ක් ඇතුළත නොලැබුනොත් (Network එක මන්දගාමී නම්
+        // හෝ විසන්ධි වී ඇත්නම්), Browser එකේම ගබඩා වී ඇති Local Backup එකෙන් දත්ත වහාම
+        // load කර, User ට තමන් ඇතුළත් කළ දත්ත සමගම වැඩ කරගෙන යාමට හැකි කරයි.
+        let localFallbackTimer = setTimeout(() => {
+            let backup = loadLocalBackup();
+            if (backup) {
+                localBackupUsed = true;
+                applyDataSnapshot(backup);
+                lastSavedSnapshot = JSON.stringify({ priceMaster, masterData, targetMaster, discountData, halfCaseItems, discountHeaders, emptySettings, emptyTransactions });
+                document.getElementById('globalLoader').style.display = 'none';
+                refreshAllUIs();
+                let badge = document.getElementById('statusBadge');
+                if (badge) { badge.classList.add('bg-warning', 'text-dark'); badge.innerText = 'Loaded from Local Backup (Offline)'; }
+            }
+        }, 6000);
+
         db.ref('geethara_db/cokeSysUltraData').on('value', (snapshot) => {
+            clearTimeout(localFallbackTimer);
             if(isSyncing) return;
             const data = snapshot.val();
             
@@ -1121,6 +1179,7 @@
 
                 // Undo/Redo baseline එක අලුතින් පැමිණි දත්ත වලට යාවත්කාලීන කරයි
                 lastSavedSnapshot = JSON.stringify({ priceMaster, masterData, targetMaster, discountData, halfCaseItems, discountHeaders, emptySettings, emptyTransactions });
+                saveLocalBackup(); // Cloud එකෙන් ලැබුණු නවතම දත්ත ද Local Backup එකට යාවත්කාලීන කරයි
  
                 clearTimeout(refreshTimeout);
                 refreshTimeout = setTimeout(() => {
@@ -1140,12 +1199,31 @@
                     }
                 }, 300);
             } else {
+                // Cloud එකේ දත්තක් නොමැති නම් (හෝ තවම ලැබී නැත්නම්), Local Backup එකක් තිබේදැයි
+                // පරීක්ෂා කර, තිබේ නම් එය Cloud එකට නැවත Sync කරයි
+                let backup = loadLocalBackup();
+                if (backup && !localBackupUsed) {
+                    applyDataSnapshot(backup);
+                    lastSavedSnapshot = JSON.stringify({ priceMaster, masterData, targetMaster, discountData, halfCaseItems, discountHeaders, emptySettings, emptyTransactions });
+                    refreshAllUIs();
+                    saveToDatabase();
+                }
                 document.getElementById('globalLoader').style.display = 'none';
             }
         }, (error) => {
+            clearTimeout(localFallbackTimer);
             console.error("Firebase Sync Error: ", error);
+            // Cloud සම්බන්ධතාවයේ දෝෂයක් ඇතිවුවත්, Local Backup එකෙන් දත්ත load කර වැඩ කරගෙන යා හැක
+            let backup = loadLocalBackup();
+            let usedBackupMsg = '';
+            if (backup) {
+                applyDataSnapshot(backup);
+                lastSavedSnapshot = JSON.stringify({ priceMaster, masterData, targetMaster, discountData, halfCaseItems, discountHeaders, emptySettings, emptyTransactions });
+                refreshAllUIs();
+                usedBackupMsg = ' (Local Backup එකෙන් දත්ත ආපසු load කරන ලදී.)';
+            }
             document.getElementById('globalLoader').style.display = 'none';
-            Swal.fire('Database Connection Error', 'දත්ත ලබාගැනීමේදී දෝෂයක් ඇතිවිය: ' + error.message, 'error');
+            Swal.fire('Database Connection Error', 'දත්ත ලබාගැනීමේදී දෝෂයක් ඇතිවිය: ' + error.message + usedBackupMsg, 'error');
         });
     }
 
@@ -1153,6 +1231,11 @@
         isSyncing = true;
         const data = { priceMaster, masterData, targetMaster, discountData, halfCaseItems, discountHeaders, emptySettings, emptyTransactions };
         const newSnapshot = JSON.stringify(data);
+
+        // දත්ත වෙනස් වූ ක්ෂණයේම, Cloud Save එක සාර්ථක වේද යන්න බලාගෙන නොසිට, Browser
+        // එකේම (localStorage) ක්ෂණිකව Backup එකක් ලෙස ගබඩා කරයි. මෙයින් Internet එක
+        // නැති වුවත් හෝ Cloud Save එක අතරමග අසාර්ථක වුවත් ඇතුළත් කළ දත්ත අහිමි නොවේ.
+        saveLocalBackup();
 
         // Undo/Redo: වෙනසක් සිදු වූ විට පෙර තත්වය undoStack එකට එකතු කරයි
         if (!isUndoRedoAction && lastSavedSnapshot && lastSavedSnapshot !== newSnapshot) {
@@ -1526,13 +1609,17 @@
                      let route = bVal;
                      let saleVal = cleanNum(row[2]); let rd = cleanNum(row[3]);
                      let specialOutlet = cleanNum(row[6]); let totalRowDiscount = 0;
-                     let itemBreakdown = {};
+                     // NOTE: itemBreakdown එක Array එකක් ලෙස තබා ගැනීම වැදගත්. Excel හෙඩර් නම්
+                     // (item name) key එකක් ලෙස පාවිච්චි කළොත්, ඒ නමේ . # $ [ ] / වැනි character
+                     // තිබුනොත් Firebase Realtime Database එකට Save කරන්න බැරි වී (silent error)
+                     // මුළු Discount Data එකම Cloud එකට Save නොවී යනවා. Array එකකින් එම ෆහත සම්පූර්ණයෙන්ම මගහැරේ.
+                     let itemBreakdown = [];
                      for(let c=4; c<=22; c++) { 
                          let val = cleanNum(row[c]);
                          if(c !== 6) { totalRowDiscount += val; }
                          if(val > 0 && c !== 6) {
                              let itemName = discountHeaders[c] || `Item Column ${c}`;
-                             itemBreakdown[itemName] = val;
+                             itemBreakdown.push({ name: itemName, value: val });
                          }
                      }
                      
@@ -1652,9 +1739,17 @@
         
         let itemsHtml = '';
         let calcTotal = 0;
-        if(d.itemBreakdown && Object.keys(d.itemBreakdown).length > 0) {
-            Object.keys(d.itemBreakdown).forEach(item => {
-                let val = d.itemBreakdown[item];
+        // Backward compatibility: පරණ දත්තවල itemBreakdown එක Object එකක් ලෙසත්, අලුත් දත්තවල
+        // Array එකක් ලෙසත් තිබිය හැක. දෙකම හසුරුවා {name, value} ලැයිස්තුවක් ලෙස සකසයි.
+        let breakdownList = [];
+        if (Array.isArray(d.itemBreakdown)) {
+            breakdownList = d.itemBreakdown;
+        } else if (d.itemBreakdown && typeof d.itemBreakdown === 'object') {
+            breakdownList = Object.keys(d.itemBreakdown).map(k => ({ name: k, value: d.itemBreakdown[k] }));
+        }
+        if (breakdownList.length > 0) {
+            breakdownList.forEach(entry => {
+                let item = entry.name; let val = parseFloat(entry.value) || 0;
                 if(val > 0) {
                     itemsHtml += `<div class="d-flex justify-content-between p-2 mb-2 rounded animate__animated animate__fadeInLeft" style="background: rgba(102, 252, 241, 0.1); border-left: 3px solid var(--accent-cyan); animation-duration: 0.5s;">
                         <span class="text-light fw-bold"><i class="fa-solid fa-bottle-water me-2 text-info"></i>${item}</span>
@@ -2403,7 +2498,9 @@
         const reader = new FileReader();
         reader.onload = function(e) {
             try { const data = JSON.parse(e.target.result);
-            db.ref('geethara_db/cokeSysUltraData').set(data); Swal.fire('Success', 'Database Restored! Syncing...', 'success').then(() => location.reload()); } catch(err) { Swal.fire('Error', 'Invalid Backup File', 'error');
+            db.ref('geethara_db/cokeSysUltraData').set(data);
+            try { localStorage.setItem(LOCAL_BACKUP_KEY, JSON.stringify(Object.assign({}, data, { savedAt: new Date().toISOString() }))); } catch(lsErr) { console.error('Local backup update failed:', lsErr); }
+            Swal.fire('Success', 'Database Restored! Syncing...', 'success').then(() => location.reload()); } catch(err) { Swal.fire('Error', 'Invalid Backup File', 'error');
             }
         };
         reader.readAsText(fileInput.files[0]);
@@ -2421,6 +2518,7 @@
                 priceMaster = {};
                 masterData = []; targetMaster = {}; halfCaseItems = []; discountData = []; discountHeaders = [];
                 db.ref('geethara_db/cokeSysUltraData').set({});
+                try { localStorage.removeItem(LOCAL_BACKUP_KEY); } catch(lsErr) { console.error('Local backup clear failed:', lsErr); }
                 Swal.fire('Database Wiped!', 'Your system is completely clean.', 'success').then(() => { location.reload(); });
             } else { Swal.fire('Incorrect', 'Math pin failed. Database wipe canceled.', 'error');
             }
