@@ -709,7 +709,7 @@
                             <div class="table-container mb-4" style="max-height: 250px;">
                                 <table class="table table-hover text-center align-middle" id="emptyLoadsTable">
                                     <thead class="table-dark sticky-top">
-                                        <tr><th>Date</th><th>Load No</th><th>Vehicle No</th><th class="text-info text-end">Calculated Empty Value</th></tr>
+                                        <tr><th>Date</th><th>Load No</th><th>Vehicle No</th><th class="text-info text-end">Calculated Empty Value</th><th title="Audit Stage 1">A1</th><th title="Audit Stage 2">A2</th><th title="Audit Stage 3">A3</th></tr>
                                     </thead>
                                     <tbody></tbody>
                                 </table>
@@ -3018,15 +3018,20 @@
         loadsBody.innerHTML = '';
         let totalLoadEmpties = 0;
 
-        masterData.forEach(l => {
+        masterData.forEach((l, idx) => {
             if (fFrom && l.date < fFrom) return;
             if (fTo && l.date > fTo) return;
             let ev = calcLoadEmptyValue(l);
             if (ev > 0) {
                 totalLoadEmpties += ev;
+                // Audit checkbox 3 (A1/A2/A3) මෙය Neural Database හි ඇති audit1/audit2/audit3 fields මගින්ම පාලනය වේ -
+                // load එකම නිසා, එකම audit state එක තැන් දෙකෙන්ම (Neural Database සහ මෙතැනින්) update කළ හැක.
                 loadsBody.innerHTML += `<tr onclick="showLoadEmptyBreakdown('${l.invNo}')" title="Click for Breakdown" style="cursor:pointer;">
                     <td>${l.date}</td><td>${l.loadNo}</td><td>${l.vehicleNo}</td>
                     <td class="text-info text-end font-monospace">Rs. ${ev.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+                    <td class="text-center" onclick="event.stopPropagation()"><input class="form-check-input" type="checkbox" ${l.audit1 ? 'checked':''} onchange="toggleAudit(${idx},1); renderEmptyDashboard();"></td>
+                    <td class="text-center" onclick="event.stopPropagation()"><input class="form-check-input" type="checkbox" ${l.audit2 ? 'checked':''} onchange="toggleAudit(${idx},2); renderEmptyDashboard();"></td>
+                    <td class="text-center" onclick="event.stopPropagation()"><input class="form-check-input" type="checkbox" ${l.audit3 ? 'checked':''} onchange="toggleAudit(${idx},3); renderEmptyDashboard();"></td>
                 </tr>`;
             }
         });
