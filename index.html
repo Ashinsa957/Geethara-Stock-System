@@ -750,7 +750,7 @@
                                         </div>
                                     </div>
 
-                                    <div class="table-responsive mt-4" style="max-height:150px;"><table class="table table-sm text-center" id="emptyReturnTable"><thead class="table-secondary"><tr><th>Date</th><th>Vehicle</th><th class="text-start">Items (Qty)</th><th>Total Qty</th><th>Value</th><th>Audit</th></tr></thead><tbody></tbody></table></div>
+                                    <div class="table-responsive mt-4" style="max-height:220px;"><table class="table table-sm text-center" id="emptyReturnTable"><thead class="table-secondary"><tr><th>Date</th><th>Vehicle</th><th class="text-start">Items (Qty)</th><th>Total Qty</th><th>Value</th><th title="Audit Stage 1">A1</th><th title="Audit Stage 2">A2</th><th title="Audit Stage 3">A3</th><th>Action</th></tr></thead><tbody></tbody></table></div>
                                 </div>
 
                                 <!-- 2. Shell Return -->
@@ -762,7 +762,7 @@
                                         <div class="col-md-3"><label class="form-label small">Cases Qty</label><input type="number" id="srQty" class="form-control"></div>
                                         <div class="col-md-3"><button class="btn btn-warning w-100 fw-bold" onclick="saveShellReturn()"><i class="fa-solid fa-plus"></i> Add</button></div>
                                     </div>
-                                    <div class="table-responsive mt-3" style="max-height:150px;"><table class="table table-sm text-center" id="shellReturnTable"><thead class="table-secondary"><tr><th>Date</th><th>Case Value</th><th>Qty</th><th>Total Value</th><th>Audit</th></tr></thead><tbody></tbody></table></div>
+                                    <div class="table-responsive mt-3" style="max-height:220px;"><table class="table table-sm text-center" id="shellReturnTable"><thead class="table-secondary"><tr><th>Date</th><th>Case Value</th><th>Qty</th><th>Total Value</th><th title="Audit Stage 1">A1</th><th title="Audit Stage 2">A2</th><th title="Audit Stage 3">A3</th><th>Action</th></tr></thead><tbody></tbody></table></div>
                                 </div>
 
                                 <!-- 3. Add Deposit -->
@@ -774,10 +774,10 @@
                                         <div class="col-md-2"><label class="form-label small">Deposit Value</label><input type="number" id="depValue" class="form-control"></div>
                                         <div class="col-md-2"><button class="btn btn-success w-100 fw-bold" onclick="saveDeposit()"><i class="fa-solid fa-plus"></i> Add</button></div>
                                     </div>
-                                    <div class="table-responsive mt-3" style="max-height:150px;"><table class="table table-sm text-center" id="depositTable"><thead class="table-secondary"><tr><th>Date</th><th>Shop Name</th><th>Value</th><th>Audit</th></tr></thead><tbody></tbody></table></div>
+                                    <div class="table-responsive mt-3" style="max-height:220px;"><table class="table table-sm text-center" id="depositTable"><thead class="table-secondary"><tr><th>Date</th><th>Shop Name</th><th>Value</th><th title="Audit Stage 1">A1</th><th title="Audit Stage 2">A2</th><th title="Audit Stage 3">A3</th><th>Action</th></tr></thead><tbody></tbody></table></div>
                                 </div>
                             </div>
-                            <p class="text-muted small mt-2"><i class="fa-solid fa-circle-info text-info"></i> Audit Verified checkbox එක දැන් Save කිරීමෙන් පසුව, පහත table එකේදී ටික් කිරීමට හැකියි (add කරන අවස්ථාවේ නොවේ).</p>
+                            <p class="text-muted small mt-2"><i class="fa-solid fa-circle-info text-info"></i> A1 / A2 / A3 Audit checkbox 3 දැන් Save කිරීමෙන් පසුව, පහත table එකේදී වෙන වෙනම ටික් කිරීමට හැකියි (add කරන අවස්ථාවේ නොවේ). ඇතුළු කළ ඕනෑම වාර්තාවක් Action column එකෙන් Edit කිරීමට හෝ Delete කිරීමට හැකියි.</p>
                         </div>
                     </div>
                 </div>
@@ -1299,14 +1299,45 @@
     function cleanItemCode(code) { let c = String(code || "").trim().toUpperCase();
         if (c.endsWith(".0")) { c = c.substring(0, c.length - 2); } return c;
     }
+
+    // Empty Value සදහා තනි, බෙදාගත් calculation function එකක්.
+    // Load එකක ඇති glass item සියල්ලෙම (2, 3 හෝ ඊට වැඩි වර්ග) Empty Value එකතුව නිවැරදිව ලබා දෙයි.
+    // Data snapshot එකක් මත රඳා නොසිට, display කරන අවස්ථාවේම priceMaster එකෙන් නැවත calculate කරන නිසා,
+    // පැරණි load වලට වුවද (sysTotals.emptyValue set නොවුනත්) නිවැරදි අගය පෙන්වයි.
+    function calcLoadEmptyValue(load) {
+        if (!load || !Array.isArray(load.items)) return 0;
+        let total = 0;
+        load.items.forEach(item => {
+            let lookupCode = cleanItemCode(item.code);
+            let p = priceMaster[lookupCode];
+            if (!p) { let fk = Object.keys(priceMaster).find(k => k === lookupCode || k.includes(lookupCode) || lookupCode.includes(k)); p = fk ? priceMaster[fk] : null; }
+            if (p && p.isGlass) {
+                total += (cleanNum(item.qty) * (parseFloat(p.emptyValue) || 0));
+            }
+        });
+        return total;
+    }
     
     let sortDir = false;
     function sortTable(tableId, colIndex) {
         let table = document.getElementById(tableId); let tbody = table.querySelector("tbody");
         let rows = Array.from(tbody.querySelectorAll("tr")); sortDir = !sortDir;
         rows.sort((a, b) => {
-            let valA = a.cells[colIndex].innerText.replace(/[^0-9.-]+/g,""); let valB = b.cells[colIndex].innerText.replace(/[^0-9.-]+/g,"");
-            valA = parseFloat(valA) || a.cells[colIndex].innerText.toLowerCase(); valB = parseFloat(valB) || b.cells[colIndex].innerText.toLowerCase();
+            let textA = a.cells[colIndex].innerText.trim(); let textB = b.cells[colIndex].innerText.trim();
+            // Date column (YYYY-MM-DD) නිවැරදිව Sort කිරීම සදහා විශේෂ handling එකක්.
+            // කලින් තිබූ ක්‍රමයේදී "2026-03-15" වැනි අගයන් parseFloat කළ විට "2026" පමණක් ලැබී,
+            // එකම වසරේ දින සියල්ල එකම අගයක් ලෙස සලකා Sort එක නිවැරදිව සිදු නොවීය.
+            let dateMatchA = textA.match(/^(\d{4})-(\d{2})-(\d{2})/); let dateMatchB = textB.match(/^(\d{4})-(\d{2})-(\d{2})/);
+            let valA, valB;
+            if (dateMatchA && dateMatchB) {
+                valA = new Date(dateMatchA[0]).getTime(); valB = new Date(dateMatchB[0]).getTime();
+            } else {
+                let numA = textA.replace(/[^0-9.-]+/g,""); let numB = textB.replace(/[^0-9.-]+/g,"");
+                let isNumericA = numA !== "" && numA !== "-" && !isNaN(parseFloat(numA)) && /^-?[\d,]*\.?\d+$/.test(textA.replace(/,/g,''));
+                let isNumericB = numB !== "" && numB !== "-" && !isNaN(parseFloat(numB)) && /^-?[\d,]*\.?\d+$/.test(textB.replace(/,/g,''));
+                valA = isNumericA ? parseFloat(numA) : textA.toLowerCase();
+                valB = isNumericB ? parseFloat(numB) : textB.toLowerCase();
+            }
             if(valA < valB) return sortDir ? -1 : 1;
             if(valA > valB) return sortDir ? 1 : -1;
           
@@ -1518,16 +1549,8 @@
         load.sysTotals.vat = vat;
         load.sysTotals.finalValue = fin;
 
-        // Empty Value Calculation අලුතින් එක් කළ කොටස
-        let totalEmptyVal = 0;
-        load.items.forEach(item => {
-            let lookupCode = cleanItemCode(item.code);
-            let p = priceMaster[lookupCode];
-            if (p && p.isGlass) {
-                totalEmptyVal += (item.qty * (parseFloat(p.emptyValue) || 0));
-            }
-        });
-        load.sysTotals.emptyValue = totalEmptyVal;
+        // Empty Value Calculation - බෙදාගත් calcLoadEmptyValue() function එකෙන්ම, glass item සියල්ලේම එකතුව ලබා ගැනීම
+        load.sysTotals.emptyValue = calcLoadEmptyValue(load);
     }
 
     document.getElementById('priceFile').addEventListener('change', function(e) {
@@ -2216,7 +2239,9 @@
             sys.cashDiscount = sys.totalQty * 264.42;
             sys.earlySet = sys.netValue * 0.0049; sys.taxable = sys.netValue - sys.cashDiscount - sys.earlySet; sys.vat = sys.taxable * 0.18;
             sys.finalValue = sys.taxable + sys.vat; }
-        currentEditingLoad.sysTotals = sys; renderComparisonMatrix();
+        currentEditingLoad.sysTotals = sys;
+        currentEditingLoad.sysTotals.emptyValue = calcLoadEmptyValue(currentEditingLoad);
+        renderComparisonMatrix();
     }
     function updateItemQty(index, newQty) { currentEditingLoad.items[index].qty = cleanNum(newQty); renderItemsAndCalculate();
     }
@@ -2251,7 +2276,14 @@
         let totNet = 0, totVat = 0, totFinal = 0, totEmpty = 0;
         masterData.forEach((l, i) => {
             if (fDate && l.date !== fDate) return; if (fCokeMonth && !(l.cokeMonth||"").toLowerCase().includes(fCokeMonth)) return; if (fInv && !(l.invNo||"").toLowerCase().includes(fInv)) return; if (fVeh && !(l.vehicleNo||"").toLowerCase().includes(fVeh)) return;
-            totNet += l.sysTotals.netValue; totVat += l.sysTotals.vat; totFinal += l.sysTotals.finalValue; totEmpty += (l.sysTotals.emptyValue || 0);
+            // Neural Database හි Net Value / VAT / Invoice Value සදහා, එක්සෙල් එකෙන් ඇතුළු කළ (excelSummary) අගයන්ම පෙන්විය යුතුයි -
+            // සිස්ටම් Calculation (sysTotals) නොවේ. Excel අගයක් නොමැති (manual add කළ) load එකකදී පමණක්, sysTotals අගය fallback එකක් ලෙස යොදාගැනේ.
+            let exc = l.excelSummary || {};
+            let dispNet = (exc.netValue !== undefined && exc.netValue !== null && exc.netValue !== "") ? parseFloat(exc.netValue) || 0 : (l.sysTotals.netValue || 0);
+            let dispVat = (exc.vat !== undefined && exc.vat !== null && exc.vat !== "") ? parseFloat(exc.vat) || 0 : (l.sysTotals.vat || 0);
+            let dispFinal = (exc.finalValue !== undefined && exc.finalValue !== null && exc.finalValue !== "") ? parseFloat(exc.finalValue) || 0 : (l.sysTotals.finalValue || 0);
+            let dispEmpty = calcLoadEmptyValue(l);
+            totNet += dispNet; totVat += dispVat; totFinal += dispFinal; totEmpty += dispEmpty;
             let badgeColor = "bg-transparent border border-warning text-warning"; if(String(l.note).toUpperCase() === 'FREE') badgeColor = "bg-success text-white fw-bold";
             
             // Exclude mark styling
@@ -2263,9 +2295,9 @@
                 <td class="text-center" onclick="event.stopPropagation()"><input class="form-check-input" type="checkbox" ${l.audit3 ? 'checked':''} onchange="toggleAudit(${i},3)"></td>
                 <td><span class="badge bg-dark border">${l.date}</span></td><td class="text-info fw-bold">${l.invNo || '-'}</td><td>${l.loadNo || '-'}</td>
                 <td><span class="badge bg-secondary text-light">${l.vehicleNo || '-'}</span></td><td><span class="badge ${badgeColor}">${l.note}</span> ${l.excludeFromTarget ? '<i class="fa-solid fa-ban text-danger ms-1" title="Excluded from Targets"></i>' : ''}</td>
-                <td class="text-end font-monospace">${l.sysTotals.netValue.toLocaleString('en-US',{minimumFractionDigits:2})}</td><td class="text-end font-monospace text-warning">${l.sysTotals.vat.toLocaleString('en-US',{minimumFractionDigits:2})}</td>
-                <td class="text-end font-monospace text-success fw-bold">Rs. ${l.sysTotals.finalValue.toLocaleString('en-US',{minimumFractionDigits:2})}</td>
-                <td class="text-info font-monospace text-end">Rs. ${(l.sysTotals.emptyValue || 0).toLocaleString('en-US',{minimumFractionDigits:2})}</td>
+                <td class="text-end font-monospace">${dispNet.toLocaleString('en-US',{minimumFractionDigits:2})}</td><td class="text-end font-monospace text-warning">${dispVat.toLocaleString('en-US',{minimumFractionDigits:2})}</td>
+                <td class="text-end font-monospace text-success fw-bold">Rs. ${dispFinal.toLocaleString('en-US',{minimumFractionDigits:2})}</td>
+                <td class="text-info font-monospace text-end">Rs. ${dispEmpty.toLocaleString('en-US',{minimumFractionDigits:2})}</td>
                 <td class="text-center"><button class="btn btn-sm btn-outline-danger" onclick="event.stopPropagation(); deleteLoad(${i})"><i class="fa-solid fa-trash"></i></button></td></tr>`;
         });
         document.getElementById('totNetValue').innerText = totNet.toLocaleString('en-US',{minimumFractionDigits:2}); document.getElementById('totVat').innerText = totVat.toLocaleString('en-US',{minimumFractionDigits:2}); document.getElementById('totInvValue').innerText = `Rs. ${totFinal.toLocaleString('en-US',{minimumFractionDigits:2})}`; document.getElementById('totEmptyValue').innerText = totEmpty.toLocaleString('en-US',{minimumFractionDigits:2});
@@ -2353,7 +2385,8 @@
         l.date = document.getElementById('editDate').value; l.vehicleNo = document.getElementById('editVehicle').value; l.cokeMonth = document.getElementById('editCokeMonth').value; l.cokeWeek = document.getElementById('editCokeWeek').value; l.note = editNote;
         
         l.excludeFromTarget = document.getElementById('editExcludeTarget').value === 'true';
-        saveToDatabase(); renderMasterData(); renderDiscountDashboard(); renderHistoricalProfit();
+        l.sysTotals.emptyValue = calcLoadEmptyValue(l);
+        saveToDatabase(); renderMasterData(); renderDiscountDashboard(); renderHistoricalProfit(); renderEmptyDashboard();
         Swal.fire({icon: 'success', title: 'Saved!', toast: true, position: 'top-end', showConfirmButton: false, timer: 1500}); updateTargetMonthDropdown();
         renderTargetProgress(l.cokeMonth);
     }
@@ -2988,11 +3021,12 @@
         masterData.forEach(l => {
             if (fFrom && l.date < fFrom) return;
             if (fTo && l.date > fTo) return;
-            if (l.sysTotals && l.sysTotals.emptyValue > 0) {
-                totalLoadEmpties += l.sysTotals.emptyValue;
+            let ev = calcLoadEmptyValue(l);
+            if (ev > 0) {
+                totalLoadEmpties += ev;
                 loadsBody.innerHTML += `<tr onclick="showLoadEmptyBreakdown('${l.invNo}')" title="Click for Breakdown" style="cursor:pointer;">
                     <td>${l.date}</td><td>${l.loadNo}</td><td>${l.vehicleNo}</td>
-                    <td class="text-info text-end font-monospace">Rs. ${l.sysTotals.emptyValue.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+                    <td class="text-info text-end font-monospace">Rs. ${ev.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
                 </tr>`;
             }
         });
@@ -3014,9 +3048,11 @@
         if(!load) return;
         let html = `<table class="table table-dark text-center"><thead><tr><th>Item</th><th>Qty</th><th>Val/Case</th><th>Total</th></tr></thead><tbody>`;
         load.items.forEach(item => {
-            let p = priceMaster[cleanItemCode(item.code)];
+            let lookupCode = cleanItemCode(item.code);
+            let p = priceMaster[lookupCode];
+            if (!p) { let fk = Object.keys(priceMaster).find(k => k === lookupCode || k.includes(lookupCode) || lookupCode.includes(k)); p = fk ? priceMaster[fk] : null; }
             if(p && p.isGlass) {
-                html += `<tr><td>${p.itemName}</td><td>${item.qty}</td><td>Rs. ${p.emptyValue}</td><td class="text-warning">Rs. ${item.qty * p.emptyValue}</td></tr>`;
+                html += `<tr><td>${p.itemName}</td><td>${item.qty}</td><td>Rs. ${p.emptyValue}</td><td class="text-warning">Rs. ${(cleanNum(item.qty) * (parseFloat(p.emptyValue)||0)).toLocaleString('en-US',{minimumFractionDigits:2})}</td></tr>`;
             }
         });
         html += `</tbody></table>`;
@@ -3032,21 +3068,37 @@
             let items = er.items || [{ item: er.item, itemName: (priceMaster[er.item] ? priceMaster[er.item].itemName : er.item), qty: er.qty }];
             let itemsHtml = items.map(i => `${i.itemName || (priceMaster[i.item] ? priceMaster[i.item].itemName : i.item)} <span class="text-info">(${i.qty})</span>`).join('<br>');
             let totalQty = items.reduce((s, i) => s + (parseFloat(i.qty) || 0), 0);
-            erBody.innerHTML += `<tr><td>${er.date}</td><td>${er.vehicle || ''}</td><td class="text-start">${itemsHtml}</td><td>${totalQty}</td><td class="text-danger fw-bold">Rs. ${parseFloat(er.totalValue || 0).toFixed(2)}</td><td><input type="checkbox" class="form-check-input" ${er.audit ? 'checked' : ''} onchange="toggleAuditStatus('emptyReturns', ${er.timestamp})" title="Save කිරීමෙන් පසු Audit Verify කිරීමට Click කරන්න"></td></tr>`;
+            // Backward compatibility: පැරණි record වල තිබුණේ එක `audit` boolean එකක් පමණයි - එය audit1 ලෙස ගණන් ගැනීම
+            let a1 = er.audit1 !== undefined ? er.audit1 : !!er.audit; let a2 = !!er.audit2; let a3 = !!er.audit3;
+            erBody.innerHTML += `<tr><td>${er.date}</td><td>${er.vehicle || ''}</td><td class="text-start">${itemsHtml}</td><td>${totalQty}</td><td class="text-danger fw-bold">Rs. ${parseFloat(er.totalValue || 0).toFixed(2)}</td>
+                <td><input type="checkbox" class="form-check-input" ${a1 ? 'checked' : ''} onchange="toggleAuditStatus('emptyReturns', ${er.timestamp}, 1)"></td>
+                <td><input type="checkbox" class="form-check-input" ${a2 ? 'checked' : ''} onchange="toggleAuditStatus('emptyReturns', ${er.timestamp}, 2)"></td>
+                <td><input type="checkbox" class="form-check-input" ${a3 ? 'checked' : ''} onchange="toggleAuditStatus('emptyReturns', ${er.timestamp}, 3)"></td>
+                <td class="text-nowrap"><button class="btn btn-sm btn-outline-info me-1" onclick="editEmptyReturn(${er.timestamp})" title="Edit"><i class="fa-solid fa-pen"></i></button><button class="btn btn-sm btn-outline-danger" onclick="deleteEmptyReturn(${er.timestamp})" title="Delete"><i class="fa-solid fa-trash"></i></button></td></tr>`;
         });
 
         // Render Shell Returns
         let srBody = document.querySelector('#shellReturnTable tbody'); srBody.innerHTML = '';
         emptyTransactions.shellReturns.forEach(sr => {
             if(fFrom && sr.date < fFrom) return; if(fTo && sr.date > fTo) return;
-            srBody.innerHTML += `<tr><td>${sr.date}</td><td>Rs. ${sr.caseValue}</td><td>${sr.qty}</td><td class="text-warning fw-bold">Rs. ${sr.totalValue}</td><td><input type="checkbox" class="form-check-input" ${sr.audit ? 'checked' : ''} onchange="toggleAuditStatus('shellReturns', ${sr.timestamp})" title="Save කිරීමෙන් පසු Audit Verify කිරීමට Click කරන්න"></td></tr>`;
+            let a1 = sr.audit1 !== undefined ? sr.audit1 : !!sr.audit; let a2 = !!sr.audit2; let a3 = !!sr.audit3;
+            srBody.innerHTML += `<tr><td>${sr.date}</td><td>Rs. ${sr.caseValue}</td><td>${sr.qty}</td><td class="text-warning fw-bold">Rs. ${sr.totalValue}</td>
+                <td><input type="checkbox" class="form-check-input" ${a1 ? 'checked' : ''} onchange="toggleAuditStatus('shellReturns', ${sr.timestamp}, 1)"></td>
+                <td><input type="checkbox" class="form-check-input" ${a2 ? 'checked' : ''} onchange="toggleAuditStatus('shellReturns', ${sr.timestamp}, 2)"></td>
+                <td><input type="checkbox" class="form-check-input" ${a3 ? 'checked' : ''} onchange="toggleAuditStatus('shellReturns', ${sr.timestamp}, 3)"></td>
+                <td class="text-nowrap"><button class="btn btn-sm btn-outline-info me-1" onclick="editShellReturn(${sr.timestamp})" title="Edit"><i class="fa-solid fa-pen"></i></button><button class="btn btn-sm btn-outline-danger" onclick="deleteShellReturn(${sr.timestamp})" title="Delete"><i class="fa-solid fa-trash"></i></button></td></tr>`;
         });
 
         // Render Deposits
         let depBody = document.querySelector('#depositTable tbody'); depBody.innerHTML = '';
         emptyTransactions.deposits.forEach(dep => {
             if(fFrom && dep.date < fFrom) return; if(fTo && dep.date > fTo) return;
-            depBody.innerHTML += `<tr><td>${dep.date}</td><td>${dep.shop}</td><td class="text-success fw-bold">Rs. ${dep.depositValue}</td><td><input type="checkbox" class="form-check-input" ${dep.audit ? 'checked' : ''} onchange="toggleAuditStatus('deposits', ${dep.timestamp})" title="Save කිරීමෙන් පසු Audit Verify කිරීමට Click කරන්න"></td></tr>`;
+            let a1 = dep.audit1 !== undefined ? dep.audit1 : !!dep.audit; let a2 = !!dep.audit2; let a3 = !!dep.audit3;
+            depBody.innerHTML += `<tr><td>${dep.date}</td><td>${dep.shop}</td><td class="text-success fw-bold">Rs. ${dep.depositValue}</td>
+                <td><input type="checkbox" class="form-check-input" ${a1 ? 'checked' : ''} onchange="toggleAuditStatus('deposits', ${dep.timestamp}, 1)"></td>
+                <td><input type="checkbox" class="form-check-input" ${a2 ? 'checked' : ''} onchange="toggleAuditStatus('deposits', ${dep.timestamp}, 2)"></td>
+                <td><input type="checkbox" class="form-check-input" ${a3 ? 'checked' : ''} onchange="toggleAuditStatus('deposits', ${dep.timestamp}, 3)"></td>
+                <td class="text-nowrap"><button class="btn btn-sm btn-outline-info me-1" onclick="editDeposit(${dep.timestamp})" title="Edit"><i class="fa-solid fa-pen"></i></button><button class="btn btn-sm btn-outline-danger" onclick="deleteDeposit(${dep.timestamp})" title="Delete"><i class="fa-solid fa-trash"></i></button></td></tr>`;
         });
     }
 
@@ -3098,7 +3150,7 @@
 
         let totalValue = erBatchItems.reduce((sum, i) => sum + i.totalValue, 0);
         if(!Array.isArray(emptyTransactions.emptyReturns)) emptyTransactions.emptyReturns = [];
-        emptyTransactions.emptyReturns.push({ date: d, vehicle: v, items: erBatchItems, totalValue: totalValue, audit: false, timestamp: Date.now() });
+        emptyTransactions.emptyReturns.push({ date: d, vehicle: v, items: erBatchItems, totalValue: totalValue, audit: false, audit1: false, audit2: false, audit3: false, timestamp: Date.now() });
         saveToDatabase();
 
         erBatchItems = [];
@@ -3109,14 +3161,128 @@
     }
 
     // Audit ticking is now done AFTER saving to the system (from the table), not at add-time.
-    function toggleAuditStatus(arrName, timestamp) {
+    // level: 1, 2, හෝ 3 - එක් එක් වාර්තාවක් අවස්ථා තුනක් දක්වා (A1/A2/A3) වෙන වෙනම Audit කිරීමට හැකියි.
+    function toggleAuditStatus(arrName, timestamp, level) {
         if(!Array.isArray(emptyTransactions[arrName])) return;
         let rec = emptyTransactions[arrName].find(r => r.timestamp === timestamp);
         if(!rec) return;
-        rec.audit = !rec.audit;
+        level = level || 1;
+        let field = `audit${level}`;
+        // පැරණි record එකක නම්, එහි තිබූ `audit` boolean එක audit1 බවට පරිවර්තනය කිරීම (backward compatibility)
+        if (level === 1 && rec.audit1 === undefined && rec.audit !== undefined) rec.audit1 = !!rec.audit;
+        rec[field] = !rec[field];
+        rec.audit = !!rec.audit1; // legacy field එකද sync කර තබා ගැනීම
         saveToDatabase();
         renderEmptyDashboard();
-        Swal.fire({ icon: 'success', title: rec.audit ? 'Audit Verified' : 'Audit Unmarked', toast: true, position: 'top-end', showConfirmButton: false, timer: 1000 });
+        Swal.fire({ icon: 'success', title: rec[field] ? `Audit Stage ${level} Verified` : `Audit Stage ${level} Unmarked`, toast: true, position: 'top-end', showConfirmButton: false, timer: 1000 });
+    }
+
+    // --- Empty Return: Edit / Delete ---
+    async function editEmptyReturn(timestamp) {
+        let rec = emptyTransactions.emptyReturns.find(r => r.timestamp === timestamp);
+        if(!rec) return;
+        let items = rec.items || [{ item: rec.item, itemName: (priceMaster[rec.item] ? priceMaster[rec.item].itemName : rec.item), qty: rec.qty }];
+        let itemsHtml = items.map((it, idx) => `<div class="d-flex align-items-center gap-2 mb-1"><span style="flex:2; text-align:left; color:#66fcf1;">${it.itemName || it.item}</span><input type="number" class="swal2-input m-0" style="flex:1; height:36px;" id="swal-eri-qty-${idx}" value="${it.qty}"></div>`).join('');
+        const { value: formValues } = await Swal.fire({
+            title: 'Edit Empty Return',
+            html: `<label style="color:#66fcf1;">Date</label><input id="swal-er-date" type="date" class="swal2-input" value="${rec.date || ''}">
+                   <label style="color:#66fcf1;">Vehicle No</label><input id="swal-er-vehicle" class="swal2-input" value="${rec.vehicle || ''}">
+                   <div class="mt-2">${itemsHtml}</div>`,
+            focusConfirm: false, showCancelButton: true, confirmButtonText: 'Update', background: '#1f2833', color: '#fff',
+            preConfirm: () => {
+                let date = document.getElementById('swal-er-date').value;
+                let vehicle = document.getElementById('swal-er-vehicle').value;
+                if(!date) { Swal.showValidationMessage('Date එක අනිවාර්යයි.'); return false; }
+                let newItems = items.map((it, idx) => {
+                    let q = cleanNum(document.getElementById(`swal-eri-qty-${idx}`).value);
+                    let p = priceMaster[it.item];
+                    let val = q * (parseFloat(p ? p.emptyValue : 0) || 0);
+                    return { item: it.item, itemName: it.itemName, qty: q, totalValue: val };
+                });
+                return { date, vehicle, newItems };
+            }
+        });
+        if (formValues) {
+            rec.date = formValues.date; rec.vehicle = formValues.vehicle; rec.items = formValues.newItems;
+            rec.totalValue = formValues.newItems.reduce((s, i) => s + i.totalValue, 0);
+            saveToDatabase(); renderEmptyDashboard();
+            Swal.fire({ icon: 'success', title: 'Updated!', toast: true, position: 'top-end', showConfirmButton: false, timer: 1200 });
+        }
+    }
+    function deleteEmptyReturn(timestamp) {
+        Swal.fire({ title: 'Delete Record?', text: 'මෙම Empty Return වාර්තාව ඉවත් කරනු ලැබේ.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', cancelButtonColor: '#3085d6', confirmButtonText: 'Yes, delete' })
+            .then(r => { if (r.isConfirmed) {
+                emptyTransactions.emptyReturns = emptyTransactions.emptyReturns.filter(x => x.timestamp !== timestamp);
+                saveToDatabase(); renderEmptyDashboard();
+                Swal.fire('Deleted!', '', 'success');
+            }});
+    }
+
+    // --- Shell Return: Edit / Delete ---
+    async function editShellReturn(timestamp) {
+        let rec = emptyTransactions.shellReturns.find(r => r.timestamp === timestamp);
+        if(!rec) return;
+        const { value: formValues } = await Swal.fire({
+            title: 'Edit Shell Return',
+            html: `<label style="color:#66fcf1;">Date</label><input id="swal-sr-date" type="date" class="swal2-input" value="${rec.date || ''}">
+                   <label style="color:#66fcf1;">Case Value</label>
+                   <select id="swal-sr-value" class="swal2-select"><option value="150" ${rec.caseValue==150?'selected':''}>Rs. 150</option><option value="250" ${rec.caseValue==250?'selected':''}>Rs. 250</option><option value="500" ${rec.caseValue==500?'selected':''}>Rs. 500</option></select>
+                   <label style="color:#66fcf1;">Cases Qty</label><input id="swal-sr-qty" type="number" class="swal2-input" value="${rec.qty}">`,
+            focusConfirm: false, showCancelButton: true, confirmButtonText: 'Update', background: '#1f2833', color: '#fff',
+            preConfirm: () => {
+                let date = document.getElementById('swal-sr-date').value;
+                let cv = cleanNum(document.getElementById('swal-sr-value').value);
+                let qty = cleanNum(document.getElementById('swal-sr-qty').value);
+                if(!date || qty <= 0) { Swal.showValidationMessage('Invalid data.'); return false; }
+                return { date, cv, qty };
+            }
+        });
+        if (formValues) {
+            rec.date = formValues.date; rec.caseValue = formValues.cv; rec.qty = formValues.qty; rec.totalValue = formValues.cv * formValues.qty;
+            saveToDatabase(); renderEmptyDashboard();
+            Swal.fire({ icon: 'success', title: 'Updated!', toast: true, position: 'top-end', showConfirmButton: false, timer: 1200 });
+        }
+    }
+    function deleteShellReturn(timestamp) {
+        Swal.fire({ title: 'Delete Record?', text: 'මෙම Shell Return වාර්තාව ඉවත් කරනු ලැබේ.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', cancelButtonColor: '#3085d6', confirmButtonText: 'Yes, delete' })
+            .then(r => { if (r.isConfirmed) {
+                emptyTransactions.shellReturns = emptyTransactions.shellReturns.filter(x => x.timestamp !== timestamp);
+                saveToDatabase(); renderEmptyDashboard();
+                Swal.fire('Deleted!', '', 'success');
+            }});
+    }
+
+    // --- Deposit: Edit / Delete ---
+    async function editDeposit(timestamp) {
+        let rec = emptyTransactions.deposits.find(r => r.timestamp === timestamp);
+        if(!rec) return;
+        const { value: formValues } = await Swal.fire({
+            title: 'Edit Deposit',
+            html: `<label style="color:#66fcf1;">Date</label><input id="swal-dep-date" type="date" class="swal2-input" value="${rec.date || ''}">
+                   <label style="color:#66fcf1;">Shop/Route Name</label><input id="swal-dep-shop" class="swal2-input" value="${rec.shop || ''}">
+                   <label style="color:#66fcf1;">Deposit Value</label><input id="swal-dep-value" type="number" class="swal2-input" value="${rec.depositValue}">`,
+            focusConfirm: false, showCancelButton: true, confirmButtonText: 'Update', background: '#1f2833', color: '#fff',
+            preConfirm: () => {
+                let date = document.getElementById('swal-dep-date').value;
+                let shop = document.getElementById('swal-dep-shop').value;
+                let val = cleanNum(document.getElementById('swal-dep-value').value);
+                if(!date || !shop || val <= 0) { Swal.showValidationMessage('Invalid data.'); return false; }
+                return { date, shop, val };
+            }
+        });
+        if (formValues) {
+            rec.date = formValues.date; rec.shop = formValues.shop; rec.depositValue = formValues.val;
+            saveToDatabase(); renderEmptyDashboard();
+            Swal.fire({ icon: 'success', title: 'Updated!', toast: true, position: 'top-end', showConfirmButton: false, timer: 1200 });
+        }
+    }
+    function deleteDeposit(timestamp) {
+        Swal.fire({ title: 'Delete Record?', text: 'මෙම Deposit වාර්තාව ඉවත් කරනු ලැබේ.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', cancelButtonColor: '#3085d6', confirmButtonText: 'Yes, delete' })
+            .then(r => { if (r.isConfirmed) {
+                emptyTransactions.deposits = emptyTransactions.deposits.filter(x => x.timestamp !== timestamp);
+                saveToDatabase(); renderEmptyDashboard();
+                Swal.fire('Deleted!', '', 'success');
+            }});
     }
 
     function saveShellReturn() {
@@ -3127,7 +3293,7 @@
         if(!d || qty<=0) return Swal.fire('Error', 'Invalid data.', 'error');
 
         if(!Array.isArray(emptyTransactions.shellReturns)) emptyTransactions.shellReturns = [];
-        emptyTransactions.shellReturns.push({ date: d, caseValue: cv, qty: qty, totalValue: cv * qty, audit: false, timestamp: Date.now() });
+        emptyTransactions.shellReturns.push({ date: d, caseValue: cv, qty: qty, totalValue: cv * qty, audit: false, audit1: false, audit2: false, audit3: false, timestamp: Date.now() });
         saveToDatabase(); renderEmptyDashboard();
         document.getElementById('srQty').value = '';
     }
@@ -3140,7 +3306,7 @@
         if(!d || !shop || val<=0) return Swal.fire('Error', 'Invalid data.', 'error');
 
         if(!Array.isArray(emptyTransactions.deposits)) emptyTransactions.deposits = [];
-        emptyTransactions.deposits.push({ date: d, shop: shop, depositValue: val, audit: false, timestamp: Date.now() });
+        emptyTransactions.deposits.push({ date: d, shop: shop, depositValue: val, audit: false, audit1: false, audit2: false, audit3: false, timestamp: Date.now() });
         saveToDatabase(); renderEmptyDashboard();
         document.getElementById('depShop').value = ''; document.getElementById('depValue').value = '';
     }
