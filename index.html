@@ -1351,10 +1351,22 @@
         let rows = table.querySelectorAll('tr'); let csv = [];
         for (let i = 0; i < rows.length; i++) {
             let row = [], cols = rows[i].querySelectorAll('td, th');
-            for (let j = 0; j < cols.length; j++) row.push('"' + cols[j].innerText.replace(/"/g, '""') + '"');
+            for (let j = 0; j < cols.length; j++) {
+                let cellText;
+                // Audit (A1/A2/A3) වැනි checkbox සහිත cell එකක් නම්, checkbox එකෙහි checked
+                // status එක අනුව ටික් එකක් (✓) හෝ හිස්ව CSV එකට එක් කරන්න.
+                // (checkbox වල innerText හිස් නිසා, එය නොසලකා checked state එක කෙලින්ම කියවීම)
+                let checkbox = cols[j].querySelector('input[type="checkbox"]');
+                if (checkbox) {
+                    cellText = checkbox.checked ? '✓' : '';
+                } else {
+                    cellText = cols[j].innerText;
+                }
+                row.push('"' + cellText.replace(/"/g, '""') + '"');
+            }
             csv.push(row.join(','));
         }
-        let csvFile = new Blob([csv.join('\n')], {type: 'text/csv'});
+        let csvFile = new Blob(['\uFEFF' + csv.join('\n')], {type: 'text/csv;charset=utf-8;'});
         let downloadLink = document.createElement('a');
         downloadLink.download = filename; downloadLink.href = window.URL.createObjectURL(csvFile);
         downloadLink.style.display = 'none'; document.body.appendChild(downloadLink); downloadLink.click(); document.body.removeChild(downloadLink);
