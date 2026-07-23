@@ -2306,7 +2306,7 @@
                 <td class="text-center" onclick="event.stopPropagation()"><input class="form-check-input" type="checkbox" ${l.audit2 ? 'checked':''} onchange="toggleAudit(${i},2)"></td>
                 <td class="text-center" onclick="event.stopPropagation()"><input class="form-check-input" type="checkbox" ${l.audit3 ? 'checked':''} onchange="toggleAudit(${i},3)"></td>
                 <td><span class="badge bg-dark border">${l.date}</span></td><td class="text-info fw-bold">${l.invNo || '-'}</td><td>${l.loadNo || '-'}</td>
-                <td><span class="badge bg-secondary text-light">${l.vehicleNo || '-'}</span></td><td><span class="badge ${badgeColor}">${l.note}</span> ${l.excludeFromTarget ? '<i class="fa-solid fa-ban text-danger ms-1" title="Excluded from Targets"></i>' : ''}</td>
+                <td><span class="badge bg-secondary text-light">${l.vehicleNo || '-'}</span></td><td><span class="badge ${badgeColor}">${l.note}</span> ${l.excludeFromTarget ? '<i class="fa-solid fa-ban text-danger ms-1" title="Excluded from Targets"></i>' : ''} ${l.itemsManuallyAdjusted ? '<i class="fa-solid fa-rotate-left text-warning ms-1" title="Return/Quantity Adjustment Applied"></i>' : ''}</td>
                 <td class="text-end font-monospace">${dispNet.toLocaleString('en-US',{minimumFractionDigits:2})}</td><td class="text-end font-monospace text-warning">${dispVat.toLocaleString('en-US',{minimumFractionDigits:2})}</td>
                 <td class="text-end font-monospace text-success fw-bold">Rs. ${dispFinal.toLocaleString('en-US',{minimumFractionDigits:2})}</td>
                 <td class="text-info font-monospace text-end">Rs. ${dispEmpty.toLocaleString('en-US',{minimumFractionDigits:2})}</td>
@@ -2336,11 +2336,25 @@
 
     function showLoadDetails(index) {
         let l = masterData[index];
-        let itemRows = l.items.map(i => { let lookupCode = cleanItemCode(i.code); let p = priceMaster[lookupCode];
+        let itemRows = l.items.map((i, itemIdx) => { let lookupCode = cleanItemCode(i.code); let p = priceMaster[lookupCode];
             if(!p) { let fk = Object.keys(priceMaster).find(k => k === lookupCode || k.includes(lookupCode) || lookupCode.includes(k)); p = fk ? priceMaster[fk] : null; }
             let name = i.itemName || (p ? p.itemName : 'Unknown Item'); let type = i.itemType || (p ? p.itemType : 'Standard'); let uPrice = i.unitPrice || (p ? p.unitPrice : 0);
             
-            return `<tr><td class="text-start ps-3 fw-bold">${i.code}</td><td class="text-light text-start">${name}</td><td class="text-info">${type}</td><td>${i.qty}</td><td>Rs. ${uPrice.toFixed(2)}</td><td class="text-success text-end pe-3">Rs. ${(i.qty * uPrice).toLocaleString('en-US',{minimumFractionDigits:2})}</td></tr>`;
+            // ප්‍රමාණය (Qty) සදහා Editable Input එකක්. වැරදීමකින් එවූ තොග ආපසු (Full/Partial Return)
+            // පැමිණි විට, මෙතනින්ම ප්‍රමාණය නිවැරදි කළ හැක. වෙනස් කළ විගස recalcLoadFinancials() මගින්
+            // සම්පූර්ණ Load එකේම (Net/VAT/Final/Empty Value) අගයන් ස්වයංක්‍රීයව යාවත්කාලීන වේ.
+            return `<tr id="itemRow_${itemIdx}">
+                <td class="text-start ps-3 fw-bold">${i.code}</td>
+                <td class="text-light text-start">${name}</td>
+                <td class="text-info">${type}</td>
+                <td><input type="number" min="0" step="0.01" class="form-control form-control-sm edit-input mx-auto" style="width:85px;" value="${i.qty}" id="qtyInput_${itemIdx}" onkeydown="if(event.key==='Enter'){ event.preventDefault(); updateItemQty(${index}, ${itemIdx}, this.value); }"></td>
+                <td>Rs. ${uPrice.toFixed(2)}</td>
+                <td class="text-success text-end pe-3">Rs. ${(i.qty * uPrice).toLocaleString('en-US',{minimumFractionDigits:2})}</td>
+                <td class="text-center">
+                    <button class="btn btn-sm btn-outline-info" title="ප්‍රමාණය යාවත්කාලීන කරන්න (Save Qty)" onclick="updateItemQty(${index}, ${itemIdx}, document.getElementById('qtyInput_${itemIdx}').value)"><i class="fa-solid fa-floppy-disk"></i></button>
+                    <button class="btn btn-sm btn-outline-danger" title="සම්පූර්ණ Return එකක් (Remove Item)" onclick="removeItemFromLoad(${index}, ${itemIdx})"><i class="fa-solid fa-rotate-left"></i></button>
+                </td>
+            </tr>`;
         }).join('');
         let totalQty = l.items.reduce((sum, i) => sum + (parseFloat(i.qty) || 0), 0);
         let exc = l.excelSummary || {}; let sys = l.sysTotals || {};
@@ -2379,8 +2393,10 @@
             <h6 class="text-warning mb-2 mt-3"><i class="fa-solid fa-scale-balanced"></i> Financial Overview (Excel Original vs System Calc)</h6>
             <div class="row g-2 text-center mb-4 font-monospace fs-6">
                 <div class="col-md-2"><div class="p-2 border border-secondary rounded bg-dark">Net Value<br><span class="text-light">Rs. ${(exc.netValue||0).toLocaleString('en-US',{minimumFractionDigits:2})}</span><br><small class="text-warning" style="font-size:0.75em;" id="e_net">Sys: ${(sys.netValue||0).toLocaleString('en-US',{minimumFractionDigits:2})}</small></div></div><div class="col-md-2"><div class="p-2 border border-secondary rounded bg-dark">Cash Discount<br><span class="text-light">Rs. ${(exc.cashDiscount||0).toLocaleString('en-US',{minimumFractionDigits:2})}</span><br><small class="text-warning" style="font-size:0.75em;" id="e_cd">Sys: ${(sys.cashDiscount||0).toLocaleString('en-US',{minimumFractionDigits:2})}</small></div></div><div class="col-md-3"><div class="p-2 border border-secondary rounded bg-dark">Early Settlement<br><span class="text-light">Rs. ${(exc.earlySet||0).toLocaleString('en-US',{minimumFractionDigits:2})}</span><br><small class="text-warning" style="font-size:0.75em;" id="e_es">Sys: ${(sys.earlySet||0).toLocaleString('en-US',{minimumFractionDigits:2})}</small></div></div><div class="col-md-2"><div class="p-2 border border-secondary rounded bg-dark">VAT (18%)<br><span class="text-light">Rs. ${(exc.vat||0).toLocaleString('en-US',{minimumFractionDigits:2})}</span><br><small class="text-warning" style="font-size:0.75em;" id="e_vat">Sys: ${(sys.vat||0).toLocaleString('en-US',{minimumFractionDigits:2})}</small></div></div><div class="col-md-3"><div class="p-2 border border-success rounded bg-dark">Final Invoice Value<br><span class="text-success fw-bold">Rs. ${(exc.finalValue||0).toLocaleString('en-US',{minimumFractionDigits:2})}</span><br><small class="text-warning" style="font-size:0.75em;" id="e_fin">Sys: ${(sys.finalValue||0).toLocaleString('en-US',{minimumFractionDigits:2})}</small></div></div></div>
-            <h6 class="text-info mb-2"><i class="fa-solid fa-boxes-stacked"></i> Items Delivered</h6>
-            <div class="table-responsive border border-secondary rounded" style="max-height: 220px;"><table class="table table-sm text-center mb-0"><thead class="table-dark sticky-top"><tr><th>Code</th><th>Item Name</th><th>Item Type</th><th>Qty</th><th>Unit Price</th><th class="text-end pe-3">Line Total</th></tr></thead><tbody>${itemRows}</tbody><tfoot class="table-dark"><tr class="fw-bold"><th colspan="3" class="text-end">Total Quantity:</th><th class="text-warning">${totalQty}</th><th></th><th></th></tr></tfoot></table></div>`;
+            <h6 class="text-info mb-2 d-flex align-items-center gap-2"><i class="fa-solid fa-boxes-stacked"></i> Items Delivered ${l.itemsManuallyAdjusted ? '<span class="badge bg-warning text-dark"><i class="fa-solid fa-rotate-left"></i> Return Adjusted</span>' : ''}
+                <small class="text-muted fw-normal" style="font-size:0.7em;">(Return/වැරදි ප්‍රමාණයක් නම් පහත Qty කොටුවේදීම නිවැරදි කර 💾 Save කරන්න)</small>
+            </h6>
+            <div class="table-responsive border border-secondary rounded" style="max-height: 220px;"><table class="table table-sm text-center mb-0"><thead class="table-dark sticky-top"><tr><th>Code</th><th>Item Name</th><th>Item Type</th><th>Qty</th><th>Unit Price</th><th class="text-end pe-3">Line Total</th><th>Return</th></tr></thead><tbody>${itemRows}</tbody><tfoot class="table-dark"><tr class="fw-bold"><th colspan="3" class="text-end">Total Quantity:</th><th class="text-warning">${totalQty}</th><th></th><th></th><th></th></tr></tfoot></table></div>`;
         detailsModalInstance.show();
     }
     function saveEditedLoad() {
@@ -2401,6 +2417,110 @@
         saveToDatabase(); renderMasterData(); renderDiscountDashboard(); renderHistoricalProfit(); renderEmptyDashboard();
         Swal.fire({icon: 'success', title: 'Saved!', toast: true, position: 'top-end', showConfirmButton: false, timer: 1500}); updateTargetMonthDropdown();
         renderTargetProgress(l.cokeMonth);
+    }
+
+    // ==========================================
+    // RETURN / QUANTITY CORRECTION SYSTEM
+    // ==========================================
+    // ක්‍රියාකාරීත්වය: Excel එකෙන් Load එකක් Import කළ පසු, ඇතැම් විට ඇතැම් බීම
+    // වර්ගයක Case ප්‍රමාණය සම්පූර්ණයෙන්ම හෝ කොටසක් ආපසු (Return) එවනු ලැබේ. එවිට
+    // Neural Database හි එම Load එකේ Item එකේ ප්‍රමාණය මෙතනින් නිවැරදි කළ හැක.
+    // recalcLoadFinancials() මගින් Item ප්‍රමාණය මත පදනම්ව Net Value, VAT, Cash
+    // Discount, Early Settlement, Final Invoice Value සහ Empty Bottle Value යන සියල්ලම
+    // ස්වයංක්‍රීයව ප්‍රතිගණනය කර, පද්දතියේ අදාළ සියලුම තැන් (Master Table, Profit
+    // Analytics, Discount Hub, Empty Bottles, Targets) වෙත ස්වයංක්‍රීයව Sync වේ.
+
+    function recalcLoadFinancials(index) {
+        let l = masterData[index];
+        if (!l || !Array.isArray(l.items)) return;
+
+        // Item එකක Unit Price එකක් තහවුරු කර නොමැති නම්, Price Master එකෙන් සොයාගෙන
+        // නැවත Net Value එක item ප්‍රමාණයන් මතම ගණනය කරයි (Return නිසා වෙනස් වූ ප්‍රමාණයට අනුව).
+        let net = 0;
+        l.items.forEach(it => {
+            let lookupCode = cleanItemCode(it.code);
+            let p = priceMaster[lookupCode];
+            if (!p) { let fk = Object.keys(priceMaster).find(k => k === lookupCode || k.includes(lookupCode) || lookupCode.includes(k)); p = fk ? priceMaster[fk] : null; }
+            let uPrice = (it.unitPrice !== undefined && it.unitPrice !== null && it.unitPrice !== "") ? parseFloat(it.unitPrice) : (p ? p.unitPrice : 0);
+            it.unitPrice = uPrice;
+            net += (parseFloat(it.qty) || 0) * uPrice;
+        });
+        let qty = l.items.reduce((sum, i) => sum + (parseFloat(i.qty) || 0), 0);
+
+        l.sysTotals = l.sysTotals || {};
+        l.sysTotals.netValue = net;
+        l.sysTotals.totalQty = qty;
+
+        if (String(l.note).toUpperCase() === 'FREE') {
+            l.sysTotals.cashDiscount = 0; l.sysTotals.earlySet = 0; l.sysTotals.taxable = 0; l.sysTotals.vat = 0; l.sysTotals.finalValue = net;
+        } else {
+            l.sysTotals.cashDiscount = qty * 264.42;
+            l.sysTotals.earlySet = net * 0.0049;
+            l.sysTotals.taxable = net - l.sysTotals.cashDiscount - l.sysTotals.earlySet;
+            l.sysTotals.vat = l.sysTotals.taxable * 0.18;
+            l.sysTotals.finalValue = l.sysTotals.taxable + l.sysTotals.vat;
+        }
+        l.sysTotals.emptyValue = calcLoadEmptyValue(l);
+
+        // Neural Database Table එකේ (Master Table) පෙන්වන්නේ Excel Original අගයන් (excelSummary)
+        // ලෙසින් නිසා, Return එකකින් පසු එම අගයන්ද අලුත් System අගයන්ට සමාන කර යාවත්කාලීන
+        // නොකළහොත් Table එකේ පරණ (වැරදි) අගයම පෙන්වනු ඇත. එබැවින් මෙතනින්ම Sync කරයි.
+        l.excelSummary = l.excelSummary || {};
+        l.excelSummary.netValue = l.sysTotals.netValue;
+        l.excelSummary.vat = l.sysTotals.vat;
+        l.excelSummary.finalValue = l.sysTotals.finalValue;
+
+        l.itemsManuallyAdjusted = true; // මෙම Load එක Return/Correction එකකට ලක් වී ඇති බව සලකුණු කිරීම
+    }
+
+    function updateItemQty(loadIndex, itemIndex, newVal) {
+        let l = masterData[loadIndex];
+        if (!l || !l.items || !l.items[itemIndex]) return;
+        let item = l.items[itemIndex];
+        let newQty = parseFloat(newVal);
+
+        if (isNaN(newQty) || newQty < 0) {
+            Swal.fire('වැරදි අගයක්!', 'කරුණාකර ශුන්‍යයට වඩා වැඩි හෝ සමාන නිවැරදි සංඛ්‍යාවක් ඇතුළත් කරන්න.', 'error');
+            showLoadDetails(loadIndex);
+            return;
+        }
+
+        let oldQty = parseFloat(item.qty) || 0;
+        if (newQty === oldQty) { return; }
+
+        item.qty = newQty;
+        recalcLoadFinancials(loadIndex);
+        saveToDatabase();
+
+        // Modal එකම නැවත Refresh කර, Master Table + පද්දතියේ අනෙකුත් සියලුම Dashboards යාවත්කාලීන කරයි
+        showLoadDetails(loadIndex);
+        refreshAllUIs();
+        renderTargetProgress(l.cokeMonth);
+
+        Swal.fire({ icon: 'success', title: 'ප්‍රමාණය යාවත්කාලීන කරන ලදී', text: `${item.code}: ${oldQty} → ${newQty}`, toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
+    }
+
+    function removeItemFromLoad(loadIndex, itemIndex) {
+        let l = masterData[loadIndex];
+        if (!l || !l.items || !l.items[itemIndex]) return;
+        let item = l.items[itemIndex];
+
+        Swal.fire({
+            title: 'සම්පූර්ණ Return එකක්ද?',
+            html: `<b>${item.code}</b> (ප්‍රමාණය: ${item.qty}) මෙම Load එකෙන් සම්පූර්ණයෙන්ම ඉවත් කරන්නද?<br><small class="text-muted">මෙය සම්පූර්ණ Case Return එකක් සදහා පමණි. Partial Return එකක් නම් ඒ වෙනුවට ප්‍රමාණය කොටුවේ නිවැරදි කරන්න.</small>`,
+            icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', cancelButtonColor: '#3085d6',
+            confirmButtonText: 'ඔව්, සම්පූර්ණයෙන්ම ඉවත් කරන්න', cancelButtonText: 'අවලංගු කරන්න', background: '#1f2833', color: '#fff'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                l.items.splice(itemIndex, 1);
+                recalcLoadFinancials(loadIndex);
+                saveToDatabase();
+                showLoadDetails(loadIndex);
+                refreshAllUIs();
+                renderTargetProgress(l.cokeMonth);
+                Swal.fire({ icon: 'success', title: 'ඉවත් කරන ලදී', text: `${item.code} Load එකෙන් ඉවත් කරන ලදී.`, toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
+            }
+        });
     }
 
     // --- TARGET MODULE ---
