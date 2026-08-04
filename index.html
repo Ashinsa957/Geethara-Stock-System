@@ -2844,7 +2844,7 @@
                 let rawInv = String(l.invNo || '').replace('INV00', '');
                 let invNo = rawInv ? `INV00${rawInv}` : '-';
                 
-                let val = parseFloat(l.excelSummary?.finalValue) || 0;
+                let val = parseFloat(l.excelSummary?.netValue) || 0;
                 let vat = parseFloat(l.excelSummary?.vat) || 0;
                 
                 if (vat <= 0) return; 
