@@ -233,12 +233,20 @@
                 <button class="btn btn-sm btn-outline-light rounded-pill" id="redoActionBtn" onclick="redoAction()" title="Redo (Ctrl+Y)" disabled><i class="fa-solid fa-rotate-right"></i> Redo</button>
                 <button class="btn btn-sm btn-outline-info rounded-pill" onclick="exportBackup()"><i class="fa-solid fa-cloud-arrow-down"></i> Quick Backup</button>
                 <span class="badge bg-transparent text-success p-2 px-3 rounded-pill border border-success shadow heartbeat" id="statusBadge"><i class="fa-solid fa-cloud-bolt me-2"></i> Cloud Live Syncing...</span>
+                <span class="badge p-2 px-3 rounded-pill border border-warning text-warning shadow" id="duplicateModeStatusBadge" style="display:none;" title="Duplicate Mode හි ඇතුළත් කරන දත්ත, හිමිකරු Approve කරන තුරු Production Database එකට යන්නේ නැත"><i class="fa-solid fa-clone me-1"></i> Duplicate Mode</span>
+                <span class="align-items-center gap-2 ps-2" id="duplicateModeToggleWrapper" style="display:none;">
+                    <span class="form-check form-switch m-0" title="Duplicate Mode On/Off කිරීම - මෙය 1234kumarika@gmail.com ගිණුමට පමණි">
+                        <input class="form-check-input" type="checkbox" role="switch" id="duplicateModeSwitch" onchange="toggleDuplicateModeSwitch(this.checked)">
+                        <label class="form-check-label small text-warning fw-bold" for="duplicateModeSwitch">Duplicate Mode</label>
+                    </span>
+                </span>
             </div>
         </div>
 
         <div class="text-center mb-4">
             <ul class="nav nav-pills-main gap-2" id="myTab" role="tablist">
                 <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#upload"><i class="fa-solid fa-cloud-arrow-up me-2"></i> Data Ingestion</button></li>
+                <li class="nav-item" id="duplicateModeNavItem" style="display:none;"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#duplicateModeView"><i class="fa-solid fa-clone me-2"></i> Duplicate Mode <span class="badge bg-danger rounded-pill ms-1" id="duplicateQueueCountBadge" style="display:none;">0</span></button></li>
                 <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#master"><i class="fa-solid fa-server me-2"></i> Neural Database</button></li>
                 <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#profitView"><i class="fa-solid fa-sack-dollar me-2"></i> Profit Analytics</button></li>
                 <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#targetView"><i class="fa-solid fa-bullseye me-2"></i> Targets & KPIs</button></li>
@@ -274,6 +282,36 @@
                             <p class="text-muted small mb-4 mt-3">Upload today's stock delivery formatted Excel file to analyze values.</p>
                             <input type="file" class="form-control form-control-lg" id="invoiceFile" accept=".xlsx, .csv">
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="duplicateModeView">
+                <div class="pro-card p-4 mb-4">
+                    <h4 class="fw-bold text-warning"><i class="fa-solid fa-clone"></i> Duplicate Mode - අනුමැතිය සඳහා රැඳී ඇති දත්ත</h4>
+                    <p class="text-muted small mb-4">
+                        නව සේවකයෙකු මෙම <b>1234kumarika@gmail.com</b> ගිණුමෙන් ලොග් වී, Duplicate Mode Toggle එක ON කර
+                        ඇතුළත් කරන Invoice/Load දත්ත මෙහි රැඳී පවතී. මෙම දත්ත ප්‍රධාන (Production) Database එකට කෙලින්ම
+                        එකතු නොවේ, ස්ථිර සේවක ගිණුම් ඇතුළු කිසිම වෙනත් ගිණුමකටවත් Sync නොවේ. ප්‍රධානියා පසුව මෙම ගිණුමෙන්ම
+                        (1234kumarika@gmail.com) ලොග් වී, දත්ත පරීක්ෂා කර, Password එක ඇතුළත් කර
+                        <b>"Approve &amp; Push"</b> click කළ පසුවම, එම දත්ත ක්ෂණිකව Production Database එකට එකතු වී
+                        සියලුම පරිගණකවල (ස්ථිර සේවක ගිණුම් ඇතුළුව) Sync වේ.
+                    </p>
+                    <div class="table-container" style="max-height:550px;">
+                        <table class="table table-hover align-middle text-center" id="duplicateQueueTable">
+                            <thead>
+                                <tr>
+                                    <th>Entered By</th>
+                                    <th>Entered At</th>
+                                    <th>Invoice Count</th>
+                                    <th class="text-start">Invoice Numbers</th>
+                                    <th>Status / Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="duplicateQueueBody">
+                                <tr><td colspan="5" class="text-muted py-4">Loading...</td></tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -805,7 +843,8 @@
                  <div class="mt-5 text-center border p-4 border-danger rounded-4 bg-dark">
                      <h5 class="text-danger fw-bold"><i class="fa-solid fa-triangle-exclamation"></i> Danger Zone</h5>
                     <p class="text-muted small">This action requires a security math pin to prevent accidental data loss.</p>
-                    <button class="btn btn-danger rounded-pill px-5 py-2 fw-bold shadow-lg" onclick="clearSystemData()">WIPE ALL FIREBASE DATABASE</button>
+                    <button class="btn btn-danger rounded-pill px-5 py-2 fw-bold shadow-lg" id="wipeDbBtn" style="display:none;" onclick="clearSystemData()">WIPE ALL FIREBASE DATABASE</button>
+                    <p class="text-muted small mt-3 mb-0" id="wipeDbRestrictedNote"><i class="fa-solid fa-lock"></i> මෙම විකල්පය <b>ashinsasathsara@gmail.com</b> ගිණුමෙන් ලොග් වුවහොත් පමණක් පෙන්වයි.</p>
                  </div>
             </div>
         </div>
@@ -1031,20 +1070,108 @@
     const db = firebase.database();
     
     const allowedEmails = ["ranjithu1234@gmail.com", "pkumara125@gmail.com", "1234kumarika@gmail.com", "ashinsasathsara@gmail.com"];
+
+    // ==========================================
+    // DUPLICATE MODE / APPROVAL SYSTEM CONFIG
+    // ==========================================
+    // 1234kumarika@gmail.com යනු නව සේවකයන්ට ලබා දෙන එකම (Shared) ගිණුමයි. ස්ථිර සේවක
+    // ගිණුම් (ranjithu1234@gmail.com, pkumara125@gmail.com, ashinsasathsara@gmail.com)
+    // වලට Duplicate Mode සම්බන්ධ කිසිදු දෙයක් (Tab, Toggle, Queue) නොපෙනේ; ඔවුන් ඇතුළු
+    // කරන දත්ත සැමවිටම කලින් සිටි සාමාන්‍ය ක්‍රමයටම රිජුව Production Database එකට Sync වේ.
+    //
+    // 1234kumarika@gmail.com ගිණුම තුළම සම්පූර්ණ Workflow එක සිදුවේ:
+    //   1. නව සේවකයා මෙම ගිණුමෙන් ලොග් වී, Duplicate Mode Toggle එක ON කර දත්ත ඇතුළු කරයි.
+    //      එම දත්ත Production Database එකට හෝ වෙනත් කිසිම ගිණුමකටවත් (ස්ථිර සේවක ගිණුම්
+    //      ඇතුළු) සෘජුව Sync වන්නේ නැත - Firebase එකේ වෙනම 'duplicateQueue' path එකක
+    //      රැඳේ.
+    //   2. ප්‍රධානියා පසුව එම 1234kumarika@gmail.com ගිණුමෙන්ම ලොග් වී, "Duplicate Mode"
+    //      Tab එකෙන් ඇතුළත් කළ දත්ත පරීක්ෂා කර, Password (112233) එක ඇතුළත් කර
+    //      "Approve & Push" click කරයි - එවිට එම දත්ත ක්ෂණිකව Production Database එකට
+    //      එකතු වී සියලුම පරිගණකවල (ස්ථිර සේවක ගිණුම් ඇතුළු) Sync වේ.
+    //   3. Duplicate Mode Toggle එක OFF කර දත්ත ඇතුළු කළහොත්, එය සාමාන්‍ය පරිදි ක්ෂණිකවම
+    //      Sync වේ (Approval අවශ්‍ය නොවේ).
+    //
+    // NOTE: මෙය Client-side JavaScript check එකක් පමණි (Password/Email check browser
+    // එකේම සිදුවේ) - සැබෑ Server-side ආරක්ෂාවක් නොවේ. සම්පූර්ණ ආරක්ෂාවක් සඳහා Firebase
+    // Security Rules හෝ Cloud Functions හරහා මෙය server-side ද validate කළ යුතුය.
+    const KUMARIKA_EMAIL = "1234kumarika@gmail.com";
+    const WIPE_DB_ALLOWED_EMAIL = "ashinsasathsara@gmail.com";
+    const DUPLICATE_APPROVE_PASSWORD = "112233";
+    let currentUserEmail = null;
+    let isDuplicateModeActive = false;     // true නම් අලුතින් ඇතුළු කරන Load/Invoice, Production Database එකට රිජුව නොගොස් Queue එකට යයි (Kumarika ගිණුමට පමණක් අදාළ වේ)
+    let duplicateQueue = [];               // { id, enteredBy, enteredAt, items:[...] } - 1234kumarika@gmail.com ගිණුමට පමණක් පේනවා (Firebase හරහා sync වේ)
+    let pendingDuplicateBatchItems = [];   // Excel එකකින් process කරන Load කිහිපයක්ම, Approve වීමට පෙර තාවකාලිකව රඳවා ගැනීමට
+
     auth.onAuthStateChanged(user => {
         if (user && allowedEmails.includes(user.email.toLowerCase())) {
+            currentUserEmail = user.email.toLowerCase();
             document.getElementById('loginOverlay').style.display = 'none';
             document.getElementById('globalLoader').style.display = 'flex';
             document.getElementById('mainAppWrapper').style.display = 'block';
+            setupRoleBasedUI();
             initLiveSync(); 
+            initDuplicateQueueSync();
         } else if (user) {
+            currentUserEmail = null;
             document.getElementById('loginError').style.display = 'block';
             auth.signOut();
         } else {
+            currentUserEmail = null;
             document.getElementById('loginOverlay').style.display = 'flex';
             document.getElementById('mainAppWrapper').style.display = 'none';
         }
     });
+
+    // ලොග් වූ ගිණුම අනුව UI Permissions සකසයි: Duplicate Mode Tab/Toggle (Kumarika ගිණුමට
+    // පමණක්), WIPE DATABASE බොත්තම (ashinsasathsara ට පමණක්)
+    function setupRoleBasedUI() {
+        let isKumarika = (currentUserEmail === KUMARIKA_EMAIL);
+
+        // --- Duplicate Mode (Entry Toggle + Review/Approve Tab): 1234kumarika@gmail.com ගිණුමට පමණක් පෙනේ ---
+        // ස්ථිර සේවක ගිණුම් වලට Duplicate Mode කියලා දෙයක් තිබෙන බවවත් නොපෙනේ.
+        let toggleWrapper = document.getElementById('duplicateModeToggleWrapper');
+        let navItem = document.getElementById('duplicateModeNavItem');
+
+        if (isKumarika) {
+            if (toggleWrapper) toggleWrapper.style.display = 'inline-flex';
+            if (navItem) navItem.style.display = 'block';
+            isDuplicateModeActive = true; // ආරක්ෂිත Default එක - මෙම ගිණුමෙන් ලොග් වූ විටෙක Duplicate Mode ON වෙයි; අවශ්‍ය නම් Toggle එකෙන් Direct Mode වෙත මාරු විය හැක
+            let sw = document.getElementById('duplicateModeSwitch');
+            if (sw) sw.checked = true;
+        } else {
+            if (toggleWrapper) toggleWrapper.style.display = 'none';
+            if (navItem) navItem.style.display = 'none';
+            isDuplicateModeActive = false; // ස්ථිර සේවක ගිණුම් වලට Duplicate Mode කිසිසේත් අදාළ නොවේ - ඔවුන්ගේ දත්ත සැමවිටම රිජුව Sync වේ
+        }
+        updateDuplicateModeStatusUI();
+
+        // --- WIPE ALL FIREBASE DATABASE: ashinsasathsara@gmail.com ට පමණක් පෙනේ ---
+        let wipeBtn = document.getElementById('wipeDbBtn');
+        let wipeNote = document.getElementById('wipeDbRestrictedNote');
+        let isWipeAllowed = (currentUserEmail === WIPE_DB_ALLOWED_EMAIL);
+        if (wipeBtn) wipeBtn.style.display = isWipeAllowed ? 'inline-block' : 'none';
+        if (wipeNote) wipeNote.style.display = isWipeAllowed ? 'none' : 'block';
+    }
+
+    function toggleDuplicateModeSwitch(checked) {
+        if (currentUserEmail !== KUMARIKA_EMAIL) return; // ආරක්ෂිතව - මෙම Switch එක Kumarika ගිණුමට හැර වෙනත් කිසිම ගිණුමකට නොපෙනිය යුතුය
+        isDuplicateModeActive = checked;
+        updateDuplicateModeStatusUI();
+    }
+
+    function updateDuplicateModeStatusUI() {
+        let badge = document.getElementById('duplicateModeStatusBadge');
+        if (!badge) return;
+        if (currentUserEmail !== KUMARIKA_EMAIL) { badge.style.display = 'none'; return; } // Kumarika හැර අනෙක් ගිණුම් වලට මෙය කිසිසේත් නොපෙනිය යුතුය
+        badge.style.display = 'inline-flex';
+        if (isDuplicateModeActive) {
+            badge.className = 'badge p-2 px-3 rounded-pill border border-warning text-warning shadow';
+            badge.innerHTML = '<i class="fa-solid fa-clone me-1"></i> Duplicate Mode (Pending Approval)';
+        } else {
+            badge.className = 'badge p-2 px-3 rounded-pill border border-success text-success shadow';
+            badge.innerHTML = '<i class="fa-solid fa-bolt me-1"></i> Direct Production Mode';
+        }
+    }
 
     function loginWithGoogle() {
         const provider = new firebase.auth.GoogleAuthProvider();
@@ -1270,10 +1397,180 @@
         renderEmptyDashboard();
         updateGlassItemDropdown();
         renderNewIRDTable(); // අලුත් IRD වගුව
+        renderDuplicateQueue(); // Duplicate Mode Queue
         updateUndoRedoButtons();
         if(document.getElementById('priceMasterManageModal').classList.contains('show')) {
             renderPriceMasterManageTable();
         }
+    }
+
+    // ==========================================
+    // DUPLICATE MODE - CLOUD SYNC & UI
+    // ==========================================
+    // Production දත්ත (cokeSysUltraData) වලින් වෙනස්ව, Duplicate Mode හි ඇතුළත් කරන
+    // දත්ත 'duplicateQueue' නමින් වෙනම Firebase path එකක ගබඩා වේ. මෙමගින් 1234kumarika@gmail.com
+    // ගිණුමෙන් ලොග් වන ඕනෑම කෙනෙකුට (නව සේවකයා හෝ ප්‍රධානියා) pending දත්ත Review කළ හැක
+    // - නමුත් ඒවා ප්‍රධාන Production Database එකට කිසිසේත් සෘජුව බලපාන්නේ නැත.
+    function initDuplicateQueueSync() {
+        // Duplicate Mode Queue එක 1234kumarika@gmail.com ගිණුමට හැර, කිසිම ගිණුමකට
+        // (UI එකට වගේම, Browser Memory එකටත්) Sync නොකරයි - ස්ථිර සේවක ගිණුම් වලට මෙය
+        // කිසිසේත් නොපෙනිය යුතුය.
+        if (currentUserEmail !== KUMARIKA_EMAIL) {
+            duplicateQueue = [];
+            return;
+        }
+        db.ref('geethara_db/duplicateQueue').on('value', (snapshot) => {
+            const data = snapshot.val();
+            duplicateQueue = Array.isArray(data) ? data : (data ? Object.values(data) : []);
+            renderDuplicateQueue();
+        }, (error) => {
+            console.error('Duplicate Queue Sync Error:', error);
+        });
+    }
+
+    function saveDuplicateQueueToDatabase() {
+        db.ref('geethara_db/duplicateQueue').set(duplicateQueue).catch(e => {
+            console.error('Duplicate queue save error', e);
+            Swal.fire({ icon: 'error', title: 'Save Failed', text: 'Duplicate Mode දත්ත සුරැකීමේදී දෝෂයක් ඇතිවිය: ' + (e && e.message ? e.message : e) });
+        });
+    }
+
+    // Load Batch එකක් Queue එකට එකතු කිරීම (1234kumarika@gmail.com ගිණුමෙන් පමණක් සිදුවේ) -
+    // Firebase එකෙන් නවතම දත්ත කියවා (Overwrite/Race Condition වළක්වා) පසුව Append කර Save
+    // කරයි. Save වූ පසු, initDuplicateQueueSync() හි ඇති Live Listener එකෙන්ම UI එක
+    // ස්වයංක්‍රීයව Refresh වේ.
+    async function commitPendingBatchToDuplicateQueue() {
+        if (!pendingDuplicateBatchItems || pendingDuplicateBatchItems.length === 0) return;
+        let batch = {
+            id: 'dup_' + Date.now() + '_' + Math.floor(Math.random() * 100000),
+            enteredBy: currentUserEmail,
+            enteredAt: new Date().toISOString(),
+            items: pendingDuplicateBatchItems
+        };
+        pendingDuplicateBatchItems = [];
+        try {
+            let snap = await db.ref('geethara_db/duplicateQueue').once('value');
+            let existing = snap.val();
+            let latestQueue = Array.isArray(existing) ? existing : (existing ? Object.values(existing) : []);
+            latestQueue.push(batch);
+            await db.ref('geethara_db/duplicateQueue').set(latestQueue);
+        } catch (e) {
+            console.error('Duplicate queue save error', e);
+            Swal.fire({ icon: 'error', title: 'Save Failed', text: 'Duplicate Mode දත්ත සුරැකීමේදී දෝෂයක් ඇතිවිය: ' + (e && e.message ? e.message : e) });
+        }
+    }
+
+    function renderDuplicateQueue() {
+        let tbody = document.getElementById('duplicateQueueBody');
+        let countBadge = document.getElementById('duplicateQueueCountBadge');
+        if (!tbody) return;
+
+        // Duplicate Mode Queue එක 1234kumarika@gmail.com ගිණුමට හැර, කිසිම ගිණුමකට
+        // (Tab, Badge, Table කිසිවකින්වත්) නොපෙනිය යුතුය - ඒ නිසා ස්ථිර සේවක ගිණුම්
+        // සඳහා DOM එකටත් කිසිදු දත්තක් ලියන්නේ නැත.
+        if (currentUserEmail !== KUMARIKA_EMAIL) {
+            tbody.innerHTML = '';
+            if (countBadge) countBadge.style.display = 'none';
+            return;
+        }
+
+        tbody.innerHTML = '';
+
+        if (countBadge) {
+            if (duplicateQueue && duplicateQueue.length > 0) {
+                countBadge.style.display = 'inline-block';
+                countBadge.innerText = duplicateQueue.length;
+            } else {
+                countBadge.style.display = 'none';
+            }
+        }
+
+        if (!duplicateQueue || duplicateQueue.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-muted py-4"><i class="fa-solid fa-circle-check text-success me-2"></i>Duplicate Mode හි රැඳී ඇති දත්ත නොමැත.</td></tr>';
+            return;
+        }
+
+        duplicateQueue.forEach(batch => {
+            let items = batch.items || [];
+            let invNos = items.map(it => it.invNo || '(No Inv No)').join(', ');
+            // renderDuplicateQueue() මෙතනට එනවා නම්ම currentUserEmail යනු 1234kumarika@gmail.com වේ
+            let actionsHtml = `<button class="btn btn-sm btn-success me-1" onclick="approveDuplicateBatch('${batch.id}')"><i class="fa-solid fa-check"></i> Approve & Push</button>`;
+            actionsHtml += `<button class="btn btn-sm btn-outline-danger" onclick="deleteDuplicateBatch('${batch.id}')" title="Delete"><i class="fa-solid fa-trash"></i></button>`;
+
+            tbody.innerHTML += `
+                <tr>
+                    <td>${batch.enteredBy || '-'}</td>
+                    <td>${batch.enteredAt ? new Date(batch.enteredAt).toLocaleString() : '-'}</td>
+                    <td><span class="badge bg-dark border">${items.length}</span></td>
+                    <td class="text-start">${invNos}</td>
+                    <td>${actionsHtml}</td>
+                </tr>
+            `;
+        });
+    }
+
+    async function approveDuplicateBatch(batchId) {
+        if (currentUserEmail !== KUMARIKA_EMAIL) {
+            Swal.fire('Access Denied', 'මෙම කාර්යය සිදු කළ හැක්කේ 1234kumarika@gmail.com ගිණුමෙන් ලොග් වූ විටක පමණි.', 'error');
+            return;
+        }
+        let batch = duplicateQueue.find(b => b.id === batchId);
+        if (!batch) return;
+
+        const { value: pin } = await Swal.fire({
+            title: 'Production Database එකට දත්ත ඇතුළු කරන්න',
+            html: 'දත්ත නිවැරදි බව තහවුරු කර ගැනීමෙන් පසු, ඉදිරියට යාමට Password එක ඇතුළත් කරන්න.',
+            input: 'password',
+            inputPlaceholder: 'Password ඇතුළත් කරන්න',
+            showCancelButton: true,
+            confirmButtonColor: '#2ed573',
+            confirmButtonText: 'Approve & Push to Production',
+            cancelButtonText: 'අවලංගු කරන්න'
+        });
+        if (pin === undefined || pin === null || pin === '') return;
+        if (pin !== DUPLICATE_APPROVE_PASSWORD) {
+            Swal.fire('වැරදි Password', 'ඇතුළත් කළ Password එක වැරදියි. දත්ත Production Database එකට ඇතුළත් කරන ලද්දේ නැත.', 'error');
+            return;
+        }
+
+        let addedCount = 0, skippedCount = 0;
+        (batch.items || []).forEach(item => {
+            let isDup = item.invNo && masterData.some(l => l.invNo && l.invNo.toLowerCase() === item.invNo.toLowerCase());
+            if (isDup) { skippedCount++; return; }
+            masterData.push(item);
+            addedCount++;
+        });
+
+        duplicateQueue = duplicateQueue.filter(b => b.id !== batchId);
+        saveDuplicateQueueToDatabase();
+        saveToDatabase(); // Production Database එකට Push කර, සියලුම පරිගණකවල (ස්ථිර සේවක ගිණුම් ඇතුළුව) ක්ෂණිකව Sync කරයි
+        renderMasterData(); updateTargetMonthDropdown(); renderDiscountDashboard(); renderHistoricalProfit();
+        renderDuplicateQueue();
+
+        let msg = `Invoice ${addedCount}ක් Production Database එකට ඇතුළත් කරන ලදී.`;
+        if (skippedCount > 0) msg += ` (${skippedCount}ක් දැනටමත් ඇති Invoice අංක නිසා මගහරින ලදී.)`;
+        Swal.fire('සාර්ථකයි!', msg, 'success');
+    }
+
+    function deleteDuplicateBatch(batchId) {
+        if (currentUserEmail !== KUMARIKA_EMAIL) {
+            Swal.fire('Access Denied', 'ඔබට මෙම ලේඛනය ඉවත් කිරීමට අවසර නැත.', 'error');
+            return;
+        }
+        let batch = duplicateQueue.find(b => b.id === batchId);
+        if (!batch) return;
+        Swal.fire({
+            title: 'Duplicate Mode එකෙන් ඉවත් කරන්නද?',
+            text: 'මෙම දත්ත සමූහය Duplicate Mode Queue එකෙන් ස්ථිරවම ඉවත් වේ.',
+            icon: 'warning', showCancelButton: true,
+            confirmButtonText: 'ඔව්, ඉවත් කරන්න', cancelButtonText: 'එපා'
+        }).then(res => {
+            if (res.isConfirmed) {
+                duplicateQueue = duplicateQueue.filter(b => b.id !== batchId);
+                saveDuplicateQueueToDatabase();
+                renderDuplicateQueue();
+            }
+        });
     }
 
     function checkPriceMasterStatus() {
@@ -2189,8 +2486,19 @@
     function processNextPendingLoad() {
         if (pendingLoads.length === 0) {
             loadModalInstance.hide();
-            renderMasterData(); updateTargetMonthDropdown(); renderDiscountDashboard(); renderHistoricalProfit(); saveToDatabase();
-            Swal.fire({ icon: 'success', title: 'Complete', text: 'All Invoices Saved.' }); return;
+            if (isDuplicateModeActive) {
+                // Duplicate Mode: දත්ත Production Database එකට නොගොස්, ස්ථිර සේවකයෙකු Approve කරන තුරු Queue එකට පමණක් යයි.
+                // (isDuplicateModeActive true වන්නේ Kumarika ගිණුමට පමණි.)
+                commitPendingBatchToDuplicateQueue();
+                Swal.fire({
+                    icon: 'info', title: 'Duplicate Mode වෙත ඇතුළත් කරන ලදී',
+                    text: 'ඔබ ඇතුළත් කළ දත්ත, මෙම ගිණුමෙන්ම (1234kumarika@gmail.com) ලොග් වී, Password එකෙන් Approve කරන තුරු Production Database එකට හෝ වෙනත් කිසිම ගිණුමකටවත් Sync වන්නේ නැත.'
+                });
+            } else {
+                renderMasterData(); updateTargetMonthDropdown(); renderDiscountDashboard(); renderHistoricalProfit(); saveToDatabase();
+                Swal.fire({ icon: 'success', title: 'Complete', text: 'All Invoices Saved.' });
+            }
+            return;
         }
         currentEditingLoad = pendingLoads[0];
 
@@ -2270,14 +2578,25 @@
     function skipCurrentLoad() { pendingLoads.shift(); processNextPendingLoad(); }
     function saveAndNextLoad() {
         let newInvNo = document.getElementById('m-invNo').value.trim();
-        let isDuplicate = masterData.some(l => l.invNo && l.invNo.toLowerCase() === newInvNo.toLowerCase());
-        if (isDuplicate && newInvNo !== "") { Swal.fire('Error!', 'මෙම Invoice අංකය දැනටමත් සිස්ටම් එකට ඇතුලත් කර ඇත: ' + newInvNo, 'error'); return; }
+        // Production Data (masterData) සහ (1234kumarika@gmail.com ගිණුමට පමණක් Locally Sync වන) Duplicate Mode
+        // Queue එකේ රැඳී ඇති දත්ත යන දෙකෙහිම Invoice අංකය Duplicate ද යන්න පරීක්ෂා කරයි
+        let isDuplicate = masterData.some(l => l.invNo && l.invNo.toLowerCase() === newInvNo.toLowerCase())
+            || duplicateQueue.some(b => (b.items || []).some(l => l.invNo && l.invNo.toLowerCase() === newInvNo.toLowerCase()))
+            || pendingDuplicateBatchItems.some(l => l.invNo && l.invNo.toLowerCase() === newInvNo.toLowerCase());
+        if (isDuplicate && newInvNo !== "") { Swal.fire('Error!', 'මෙම Invoice අංකය දැනටමත් සිස්ටම් එකට (හෝ Duplicate Mode Queue එකට) ඇතුලත් කර ඇත: ' + newInvNo, 'error'); return; }
         currentEditingLoad.date = document.getElementById('m-date').value; currentEditingLoad.calMonth = document.getElementById('m-calMonth').value; currentEditingLoad.cokeMonth = document.getElementById('m-cokeMonth').value;
         currentEditingLoad.cokeWeek = document.getElementById('m-cokeWeek').value; currentEditingLoad.invNo = newInvNo; currentEditingLoad.loadNo = document.getElementById('m-loadNo').value; currentEditingLoad.vehicleNo = document.getElementById('m-vehicleNo').value; currentEditingLoad.note = document.getElementById('m-note').value;
         currentEditingLoad.items.forEach(item => { let lookupCode = cleanItemCode(item.code); let p = priceMaster[lookupCode];
             if(!p) { let fk = Object.keys(priceMaster).find(k => k === lookupCode || k.includes(lookupCode) || lookupCode.includes(k)); p = fk ? priceMaster[fk] : null; }
             if(p) { item.itemName = p.itemName; item.itemType = p.itemType; item.unitPrice = p.unitPrice; item.salePrice = p.salePrice || 0; } });
-        masterData.push(currentEditingLoad); pendingLoads.shift(); processNextPendingLoad();
+
+        if (isDuplicateModeActive) {
+            // Duplicate Mode: Production masterData එකට රිජුව එකතු නොකර, Approve වීමට පෙර තාවකාලික Batch එකට එකතු කරයි
+            pendingDuplicateBatchItems.push(currentEditingLoad);
+        } else {
+            masterData.push(currentEditingLoad);
+        }
+        pendingLoads.shift(); processNextPendingLoad();
     }
 
     // --- MASTER DATA & DATABASE LOGIC ---
@@ -2672,6 +2991,10 @@
     }
 
     async function clearSystemData() {
+        if (currentUserEmail !== WIPE_DB_ALLOWED_EMAIL) {
+            Swal.fire('Access Denied', 'මෙම කාර්යය සිදු කළ හැක්කේ ashinsasathsara@gmail.com ගිණුමෙන් ලොග් වූ විටක පමණි.', 'error');
+            return;
+        }
         let num1 = Math.floor(Math.random() * 10) + 1;
         let num2 = Math.floor(Math.random() * 10) + 1;
         const { value: pin } = await Swal.fire({
