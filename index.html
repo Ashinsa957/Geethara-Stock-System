@@ -248,6 +248,7 @@
                 <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#upload"><i class="fa-solid fa-cloud-arrow-up me-2"></i> Data Ingestion</button></li>
                 <li class="nav-item" id="duplicateModeNavItem" style="display:none;"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#duplicateModeView"><i class="fa-solid fa-clone me-2"></i> Duplicate Mode <span class="badge bg-danger rounded-pill ms-1" id="duplicateQueueCountBadge" style="display:none;">0</span></button></li>
                 <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#master"><i class="fa-solid fa-server me-2"></i> Neural Database</button></li>
+                <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#beverageSummaryView" onclick="renderBeverageSummary()"><i class="fa-solid fa-bottle-water me-2"></i> Beverage Summary</button></li>
                 <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#profitView"><i class="fa-solid fa-sack-dollar me-2"></i> Profit Analytics</button></li>
                 <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#targetView"><i class="fa-solid fa-bullseye me-2"></i> Targets & KPIs</button></li>
                 <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#discountView"><i class="fa-solid fa-tags me-2"></i> Discount Hub</button></li>
@@ -291,7 +292,8 @@
                     <h4 class="fw-bold text-warning"><i class="fa-solid fa-clone"></i> Duplicate Mode - අනුමැතිය සඳහා රැඳී ඇති දත්ත</h4>
                     <p class="text-muted small mb-4">
                         නව සේවකයෙකු මෙම <b>1234kumarika@gmail.com</b> ගිණුමෙන් ලොග් වී, Duplicate Mode Toggle එක ON කර
-                        ඇතුළත් කරන Invoice/Load දත්ත මෙහි රැඳී පවතී. මෙම දත්ත ප්‍රධාන (Production) Database එකට කෙලින්ම
+                        ඇතුළත් කරන <b>Invoice/Load</b> දත්ත මෙන්ම, <b>Upload Discounts</b> මගින් ඇතුළත් කරන Discount
+                        දත්තද මෙහි රැඳී පවතී. මෙම දත්ත ප්‍රධාන (Production) Database එකට කෙලින්ම
                         එකතු නොවේ, ස්ථිර සේවක ගිණුම් ඇතුළු කිසිම වෙනත් ගිණුමකටවත් Sync නොවේ. ප්‍රධානියා පසුව මෙම ගිණුමෙන්ම
                         (1234kumarika@gmail.com) ලොග් වී, දත්ත පරීක්ෂා කර, Password එක ඇතුළත් කර
                         <b>"Approve &amp; Push"</b> click කළ පසුවම, එම දත්ත ක්ෂණිකව Production Database එකට එකතු වී
@@ -303,13 +305,14 @@
                                 <tr>
                                     <th>Entered By</th>
                                     <th>Entered At</th>
-                                    <th>Invoice Count</th>
-                                    <th class="text-start">Invoice Numbers</th>
+                                    <th>Type</th>
+                                    <th>Count</th>
+                                    <th class="text-start">Details</th>
                                     <th>Status / Action</th>
                                 </tr>
                             </thead>
                             <tbody id="duplicateQueueBody">
-                                <tr><td colspan="5" class="text-muted py-4">Loading...</td></tr>
+                                <tr><td colspan="6" class="text-muted py-4">Loading...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -365,6 +368,38 @@
                     </div>
                 </div>
          
+            </div>
+
+            <div class="tab-pane fade" id="beverageSummaryView">
+                <div class="pro-card p-4 mb-4">
+                    <div class="d-flex flex-wrap justify-content-between align-items-end mb-4 gap-3">
+                        <div>
+                            <h4 class="fw-bold text-white mb-1"><i class="fa-solid fa-bottle-water text-info"></i> Beverage Types - Stock Received Summary</h4>
+                            <p class="text-muted small mb-0">ලැබුණු බීම තොගවල තිබූ බීම වර්ග වල සාරාංශය (Date, Invoice No, Load No සහ එක් එක් බීම වර්ගයේ ප්‍රමාණය).</p>
+                        </div>
+                        <div class="d-flex gap-2 align-items-end flex-wrap">
+                            <div><label class="form-label">From Date</label><input type="date" id="bevFilterFrom" class="form-control form-control-sm" onchange="renderBeverageSummary()"></div>
+                            <div><label class="form-label">To Date</label><input type="date" id="bevFilterTo" class="form-control form-control-sm" onchange="renderBeverageSummary()"></div>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('bevFilterFrom').value=''; document.getElementById('bevFilterTo').value=''; renderBeverageSummary();"><i class="fa-solid fa-rotate-right"></i> Reset</button>
+                            <button class="btn btn-sm btn-outline-success" onclick="exportBeverageSummaryExcel()"><i class="fa-solid fa-file-excel"></i> Export Excel</button>
+                        </div>
+                    </div>
+                    <div class="table-container" style="max-height:600px;">
+                        <table class="table table-hover align-middle text-center table-dark table-bordered" id="beverageSummaryTable">
+                            <thead class="table-dark" style="position:sticky; top:0; z-index:2;">
+                                <tr id="bevSummaryHeadRow">
+                                    <th>Date</th><th>Invoice No</th><th>Load No</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bevSummaryBody">
+                                <tr><td colspan="3" class="text-muted py-4">දත්ත Filter කරන්න, හෝ Load Invoice දත්ත Process කරන්න.</td></tr>
+                            </tbody>
+                            <tfoot>
+                                <tr id="bevSummaryFootRow" class="table-dark fw-bold"></tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
             </div>
 
             <div class="tab-pane fade" id="profitView">
@@ -1398,6 +1433,7 @@
         updateGlassItemDropdown();
         renderNewIRDTable(); // අලුත් IRD වගුව
         renderDuplicateQueue(); // Duplicate Mode Queue
+        renderBeverageSummary(); // Beverage Types - Stock Received Summary
         updateUndoRedoButtons();
         if(document.getElementById('priceMasterManageModal').classList.contains('show')) {
             renderPriceMasterManageTable();
@@ -1443,11 +1479,31 @@
         if (!pendingDuplicateBatchItems || pendingDuplicateBatchItems.length === 0) return;
         let batch = {
             id: 'dup_' + Date.now() + '_' + Math.floor(Math.random() * 100000),
+            type: 'invoice',
             enteredBy: currentUserEmail,
             enteredAt: new Date().toISOString(),
             items: pendingDuplicateBatchItems
         };
         pendingDuplicateBatchItems = [];
+        await pushBatchToDuplicateQueue(batch);
+    }
+
+    // Upload Discounts මගින් ඇතුළු කරන දත්ත (Duplicate Mode ON කර ඇති විට) Production
+    // Database එකට (discountData) කෙලින්ම නොගොස්, Invoice Load දත්ත මෙන්ම මෙම Queue
+    // එකටම (වෙනත් 'type' එකකින්) එකතු වී, Kumarika ගිණුමෙන් Approve කරන තුරු රැඳී සිටී.
+    async function commitDiscountBatchToDuplicateQueue(discountItems) {
+        if (!discountItems || discountItems.length === 0) return;
+        let batch = {
+            id: 'dup_' + Date.now() + '_' + Math.floor(Math.random() * 100000),
+            type: 'discount',
+            enteredBy: currentUserEmail,
+            enteredAt: new Date().toISOString(),
+            items: discountItems
+        };
+        await pushBatchToDuplicateQueue(batch);
+    }
+
+    async function pushBatchToDuplicateQueue(batch) {
         try {
             let snap = await db.ref('geethara_db/duplicateQueue').once('value');
             let existing = snap.val();
@@ -1486,13 +1542,21 @@
         }
 
         if (!duplicateQueue || duplicateQueue.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" class="text-muted py-4"><i class="fa-solid fa-circle-check text-success me-2"></i>Duplicate Mode හි රැඳී ඇති දත්ත නොමැත.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" class="text-muted py-4"><i class="fa-solid fa-circle-check text-success me-2"></i>Duplicate Mode හි රැඳී ඇති දත්ත නොමැත.</td></tr>';
             return;
         }
 
         duplicateQueue.forEach(batch => {
             let items = batch.items || [];
-            let invNos = items.map(it => it.invNo || '(No Inv No)').join(', ');
+            let batchType = batch.type || 'invoice'; // පැරණි Batch (type නොමැති) සියල්ලම Invoice ලෙස සලකයි
+            let typeBadge, detailsHtml;
+            if (batchType === 'discount') {
+                typeBadge = '<span class="badge bg-warning text-dark"><i class="fa-solid fa-tags me-1"></i>Discounts</span>';
+                detailsHtml = items.map(it => `${it.date || '-'} / ${it.route || '(No Route)'}`).join(', ');
+            } else {
+                typeBadge = '<span class="badge bg-info text-dark"><i class="fa-solid fa-truck-fast me-1"></i>Invoices</span>';
+                detailsHtml = items.map(it => it.invNo || '(No Inv No)').join(', ');
+            }
             // renderDuplicateQueue() මෙතනට එනවා නම්ම currentUserEmail යනු 1234kumarika@gmail.com වේ
             let actionsHtml = `<button class="btn btn-sm btn-success me-1" onclick="approveDuplicateBatch('${batch.id}')"><i class="fa-solid fa-check"></i> Approve & Push</button>`;
             actionsHtml += `<button class="btn btn-sm btn-outline-danger" onclick="deleteDuplicateBatch('${batch.id}')" title="Delete"><i class="fa-solid fa-trash"></i></button>`;
@@ -1501,8 +1565,9 @@
                 <tr>
                     <td>${batch.enteredBy || '-'}</td>
                     <td>${batch.enteredAt ? new Date(batch.enteredAt).toLocaleString() : '-'}</td>
+                    <td>${typeBadge}</td>
                     <td><span class="badge bg-dark border">${items.length}</span></td>
-                    <td class="text-start">${invNos}</td>
+                    <td class="text-start">${detailsHtml}</td>
                     <td>${actionsHtml}</td>
                 </tr>
             `;
@@ -1533,22 +1598,36 @@
             return;
         }
 
-        let addedCount = 0, skippedCount = 0;
-        (batch.items || []).forEach(item => {
-            let isDup = item.invNo && masterData.some(l => l.invNo && l.invNo.toLowerCase() === item.invNo.toLowerCase());
-            if (isDup) { skippedCount++; return; }
-            masterData.push(item);
-            addedCount++;
-        });
+        let batchType = batch.type || 'invoice';
+        let addedCount = 0, skippedCount = 0, msg = '';
+
+        if (batchType === 'discount') {
+            (batch.items || []).forEach(item => {
+                let isDup = discountData.some(d => d.date === item.date && d.route === item.route);
+                if (isDup) { skippedCount++; return; }
+                discountData.push(item);
+                addedCount++;
+            });
+            updateRouteDropdown(); renderDiscountMasterTable();
+            msg = `Discount Record ${addedCount}ක් Production Database එකට ඇතුළත් කරන ලදී.`;
+            if (skippedCount > 0) msg += ` (${skippedCount}ක් දැනටමත් ඇති Date/Route නිසා මගහරින ලදී.)`;
+        } else {
+            (batch.items || []).forEach(item => {
+                let isDup = item.invNo && masterData.some(l => l.invNo && l.invNo.toLowerCase() === item.invNo.toLowerCase());
+                if (isDup) { skippedCount++; return; }
+                masterData.push(item);
+                addedCount++;
+            });
+            msg = `Invoice ${addedCount}ක් Production Database එකට ඇතුළත් කරන ලදී.`;
+            if (skippedCount > 0) msg += ` (${skippedCount}ක් දැනටමත් ඇති Invoice අංක නිසා මගහරින ලදී.)`;
+        }
 
         duplicateQueue = duplicateQueue.filter(b => b.id !== batchId);
         saveDuplicateQueueToDatabase();
         saveToDatabase(); // Production Database එකට Push කර, සියලුම පරිගණකවල (ස්ථිර සේවක ගිණුම් ඇතුළුව) ක්ෂණිකව Sync කරයි
-        renderMasterData(); updateTargetMonthDropdown(); renderDiscountDashboard(); renderHistoricalProfit();
+        renderMasterData(); updateTargetMonthDropdown(); renderDiscountDashboard(); renderHistoricalProfit(); renderBeverageSummary();
         renderDuplicateQueue();
 
-        let msg = `Invoice ${addedCount}ක් Production Database එකට ඇතුළත් කරන ලදී.`;
-        if (skippedCount > 0) msg += ` (${skippedCount}ක් දැනටමත් ඇති Invoice අංක නිසා මගහරින ලදී.)`;
         Swal.fire('සාර්ථකයි!', msg, 'success');
     }
 
@@ -1929,6 +2008,7 @@
             else discountHeaders = aoa[0] || [];
 
             let currDate = ""; let addedCount = 0; let skippedCount = 0;
+            let newDiscountRecords = []; // Duplicate Mode ON නම් රිජුව discountData එකට නොගොස් මෙතන රැඳේ
             const validRoutes = ['Port', 'Peoples Park', 'Borella', 'Armour St', 'Sea St', 'Maradana', 'Deans Rd', 'Stores', 'Cross St 01', 'Fort', 'Cross St 2', 'Other 1', 'Other 2'];
             
             for(let i=0; i<aoa.length; i++) {
@@ -1955,20 +2035,34 @@
                          }
                      }
                      
-                     // දැනටමත් සිස්ටම් එකේ Save වී ඇති (Date + Route) record එකක් නම් නැවත එකතු නොකර Skip කරයි
+                     // දැනටමත් සිස්ටම් එකේ Save වී ඇති (Date + Route) record එකක් නම්, එසේම Duplicate Mode
+                     // Queue එකේ දැනටමත් Approve නොවී පවතින (Date + Route) record එකක් නම්ද, නැවත එකතු නොකර Skip කරයි
                      let existingIdx = discountData.findIndex(d => d.date === currDate && d.route === route);
-                     if (existingIdx !== -1) {
+                     let existingInQueue = isDuplicateModeActive && duplicateQueue.some(b => (b.type === 'discount') && (b.items || []).some(it => it.date === currDate && it.route === route));
+                     if (existingIdx !== -1 || existingInQueue) {
                          skippedCount++;
                      } else {
                          let dataObj = { date: currDate, route: route, saleValue: saleVal, rd: rd, specialOutlet: specialOutlet, eligibleDiscount: totalRowDiscount, itemBreakdown: itemBreakdown };
-                         discountData.push(dataObj);
+                         newDiscountRecords.push(dataObj);
                          addedCount++;
                      }
                 }
             }
-            saveToDatabase();
-            updateRouteDropdown(); renderDiscountDashboard(); renderDiscountMasterTable();
-            Swal.fire({ icon: 'success', title: 'Discounts Uploaded', html: `අලුතින් එකතු කළ Records: <b class="text-success">${addedCount}</b><br>දැනටමත් Save වී තිබූ නිසා මඟහැරුණු (Skipped) Records: <b class="text-warning">${skippedCount}</b>` });
+
+            if (isDuplicateModeActive) {
+                // Duplicate Mode: Production Database (discountData) එකට රිජුව එකතු නොකර,
+                // ස්ථිර සේවකයෙකු (Kumarika ගිණුමෙන්) Approve කරන තුරු Queue එකට පමණක් යයි.
+                if (newDiscountRecords.length > 0) commitDiscountBatchToDuplicateQueue(newDiscountRecords);
+                Swal.fire({
+                    icon: 'info', title: 'Duplicate Mode වෙත ඇතුළත් කරන ලදී',
+                    html: `Duplicate Mode Queue එකට එකතු කළ Records: <b class="text-success">${addedCount}</b><br>දැනටමත් Save වී/Queue වී තිබූ නිසා මඟහැරුණු (Skipped) Records: <b class="text-warning">${skippedCount}</b><br><br>ඔබ ඇතුළත් කළ දත්ත, මෙම ගිණුමෙන්ම (1234kumarika@gmail.com) ලොග් වී, Password එකෙන් Approve කරන තුරු Production Database එකට හෝ වෙනත් කිසිම ගිණුමකටවත් Sync වන්නේ නැත.`
+                });
+            } else {
+                discountData.push(...newDiscountRecords);
+                saveToDatabase();
+                updateRouteDropdown(); renderDiscountDashboard(); renderDiscountMasterTable();
+                Swal.fire({ icon: 'success', title: 'Discounts Uploaded', html: `අලුතින් එකතු කළ Records: <b class="text-success">${addedCount}</b><br>දැනටමත් Save වී තිබූ නිසා මඟහැරුණු (Skipped) Records: <b class="text-warning">${skippedCount}</b>` });
+            }
             e.target.value = '';
         };
         reader.readAsArrayBuffer(e.target.files[0]);
@@ -2495,7 +2589,7 @@
                     text: 'ඔබ ඇතුළත් කළ දත්ත, මෙම ගිණුමෙන්ම (1234kumarika@gmail.com) ලොග් වී, Password එකෙන් Approve කරන තුරු Production Database එකට හෝ වෙනත් කිසිම ගිණුමකටවත් Sync වන්නේ නැත.'
                 });
             } else {
-                renderMasterData(); updateTargetMonthDropdown(); renderDiscountDashboard(); renderHistoricalProfit(); saveToDatabase();
+                renderMasterData(); updateTargetMonthDropdown(); renderDiscountDashboard(); renderHistoricalProfit(); renderBeverageSummary(); saveToDatabase();
                 Swal.fire({ icon: 'success', title: 'Complete', text: 'All Invoices Saved.' });
             }
             return;
@@ -2600,6 +2694,121 @@
     }
 
     // --- MASTER DATA & DATABASE LOGIC ---
+    // ==========================================
+    // BEVERAGE TYPES - STOCK RECEIVED SUMMARY
+    // ==========================================
+    // ලැබුණු බීම තොග (masterData) වල, තෝරන දින පරාසය තුළ තිබූ එක් එක් බීම වර්ගයේ
+    // ප්‍රමාණයන් Date/Invoice No/Load No අනුව සාරාංශගත කරයි. Excel Export එකේදී,
+    // D2 සිට ඉදිරියට (එකින් පසු එක) බීම වර්ගයේ නම සහ E2 සිට ඉදිරියට එහි Code එක
+    // යන ආකාරයට Header ගොඩනගා, A3/B3/C3 සිට පහළට පිළිවෙලින් Date/Invoice No/Load No
+    // දත්ත සහ පහළින් එක් එක් බීම වර්ගයේ මුළු එකතුව ලබා දේ.
+    window.bevSummaryColumns = [];
+    window.bevSummaryLoads = [];
+
+    function getFilteredBeverageLoads() {
+        let fFrom = document.getElementById('bevFilterFrom').value;
+        let fTo = document.getElementById('bevFilterTo').value;
+        return masterData.filter(l => {
+            if (fFrom && l.date < fFrom) return false;
+            if (fTo && l.date > fTo) return false;
+            return true;
+        }).slice().sort((a, b) => (a.date || "").localeCompare(b.date || ""));
+    }
+
+    function getBeverageColumnsFromLoads(loads) {
+        let nameByCode = {};
+        loads.forEach(l => (l.items || []).forEach(item => {
+            let code = cleanItemCode(item.code);
+            if (!code) return;
+            if (!nameByCode[code]) {
+                let p = priceMaster[code];
+                if (!p) { let fk = Object.keys(priceMaster).find(k => k === code || k.includes(code) || code.includes(k)); p = fk ? priceMaster[fk] : null; }
+                nameByCode[code] = (p && p.itemName) ? p.itemName : (item.itemName || code);
+            }
+        }));
+        return Object.keys(nameByCode).sort((a, b) => nameByCode[a].localeCompare(nameByCode[b])).map(code => ({ code, name: nameByCode[code] }));
+    }
+
+    function getQtyForLoadAndCode(load, code) {
+        return (load.items || []).filter(it => cleanItemCode(it.code) === code).reduce((sum, it) => sum + (parseFloat(it.qty) || 0), 0);
+    }
+
+    function renderBeverageSummary() {
+        let loads = getFilteredBeverageLoads();
+        let columns = getBeverageColumnsFromLoads(loads);
+        window.bevSummaryLoads = loads;
+        window.bevSummaryColumns = columns;
+
+        let headRow = document.getElementById('bevSummaryHeadRow');
+        headRow.innerHTML = `<th>Date</th><th>Invoice No</th><th>Load No</th>` +
+            columns.map(c => `<th title="Code: ${c.code}">${c.name}<br><small class="text-muted">${c.code}</small></th>`).join('');
+
+        let tbody = document.getElementById('bevSummaryBody');
+        let footRow = document.getElementById('bevSummaryFootRow');
+        let totalCols = 3 + columns.length;
+
+        if (loads.length === 0 || columns.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="${totalCols}" class="text-muted py-4">තෝරාගත් කාල සීමාව තුළ දත්ත හමු නොවීය.</td></tr>`;
+            footRow.innerHTML = '';
+            return;
+        }
+
+        let totals = columns.map(() => 0);
+        let rowsHtml = '';
+        loads.forEach(l => {
+            let cellsHtml = columns.map((c, idx) => {
+                let qty = getQtyForLoadAndCode(l, c.code);
+                totals[idx] += qty;
+                return `<td>${qty > 0 ? qty : ''}</td>`;
+            }).join('');
+            rowsHtml += `<tr><td>${l.date || '-'}</td><td>${l.invNo || '-'}</td><td>${l.loadNo || '-'}</td>${cellsHtml}</tr>`;
+        });
+        tbody.innerHTML = rowsHtml;
+        footRow.innerHTML = `<th colspan="3" class="text-end">Total:</th>` + totals.map(t => `<th>${t}</th>`).join('');
+    }
+
+    function exportBeverageSummaryExcel() {
+        let loads = window.bevSummaryLoads || [];
+        let columns = window.bevSummaryColumns || [];
+        if (loads.length === 0 || columns.length === 0) {
+            Swal.fire('දත්ත නොමැත', 'Export කිරීමට පෙර, දත්ත ඇති කාල පරාසයක් Filter කරන්න.', 'warning');
+            return;
+        }
+
+        let aoa = [];
+        aoa.push(['Beverage Types - Stock Received Summary']);
+
+        // Row 2: A2/B2/C2 headers + D2 සිට ඉදිරියට බීම වර්ගය, E2 සිට ඉදිරියට කෝඩ් එක (Name/Code pairs)
+        let headerRow = ['Date', 'Invoice No', 'Load No'];
+        columns.forEach(c => { headerRow.push(c.name); headerRow.push(c.code); });
+        aoa.push(headerRow);
+
+        // Row 3 සිට පහළට: Date/Invoice No/Load No දත්ත සහ එක් එක් බීම වර්ගයේ ප්‍රමාණය
+        loads.forEach(l => {
+            let row = [l.date || '', l.invNo || '', l.loadNo || ''];
+            columns.forEach(c => {
+                let qty = getQtyForLoadAndCode(l, c.code);
+                row.push(qty > 0 ? qty : '');
+                row.push(''); // Code Column එකට දත්ත අවශ්‍ය නොවේ - එය Header එකේ පමණි
+            });
+            aoa.push(row);
+        });
+
+        // පහළින්ම එක් එක් බීම වර්ගයේ මුළු එකතුව
+        let totalRow = ['', '', 'Total'];
+        columns.forEach(c => {
+            let total = loads.reduce((sum, l) => sum + getQtyForLoadAndCode(l, c.code), 0);
+            totalRow.push(total);
+            totalRow.push('');
+        });
+        aoa.push(totalRow);
+
+        let ws = XLSX.utils.aoa_to_sheet(aoa);
+        let wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Beverage Summary');
+        XLSX.writeFile(wb, 'Beverage_Stock_Summary.xlsx');
+    }
+
     function renderMasterData() {
         let tbody = document.querySelector('#masterTable tbody');
         tbody.innerHTML = "";
