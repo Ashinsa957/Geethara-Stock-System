@@ -271,6 +271,7 @@
                 <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#discountSummaryView" onclick="renderDiscountSummary()"><i class="fa-solid fa-table-list me-2"></i> Discount Summary</button></li>
                 <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#irdReportsView"><i class="fa-solid fa-file-invoice-dollar me-2"></i> VAT And SSCL</button></li>
                 <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#emptyManagementView"><i class="fa-solid fa-wine-bottle me-2"></i> Empty Bottles</button></li>
+                <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#noteSettingsView" onclick="renderNoteSettings()"><i class="fa-solid fa-gear me-2"></i> Settings</button></li>
                 <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#settings"><i class="fa-solid fa-shield-halved me-2"></i> Security</button></li>
             </ul>
         </div>
@@ -772,6 +773,7 @@
                                 </table>
                             </div>
                         </div>
+                        <div class="pro-card p-4 mt-4 border-top border-4 border-success" id="dsTradePct"></div>
                     </div>
 
                     <!-- ================= SPECIAL OUTLET ================= -->
@@ -818,6 +820,7 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="pro-card p-4 mt-4 border-top border-4 border-success" id="dsSpecialPct"></div>
                     </div>
                 </div>
             </div>
@@ -1019,6 +1022,49 @@
                 </div>
             </div>
 
+            <div class="tab-pane fade" id="noteSettingsView">
+                <div class="pro-card p-4 mb-4 border-top border-4 border-info">
+                    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
+                        <div>
+                            <h4 class="fw-bold text-white mb-1"><i class="fa-solid fa-gear text-info"></i> Note Type Settings</h4>
+                            <p class="text-muted small mb-0">
+                                එක් එක් Note Type එක සඳහා <b>Target Calc</b> එකට ඇතුළත් විය යුතුද යන්නත්, ඉන්වොයිසියේ <b>Net Value, Cash Discount, Early Settlement</b> ආදී අගයන් ලබාගත යුත්තේ කෙසේද යන්නත් මෙතනින් තෝරන්න.<br>
+                                <b class="text-light">Excel Value</b> = Excel ඉන්වොයිසියේ අගය (නොමැති නම් System ගණනය) &nbsp;|&nbsp;
+                                <b class="text-light">System Calculated</b> = පද්ධතිය ගණනය කරන අගය &nbsp;|&nbsp;
+                                <b class="text-light">None (0)</b> = එම Note Type එකට අදාළ නොවේ, අගය 0 වේ.
+                            </p>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-secondary" onclick="resetNoteSettings()"><i class="fa-solid fa-rotate-left"></i> Reset Defaults</button>
+                            <button class="btn btn-success fw-bold" onclick="saveNoteSettings()"><i class="fa-solid fa-floppy-disk"></i> Save Settings</button>
+                        </div>
+                    </div>
+                    <div class="table-container" style="max-height:none; overflow-x:auto;">
+                        <table class="table table-hover table-dark align-middle text-center mb-0 text-nowrap">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th class="text-start">Note Type</th>
+                                    <th>Include in<br>Target Calc</th>
+                                    <th>Net Value</th><th>Cash Discount</th><th>Early Settlement</th><th>Taxable Value</th><th>VAT</th><th>Invoice Value</th>
+                                </tr>
+                            </thead>
+                            <tbody id="noteSettingsBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="pro-card p-4 border-top border-4 border-warning">
+                    <h5 class="fw-bold text-white mb-1"><i class="fa-solid fa-calculator text-warning"></i> System Calculation Rates</h5>
+                    <p class="text-muted small mb-3">"System Calculated" ලෙස තෝරා ඇති අගයන් ගණනය කිරීමට භාවිතා වන අනුපාත.</p>
+                    <div class="row g-3" style="max-width:720px;">
+                        <div class="col-md-4"><label class="form-label">Cash Discount per Case (Rs.)</label><input type="number" step="0.01" class="form-control" id="ns_rate_cash"></div>
+                        <div class="col-md-4"><label class="form-label">Early Settlement (%)</label><input type="number" step="0.01" class="form-control" id="ns_rate_early"></div>
+                        <div class="col-md-4"><label class="form-label">VAT (%)</label><input type="number" step="0.01" class="form-control" id="ns_rate_vat"></div>
+                    </div>
+                    <p class="text-muted small mt-3 mb-0"><i class="fa-solid fa-circle-info"></i> Settings Save කළ විට, දැනට ඇති සියලුම Load වල System අගයන් සහ Target Calc නැවත ගණනය වේ.</p>
+                </div>
+            </div>
+
             <div class="tab-pane fade" id="settings">
                 <div class="row justify-content-center g-4">
                     <div class="col-md-5">
@@ -1070,6 +1116,7 @@
                             <option value="Standard">Standard</option>
                             <option value="Collection">Collection</option>
                             <option value="FREE" class="text-success">FREE</option>
+                            <option value="Free Drinks" class="text-info">Free Drinks</option>
                             <option value="Promotion">Promotion</option>
                             <option value="Staff">Staff</option>
                             <option value="Gas Out">Gas Out</option>
@@ -1391,6 +1438,7 @@
     let halfCaseItems = [];
     let discountHeaders = []; 
     let emptySettings = { openingBalance: 0 };
+    let noteSettings = null; // Note Type Settings (Settings Tab) - null නම් Default අගයන් භාවිතා වේ
     let emptyTransactions = { shellReturns: [], deposits: [], emptyReturns: [] };
 
     // Firebase Realtime Database එකේ හිස් Array එකක් (`[]`) Save කළාම, ඒක RTDB එකෙන් ස්වයංක්‍රීයව
@@ -1430,7 +1478,7 @@
 
     function saveLocalBackup() {
         try {
-            const snapshot = { priceMaster, masterData, targetMaster, discountData, halfCaseItems, discountHeaders, emptySettings, emptyTransactions, savedAt: new Date().toISOString() };
+            const snapshot = { priceMaster, masterData, targetMaster, discountData, halfCaseItems, discountHeaders, emptySettings, emptyTransactions, noteSettings, savedAt: new Date().toISOString() };
             localStorage.setItem(LOCAL_BACKUP_KEY, JSON.stringify(snapshot));
         } catch (e) {
             console.error('Local backup save failed:', e);
@@ -1456,7 +1504,7 @@
         halfCaseItems = snap.halfCaseItems || [];
         discountHeaders = snap.discountHeaders || [];
         emptySettings = snap.emptySettings || { openingBalance: 0 };
-        emptyTransactions = normalizeEmptyTransactions(snap.emptyTransactions);
+        emptyTransactions = normalizeEmptyTransactions(snap.emptyTransactions); noteSettings = snap.noteSettings || null;
     }
 
     window.onload = function() {
@@ -1488,7 +1536,7 @@
         if (cached && (cached.masterData || cached.priceMaster)) {
             try {
                 applyDataSnapshot(cached);
-                lastSavedSnapshot = JSON.stringify({ priceMaster, masterData, targetMaster, discountData, halfCaseItems, discountHeaders, emptySettings, emptyTransactions });
+                lastSavedSnapshot = JSON.stringify({ priceMaster, masterData, targetMaster, discountData, halfCaseItems, discountHeaders, emptySettings, emptyTransactions, noteSettings });
                 localBackupUsed = true; cachedShown = true;
                 document.getElementById('globalLoader').style.display = 'none';
                 setSyncLock(true);
@@ -1512,7 +1560,7 @@
             if (backup) {
                 localBackupUsed = true;
                 applyDataSnapshot(backup);
-                lastSavedSnapshot = JSON.stringify({ priceMaster, masterData, targetMaster, discountData, halfCaseItems, discountHeaders, emptySettings, emptyTransactions });
+                lastSavedSnapshot = JSON.stringify({ priceMaster, masterData, targetMaster, discountData, halfCaseItems, discountHeaders, emptySettings, emptyTransactions, noteSettings });
                 document.getElementById('globalLoader').style.display = 'none';
                 refreshAllUIs();
                 let badge = document.getElementById('statusBadge');
@@ -1538,10 +1586,10 @@
                 halfCaseItems = data.halfCaseItems || []; 
                 discountHeaders = data.discountHeaders || [];
                 emptySettings = data.emptySettings || { openingBalance: 0 };
-                emptyTransactions = normalizeEmptyTransactions(data.emptyTransactions);
+                emptyTransactions = normalizeEmptyTransactions(data.emptyTransactions); noteSettings = data.noteSettings || null;
 
                 // Undo/Redo baseline එක අලුතින් පැමිණි දත්ත වලට යාවත්කාලීන කරයි
-                lastSavedSnapshot = JSON.stringify({ priceMaster, masterData, targetMaster, discountData, halfCaseItems, discountHeaders, emptySettings, emptyTransactions });
+                lastSavedSnapshot = JSON.stringify({ priceMaster, masterData, targetMaster, discountData, halfCaseItems, discountHeaders, emptySettings, emptyTransactions, noteSettings });
                 // Local Cache එකේ දත්ත සහ Cloud දත්ත සමාන නම්, නැවත UI Render කිරීම අවශ්‍ය නැත (වේගවත්)
                 if (isFirst && cachedShown && prevSnapshotStr === lastSavedSnapshot) {
                     document.getElementById('globalLoader').style.display = 'none';
@@ -1575,7 +1623,7 @@
                 let backup = loadLocalBackup();
                 if (backup && !localBackupUsed) {
                     applyDataSnapshot(backup);
-                    lastSavedSnapshot = JSON.stringify({ priceMaster, masterData, targetMaster, discountData, halfCaseItems, discountHeaders, emptySettings, emptyTransactions });
+                    lastSavedSnapshot = JSON.stringify({ priceMaster, masterData, targetMaster, discountData, halfCaseItems, discountHeaders, emptySettings, emptyTransactions, noteSettings });
                     refreshAllUIs();
                     saveToDatabase();
                 }
@@ -1590,7 +1638,7 @@
             let usedBackupMsg = '';
             if (backup) {
                 applyDataSnapshot(backup);
-                lastSavedSnapshot = JSON.stringify({ priceMaster, masterData, targetMaster, discountData, halfCaseItems, discountHeaders, emptySettings, emptyTransactions });
+                lastSavedSnapshot = JSON.stringify({ priceMaster, masterData, targetMaster, discountData, halfCaseItems, discountHeaders, emptySettings, emptyTransactions, noteSettings });
                 refreshAllUIs();
                 usedBackupMsg = ' (Local Backup එකෙන් දත්ත ආපසු load කරන ලදී.)';
             }
@@ -1601,7 +1649,7 @@
 
     function saveToDatabase() {
         isSyncing = true;
-        const data = { priceMaster, masterData, targetMaster, discountData, halfCaseItems, discountHeaders, emptySettings, emptyTransactions };
+        const data = { priceMaster, masterData, targetMaster, discountData, halfCaseItems, discountHeaders, emptySettings, emptyTransactions, noteSettings };
         const newSnapshot = JSON.stringify(data);
 
         // දත්ත වෙනස් වූ ක්ෂණයේම, Cloud Save එක සාර්ථක වේද යන්න බලාගෙන නොසිට, Browser
@@ -1644,6 +1692,7 @@
         renderNewIRDTable(); // අලුත් IRD වගුව
         renderDuplicateQueue(); // Duplicate Mode Queue
         renderDiscountSummary();
+        { let _ns = document.getElementById('noteSettingsView'); if (_ns && !_ns.classList.contains('active')) renderNoteSettings(); }
         renderBeverageSummary(); // Beverage Types - Stock Received Summary
         updateUndoRedoButtons();
         if(document.getElementById('priceMasterManageModal').classList.contains('show')) {
@@ -2123,6 +2172,120 @@
         }
     }
 
+    // ==========================================
+    // NOTE TYPE SETTINGS ENGINE
+    // ==========================================
+    // එක් එක් Note Type එකට: (1) Target Calc එකට ඇතුළත් කළ යුතුද, (2) Net Value / Cash Discount /
+    // Early Settlement / Taxable / VAT / Invoice Value යන අගයන් Excel එකෙන්ද, System එකෙන් ගණනය කළද,
+    // නැතහොත් 0 ද යන්න තෝරා ගත හැක.
+    const NOTE_TYPES = ['Standard', 'Collection', 'FREE', 'Free Drinks', 'Promotion', 'Staff', 'Gas Out', 'Expiry'];
+    const NOTE_VALUE_FIELDS = [['netValue','Net Value'], ['cashDiscount','Cash Discount'], ['earlySet','Early Settlement'], ['taxable','Taxable Value'], ['vat','VAT'], ['finalValue','Invoice Value']];
+    const NOTE_MODE_LABELS = { excel: 'Excel Value (else System)', system: 'System Calculated', zero: 'None (0)' };
+
+    function defaultNoteSettings() {
+        let types = {};
+        NOTE_TYPES.forEach(t => {
+            let isFree = (t === 'FREE' || t === 'Free Drinks');
+            types[t] = {
+                target: !isFree,
+                netValue: 'excel',
+                cashDiscount: isFree ? 'zero' : 'excel',
+                earlySet: isFree ? 'zero' : 'excel',
+                taxable: isFree ? 'zero' : 'excel',
+                vat: isFree ? 'zero' : 'excel',
+                finalValue: 'excel'
+            };
+        });
+        return { rates: { cashPerCase: 264.42, earlyPct: 0.49, vatPct: 18 }, types: types };
+    }
+    function getNoteRates() {
+        let d = defaultNoteSettings().rates; let r = (noteSettings && noteSettings.rates) || {};
+        const num = (v, def) => (v === undefined || v === null || v === '' || isNaN(parseFloat(v))) ? def : parseFloat(v);
+        return { cashPerCase: num(r.cashPerCase, d.cashPerCase), earlyPct: num(r.earlyPct, d.earlyPct), vatPct: num(r.vatPct, d.vatPct) };
+    }
+    function resolveNoteKey(note) {
+        let up = String(note || '').trim().toUpperCase();
+        return NOTE_TYPES.find(t => t.toUpperCase() === up) || 'Standard';
+    }
+    function getNoteTypeConfig(note) {
+        let key = resolveNoteKey(note); let def = defaultNoteSettings().types[key];
+        let saved = (noteSettings && noteSettings.types && noteSettings.types[key]) || {};
+        return Object.assign({}, def, saved);
+    }
+    function isNoteInTarget(note) { return getNoteTypeConfig(note).target !== false; }
+
+    // net/qty = System (Σ qty × unit price). excel = Excel Invoice එකේ අගයන් (නැතහොත් null => පිරිසිදු System ගණනය).
+    function computeNoteTotals(note, net, qty, excel) {
+        let st = getNoteTypeConfig(note), rt = getNoteRates(), ex = excel || {};
+        const has = (v) => v !== undefined && v !== null && v !== '';
+        const pick = (mode, exVal, sysVal) => mode === 'zero' ? 0 : (mode === 'excel' && has(exVal) ? (parseFloat(exVal) || 0) : sysVal);
+        net = parseFloat(net) || 0; qty = parseFloat(qty) || 0;
+        let netV = pick(st.netValue, ex.netValue, net);
+        let cd = pick(st.cashDiscount, ex.cashDiscount, qty * rt.cashPerCase);
+        let es = pick(st.earlySet, ex.earlySet, netV * rt.earlyPct / 100);
+        let tax = pick(st.taxable, ex.taxable, netV - cd - es);
+        let vat = pick(st.vat, ex.vat, (netV - cd - es) * rt.vatPct / 100);
+        let fin = pick(st.finalValue, ex.finalValue, netV - cd - es + vat);
+        return { netValue: netV, cashDiscount: cd, earlySet: es, taxable: tax, vat: vat, finalValue: fin };
+    }
+    // System Totals (sysTotals) - Excel අගයන් නොමැතිව, Settings අනුව (Zero/System) පමණක් ගණනය කරයි
+    function applyNoteTotalsToSys(load, net, qty) {
+        let t = computeNoteTotals(load.note, net, qty, null);
+        load.sysTotals = load.sysTotals || {};
+        load.sysTotals.cashDiscount = t.cashDiscount; load.sysTotals.earlySet = t.earlySet;
+        load.sysTotals.taxable = t.taxable; load.sysTotals.vat = t.vat; load.sysTotals.finalValue = t.finalValue;
+    }
+    // Neural Database / Discount Summary සඳහා ඵලදායී (Effective) අගයන්
+    function getLoadTotals(l) {
+        let sys = l.sysTotals || {};
+        let qty = (l.items || []).reduce((sum, it) => sum + (parseFloat(it.qty) || 0), 0);
+        let net = (sys.netValue !== undefined && sys.netValue !== null) ? sys.netValue : (l.items || []).reduce((sum, it) => sum + (parseFloat(it.qty) || 0) * (parseFloat(it.unitPrice) || 0), 0);
+        return computeNoteTotals(l.note, net, qty, l.excelSummary);
+    }
+
+    function renderNoteSettings() {
+        let host = document.getElementById('noteSettingsBody'); if (!host) return;
+        let rt = getNoteRates();
+        document.getElementById('ns_rate_cash').value = rt.cashPerCase;
+        document.getElementById('ns_rate_early').value = rt.earlyPct;
+        document.getElementById('ns_rate_vat').value = rt.vatPct;
+        host.innerHTML = NOTE_TYPES.map((t, idx) => {
+            let c = getNoteTypeConfig(t);
+            let sels = NOTE_VALUE_FIELDS.map(f => `<td><select class="form-select form-select-sm bg-dark text-white border-secondary" id="ns_${f[0]}_${idx}">` +
+                Object.keys(NOTE_MODE_LABELS).map(m => `<option value="${m}" ${c[f[0]] === m ? 'selected' : ''}>${NOTE_MODE_LABELS[m]}</option>`).join('') + '</select></td>').join('');
+            return `<tr><td class="text-start fw-bold ${t === 'FREE' || t === 'Free Drinks' ? 'text-success' : 'text-light'}">${t}</td>
+                <td><div class="form-check form-switch d-flex justify-content-center m-0"><input class="form-check-input" type="checkbox" role="switch" id="ns_target_${idx}" ${c.target !== false ? 'checked' : ''}></div></td>${sels}</tr>`;
+        }).join('');
+    }
+    function saveNoteSettings() {
+        let ns = { rates: {
+            cashPerCase: parseFloat(document.getElementById('ns_rate_cash').value) || 0,
+            earlyPct: parseFloat(document.getElementById('ns_rate_early').value) || 0,
+            vatPct: parseFloat(document.getElementById('ns_rate_vat').value) || 0 }, types: {} };
+        NOTE_TYPES.forEach((t, idx) => {
+            let o = { target: document.getElementById('ns_target_' + idx).checked };
+            NOTE_VALUE_FIELDS.forEach(f => { o[f[0]] = document.getElementById(`ns_${f[0]}_${idx}`).value; });
+            ns.types[t] = o;
+        });
+        noteSettings = ns;
+        applyNoteSettingsToAllLoads();
+        Swal.fire({ icon: 'success', title: 'Settings Saved!', text: 'සියලුම Load වලට නව සැකසුම් යොදන ලදී.', toast: true, position: 'top-end', showConfirmButton: false, timer: 2200 });
+    }
+    function resetNoteSettings() {
+        Swal.fire({ title: 'Default වෙත මාරු කරන්නද?', text: 'සියලුම Note Type සැකසුම් මුල් (Default) අගයන් වෙත ආපසු යයි.', icon: 'warning', showCancelButton: true, confirmButtonText: 'ඔව්, Reset කරන්න', background: '#1f2833', color: '#fff' })
+        .then(r => { if (r.isConfirmed) { noteSettings = null; renderNoteSettings(); applyNoteSettingsToAllLoads(); } });
+    }
+    function applyNoteSettingsToAllLoads() {
+        masterData.forEach(l => {
+            if (!l.sysTotals) return;
+            let qty = (l.items || []).reduce((sum, it) => sum + (parseFloat(it.qty) || 0), 0);
+            applyNoteTotalsToSys(l, l.sysTotals.netValue || 0, qty);
+        });
+        saveToDatabase();
+        refreshAllUIs();
+        let m = document.getElementById('targetMonthSelect'); if (m && m.value) { try { renderTargetProgress(m.value); } catch (e) {} }
+    }
+
     function recalculateLoadTotals(load) {
         let net = 0;
         let qty = 0;
@@ -2134,19 +2297,7 @@
         load.sysTotals.netValue = net;
         load.sysTotals.totalQty = qty;
         
-        let cd=0, es=0, tax=0, vat=0, fin=net;
-        if(load.note !== 'FREE') {
-            cd = qty * 264.42;
-            es = net * 0.0049;
-            tax = net - cd - es;
-            vat = tax * 0.18;
-            fin = tax + vat;
-        }
-        load.sysTotals.cashDiscount = cd;
-        load.sysTotals.earlySet = es;
-        load.sysTotals.taxable = tax;
-        load.sysTotals.vat = vat;
-        load.sysTotals.finalValue = fin;
+        applyNoteTotalsToSys(load, net, qty);
 
         // Empty Value Calculation - බෙදාගත් calcLoadEmptyValue() function එකෙන්ම, glass item සියල්ලේම එකතුව ලබා ගැනීම
         load.sysTotals.emptyValue = calcLoadEmptyValue(load);
@@ -2829,7 +2980,8 @@
         let detectedNote = 'Standard';
         let rawTypeStr = (currentEditingLoad.noteTypeRaw || "").toUpperCase();
         
-        if (rawTypeStr.includes('FREE')) detectedNote = 'FREE';
+        if (rawTypeStr.includes('FREE DRINK')) detectedNote = 'Free Drinks';
+        else if (rawTypeStr.includes('FREE')) detectedNote = 'FREE';
         else if (rawTypeStr.includes('COLLECTION') || rawTypeStr.includes('COLL')) detectedNote = 'Collection';
         else if (rawTypeStr.includes('PROMO')) detectedNote = 'Promotion';
         else if (rawTypeStr.includes('STAFF')) detectedNote = 'Staff';
@@ -2859,11 +3011,8 @@
             sys.netValue += item.lineTotal; sys.totalQty += item.qty;
             tbody.innerHTML += `<tr><td class="text-start ps-3 fw-bold text-light">${item.code}</td><td class="text-light text-start">${item.itemName}</td><td class="text-info">${item.itemType}</td><td>Rs. ${item.unitPrice.toFixed(2)}</td><td><input type="number" class="edit-input" value="${item.qty}" onchange="updateItemQty(${index}, this.value)"></td><td class="text-success fw-bold">Rs. ${item.lineTotal.toLocaleString('en-US',{minimumFractionDigits:2})}</td><td><button class="btn btn-sm btn-outline-danger" onclick="removeItem(${index})"><i class="fa-solid fa-xmark"></i></button></td></tr>`;
         });
-        if (currentNoteType === 'FREE') { sys.cashDiscount = 0; sys.earlySet = 0;
-        sys.taxable = 0; sys.vat = 0; sys.finalValue = sys.netValue; } else {
-            sys.cashDiscount = sys.totalQty * 264.42;
-            sys.earlySet = sys.netValue * 0.0049; sys.taxable = sys.netValue - sys.cashDiscount - sys.earlySet; sys.vat = sys.taxable * 0.18;
-            sys.finalValue = sys.taxable + sys.vat; }
+        let _nt = computeNoteTotals(document.getElementById('m-note').value, sys.netValue, sys.totalQty, null);
+        sys.cashDiscount = _nt.cashDiscount; sys.earlySet = _nt.earlySet; sys.taxable = _nt.taxable; sys.vat = _nt.vat; sys.finalValue = _nt.finalValue;
         currentEditingLoad.sysTotals = sys;
         currentEditingLoad.sysTotals.emptyValue = calcLoadEmptyValue(currentEditingLoad);
         renderComparisonMatrix();
@@ -3035,16 +3184,12 @@
             // Excel Invoice එකේ අගයන් (excelSummary) පෙන්වයි. Excel අගයක් නොමැති (manual) load එකකදී sysTotals fallback වේ.
             let exc = l.excelSummary || {}; let sys = l.sysTotals || {};
             let dispQty = (l.items || []).reduce((sum, it) => sum + (parseFloat(it.qty) || 0), 0);
-            let dispNet = pick(exc.netValue, sys.netValue);
-            let dispCD = pick(exc.cashDiscount, sys.cashDiscount);
-            let dispES = pick(exc.earlySet, sys.earlySet);
-            let dispDisc = dispCD + dispES;
-            let dispTax = pick(exc.taxable, (sys.taxable !== undefined ? sys.taxable : (dispNet - dispDisc)));
-            let dispVat = pick(exc.vat, sys.vat);
-            let dispFinal = pick(exc.finalValue, sys.finalValue);
+            let _t = getLoadTotals(l);
+            let dispNet = _t.netValue, dispCD = _t.cashDiscount, dispES = _t.earlySet, dispDisc = dispCD + dispES;
+            let dispTax = _t.taxable, dispVat = _t.vat, dispFinal = _t.finalValue;
             let dispEmpty = calcLoadEmptyValue(l);
             T.qty += dispQty; T.net += dispNet; T.cd += dispCD; T.es += dispES; T.disc += dispDisc; T.tax += dispTax; T.vat += dispVat; T.fin += dispFinal; T.empty += dispEmpty;
-            let badgeColor = "bg-transparent border border-warning text-warning"; if(String(l.note).toUpperCase() === 'FREE') badgeColor = "bg-success text-white fw-bold";
+            let badgeColor = "bg-transparent border border-warning text-warning"; if(String(l.note).toUpperCase() === 'FREE') badgeColor = "bg-success text-white fw-bold"; else if(String(l.note).toUpperCase() === 'FREE DRINKS') badgeColor = "bg-info text-dark fw-bold";
 
             // Exclude mark styling
             let trStyle = l.excludeFromTarget ? 'opacity: 0.7; border-left: 3px solid var(--coke-red);' : '';
@@ -3135,10 +3280,21 @@
         return p || {};
     }
     function dsItemSalePrice(item) { let p = dsFindPrice(item.code); return parseFloat(item.salePrice || p.salePrice || 0) || 0; }
-    function dsCashDiscount(l) {
-        let exc = l.excelSummary || {}, sys = l.sysTotals || {};
-        let v = (exc.cashDiscount !== undefined && exc.cashDiscount !== null && exc.cashDiscount !== "") ? exc.cashDiscount : sys.cashDiscount;
-        return parseFloat(v) || 0;
+    function dsCashDiscount(l) { return getLoadTotals(l).cashDiscount || 0; }
+
+    function dsPctCardHtml(title, icon, aLabel, aVal, bLabel, bVal, restLabel, formula) {
+        let pct = aVal > 0 ? (bVal / aVal) * 100 : 0;
+        let rest = aVal - bVal;
+        let cls = pct > 100 ? 'bg-danger' : (pct > 80 ? 'bg-warning text-dark' : 'bg-success');
+        return `<h5 class="fw-bold text-white mb-1"><i class="fa-solid ${icon} text-success"></i> ${title}</h5>
+            <p class="text-muted small mb-3">${formula}</p>
+            <div class="row g-3 text-center mb-3">
+                <div class="col-md-3"><div class="p-3 bg-dark rounded border border-info"><div class="small text-info mb-1">${aLabel}</div><div class="fw-bold font-monospace text-white">Rs. ${dsFmt(aVal)}</div></div></div>
+                <div class="col-md-3"><div class="p-3 bg-dark rounded border border-warning"><div class="small text-warning mb-1">${bLabel}</div><div class="fw-bold font-monospace text-white">Rs. ${dsFmt(bVal)}</div></div></div>
+                <div class="col-md-3"><div class="p-3 bg-dark rounded border border-${rest >= 0 ? 'success' : 'danger'}"><div class="small text-${rest >= 0 ? 'success' : 'danger'} mb-1">${restLabel}</div><div class="fw-bold font-monospace text-white">Rs. ${dsFmt(rest)}</div></div></div>
+                <div class="col-md-3"><div class="p-3 bg-dark rounded border border-light"><div class="small text-light mb-1">Percentage</div><div class="fw-bold fs-4 text-white">${pct.toFixed(2)}%</div></div></div>
+            </div>
+            <div class="progress" style="height:24px;"><div class="progress-bar progress-bar-striped ${cls} fw-bold" style="width:${Math.min(pct, 100)}%">${pct.toFixed(2)}%</div></div>`;
     }
 
     function renderDiscountSummary() {
@@ -3228,6 +3384,12 @@
             dBody.innerHTML = rows;
             dFoot.innerHTML = '<th class="text-end">Total:</th>' + colT.map(t => `<th class="text-end font-monospace">${dsFmt(t)}</th>`).join('') + `<th class="text-end font-monospace text-warning border-start">${dsFmt(gt)}</th>`;
         }
+        // ---- (4) Percentage: Free Cases Sale Value වලින් Discounts Given ලෙස වියදම් වූ ප්‍රමාණය ----
+        let freeTotalAll = freeLoads.reduce((sum, l) => sum + loadValue(l), 0);
+        let discTotalAll = Object.keys(byDate).reduce((sum, dt) => sum + Object.keys(byDate[dt]).reduce((a, n) => a + byDate[dt][n], 0), 0);
+        document.getElementById('dsTradePct').innerHTML = dsPctCardHtml('Discounts Given vs Free Cases Sale Value', 'fa-percent',
+            'Free Cases Sale Value', freeTotalAll, 'Discounts Given (Excl. Special Outlet)', discTotalAll, 'Balance (Free - Discounts)',
+            'Discounts Given (Excl. Special Outlet) ÷ Free Cases &amp; Sale Value × 100');
     }
 
     function renderDsSpecialOutlet(from, to) {
@@ -3256,6 +3418,12 @@
             sBody.innerHTML = dates.map(dt => { tot += byDate[dt]; return `<tr><td>${dsEsc(dt)}</td><td class="text-end font-monospace text-danger">${dsFmt(byDate[dt])}</td></tr>`; }).join('');
             sFoot.innerHTML = `<th class="text-end">Total:</th><th class="text-end font-monospace text-warning">${dsFmt(tot)}</th>`;
         }
+        // ---- Percentage: Collection Cash Discount මුළු අගයෙන් Special Outlet ලෙස ලබා දී ඇති ප්‍රමාණය ----
+        let collTotalAll = loads.reduce((sum, l) => sum + dsCashDiscount(l), 0);
+        let specTotalAll = dates.reduce((sum, dt) => sum + byDate[dt], 0);
+        document.getElementById('dsSpecialPct').innerHTML = dsPctCardHtml('Special Outlet Discounts vs Collection Cash Discount', 'fa-percent',
+            'Collection Cash Discount (Total)', collTotalAll, 'Special Outlet Discounts', specTotalAll, 'Balance (Collection - Special Outlet)',
+            'Special Outlet Discounts ÷ Collection Loads - Cash Discount (Total) × 100');
     }
 
     function deleteLoad(index) {
@@ -3270,10 +3438,8 @@
     window.recalcEditSysTotals = function() {
         let newNote = document.getElementById('editNote').value.toUpperCase();
         let idx = document.getElementById('editLoadIndex').value; let l = masterData[idx]; let net = l.sysTotals.netValue, qty = l.sysTotals.totalQty;
-        let cd=0, es=0, tax=0, vat=0, fin=net;
-        if(newNote !== 'FREE') { cd = qty * 264.42; es = net * 0.0049;
-        tax = net - cd - es; vat = tax * 0.18; fin = tax + vat;
-        }
+        let _et = computeNoteTotals(document.getElementById('editNote').value, net, qty, null);
+        let cd = _et.cashDiscount, es = _et.earlySet, tax = _et.taxable, vat = _et.vat, fin = _et.finalValue;
         document.getElementById('e_cd').innerText = `Sys: ${cd.toLocaleString('en-US',{minimumFractionDigits:2})}`; document.getElementById('e_es').innerText = `Sys: ${es.toLocaleString('en-US',{minimumFractionDigits:2})}`; document.getElementById('e_vat').innerText = `Sys: ${vat.toLocaleString('en-US',{minimumFractionDigits:2})}`;
         document.getElementById('e_fin').innerText = `Sys: ${fin.toLocaleString('en-US',{minimumFractionDigits:2})}`;
     };
@@ -3317,6 +3483,7 @@
                         <option value="Standard" ${l.note==='Standard'?'selected':''}>Standard</option>
                         <option value="Collection" ${l.note==='Collection'?'selected':''}>Collection</option>
                         <option value="FREE" class="text-success" ${l.note==='FREE'?'selected':''}>FREE</option>
+                        <option value="Free Drinks" class="text-info" ${l.note==='Free Drinks'?'selected':''}>Free Drinks</option>
                         <option value="Promotion" ${l.note==='Promotion'?'selected':''}>Promotion</option>
                         <option value="Staff" ${l.note==='Staff'?'selected':''}>Staff</option>
                         <option value="Gas Out" ${l.note==='Gas Out'?'selected':''}>Gas Out</option>
@@ -3348,11 +3515,7 @@
         let l = masterData[idx]; let editInvNo = document.getElementById('editInvNo').value.trim(); let editNote = document.getElementById('editNote').value;
         if (l.invNo !== editInvNo && masterData.some((data, i) => i !== parseInt(idx) && data.invNo === editInvNo)) { Swal.fire('Error!', 'මෙම Invoice අංකය වෙනත් වාර්තාවකට දැනටමත් ලබා දී ඇත!', 'error'); return; }
         let net = l.sysTotals.netValue; let qty = l.sysTotals.totalQty;
-        if(editNote.toUpperCase() === 'FREE') { l.sysTotals.cashDiscount = 0; l.sysTotals.earlySet = 0; l.sysTotals.taxable = 0; l.sysTotals.vat = 0; l.sysTotals.finalValue = net;
-        } else {
-            l.sysTotals.cashDiscount = qty * 264.42;
-            l.sysTotals.earlySet = net * 0.0049; l.sysTotals.taxable = net - l.sysTotals.cashDiscount - l.sysTotals.earlySet; l.sysTotals.vat = l.sysTotals.taxable * 0.18;
-            l.sysTotals.finalValue = l.sysTotals.taxable + l.sysTotals.vat; }
+        applyNoteTotalsToSys({ note: editNote, sysTotals: l.sysTotals }, net, qty);
         l.invNo = editInvNo; l.loadNo = document.getElementById('editLoadNo').value;
         l.date = document.getElementById('editDate').value; l.vehicleNo = document.getElementById('editVehicle').value; l.cokeMonth = document.getElementById('editCokeMonth').value; l.cokeWeek = document.getElementById('editCokeWeek').value; l.note = editNote;
         
@@ -3395,15 +3558,7 @@
         l.sysTotals.netValue = net;
         l.sysTotals.totalQty = qty;
 
-        if (String(l.note).toUpperCase() === 'FREE') {
-            l.sysTotals.cashDiscount = 0; l.sysTotals.earlySet = 0; l.sysTotals.taxable = 0; l.sysTotals.vat = 0; l.sysTotals.finalValue = net;
-        } else {
-            l.sysTotals.cashDiscount = qty * 264.42;
-            l.sysTotals.earlySet = net * 0.0049;
-            l.sysTotals.taxable = net - l.sysTotals.cashDiscount - l.sysTotals.earlySet;
-            l.sysTotals.vat = l.sysTotals.taxable * 0.18;
-            l.sysTotals.finalValue = l.sysTotals.taxable + l.sysTotals.vat;
-        }
+        applyNoteTotalsToSys(l, net, qty);
         l.sysTotals.emptyValue = calcLoadEmptyValue(l);
 
         // Neural Database Table එකේ (Master Table) පෙන්වන්නේ Excel Original අගයන් (excelSummary)
@@ -3525,7 +3680,7 @@
         let weeklyActuals = {};
         masterData.forEach(load => {
             // "FREE" බීම ඉවත් කිරීම
-            if(load.note && load.note.toUpperCase() === 'FREE') return;
+            if(!isNoteInTarget(load.note)) return;
             // විශේෂිතව ඉවත් කළ ඒවා (Excluded) අත් හැරීම
             if(load.excludeFromTarget) return; 
             
@@ -3580,7 +3735,7 @@
         let totalQty = 0, totalCalcCases = 0;
         masterData.forEach(load => { 
             // "FREE" බීම ඉවත් කිරීම
-            if(load.note && load.note.toUpperCase() === 'FREE') return;
+            if(!isNoteInTarget(load.note)) return;
             // විශේෂිතව ඉවත් කළ ඒවා (Excluded) අත් හැරීම
             if(load.excludeFromTarget) return;
 
@@ -3599,7 +3754,7 @@
 
     // --- SYSTEM SECURITY & SETTINGS ---
     function exportBackup() {
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ priceMaster, masterData, targetMaster, discountData, halfCaseItems, discountHeaders }));
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ priceMaster, masterData, targetMaster, discountData, halfCaseItems, discountHeaders, noteSettings }));
         const downloadAnchorNode = document.createElement('a'); downloadAnchorNode.setAttribute("href", dataStr); downloadAnchorNode.setAttribute("download", "coke_ultra_erp_backup.json");
         document.body.appendChild(downloadAnchorNode); downloadAnchorNode.click(); downloadAnchorNode.remove();
     }
@@ -4517,7 +4672,7 @@
         halfCaseItems = snap.halfCaseItems || [];
         discountHeaders = snap.discountHeaders || [];
         emptySettings = snap.emptySettings || { openingBalance: 0 };
-        emptyTransactions = normalizeEmptyTransactions(snap.emptyTransactions);
+        emptyTransactions = normalizeEmptyTransactions(snap.emptyTransactions); noteSettings = snap.noteSettings || null;
 
         isUndoRedoAction = true;
         saveToDatabase();
@@ -4529,7 +4684,7 @@
 
     function undoAction() {
         if (undoStack.length === 0) return;
-        let currentSnapshot = lastSavedSnapshot || JSON.stringify({ priceMaster, masterData, targetMaster, discountData, halfCaseItems, discountHeaders, emptySettings, emptyTransactions });
+        let currentSnapshot = lastSavedSnapshot || JSON.stringify({ priceMaster, masterData, targetMaster, discountData, halfCaseItems, discountHeaders, emptySettings, emptyTransactions, noteSettings });
         redoStack.push(currentSnapshot);
         let prevSnapshot = undoStack.pop();
         restoreSnapshot(prevSnapshot);
@@ -4538,7 +4693,7 @@
 
     function redoAction() {
         if (redoStack.length === 0) return;
-        let currentSnapshot = lastSavedSnapshot || JSON.stringify({ priceMaster, masterData, targetMaster, discountData, halfCaseItems, discountHeaders, emptySettings, emptyTransactions });
+        let currentSnapshot = lastSavedSnapshot || JSON.stringify({ priceMaster, masterData, targetMaster, discountData, halfCaseItems, discountHeaders, emptySettings, emptyTransactions, noteSettings });
         undoStack.push(currentSnapshot);
         let nextSnapshot = redoStack.pop();
         restoreSnapshot(nextSnapshot);
