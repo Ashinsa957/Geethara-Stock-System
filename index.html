@@ -4,15 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Coca-Cola Ultra Pro Max Stock Manager</title>
+    <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://geethara-stock-system-default-rtdb.asia-southeast1.firebasedatabase.app" crossorigin>
+    <link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <!-- PDF Export Libraries -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     
     <style>
         :root {
@@ -190,6 +195,15 @@
             }
         }
 
+        /* Cache-first loading: දත්ත පෙන්වන අතරතුර Cloud Sync වෙමින් පවතින විට (තත්පර කිහිපයක්) ක්ලික් කිරීම් අවහිර කරයි */
+        #mainAppWrapper.sync-lock { pointer-events: none; }
+        #syncBar { position: fixed; top: 0; left: 0; width: 100%; height: 3px; z-index: 99998; display: none; overflow: hidden; background: rgba(255,255,255,0.08); }
+        #syncBar::after { content: ""; position: absolute; top: 0; left: -40%; width: 40%; height: 100%; background: linear-gradient(90deg, transparent, var(--coke-red), #ff416c, transparent); animation: syncBarMove 1s linear infinite; }
+        @keyframes syncBarMove { from { left: -40%; } to { left: 100%; } }
+        .col-menu { max-height: 360px; overflow-y: auto; min-width: 230px; }
+        #masterTable th, #masterTable td { vertical-align: middle; }
+        #masterTable thead th { position: sticky; top: 0; z-index: 3; background: #11151c; }
+        #masterTable tfoot th { position: sticky; bottom: 0; z-index: 3; background: #11151c; }
         .auth-warning {
             border-left: 6px solid var(--coke-red) !important;
             background: rgba(229, 0, 20, 0.05);
@@ -203,6 +217,8 @@
     <h3 class="text-white fw-bold animate__animated animate__pulse animate__infinite">සජීවී දත්ත ලබාගනිමින් පවතී...</h3>
     <p class="text-info mt-2"><i class="fa-solid fa-cloud-bolt"></i> Syncing Live Database Engine. Please wait.</p>
 </div>
+
+<div id="syncBar"></div>
 
 <div id="loginOverlay">
     <div class="pro-card p-5 text-center shadow-lg" style="max-width: 550px; margin: 10vh auto; border-top: 4px solid var(--coke-red);">
@@ -252,6 +268,7 @@
                 <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#profitView"><i class="fa-solid fa-sack-dollar me-2"></i> Profit Analytics</button></li>
                 <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#targetView"><i class="fa-solid fa-bullseye me-2"></i> Targets & KPIs</button></li>
                 <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#discountView"><i class="fa-solid fa-tags me-2"></i> Discount Hub</button></li>
+                <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#discountSummaryView" onclick="renderDiscountSummary()"><i class="fa-solid fa-table-list me-2"></i> Discount Summary</button></li>
                 <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#irdReportsView"><i class="fa-solid fa-file-invoice-dollar me-2"></i> VAT And SSCL</button></li>
                 <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#emptyManagementView"><i class="fa-solid fa-wine-bottle me-2"></i> Empty Bottles</button></li>
                 <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#settings"><i class="fa-solid fa-shield-halved me-2"></i> Security</button></li>
@@ -322,7 +339,7 @@
             <div class="tab-pane fade" id="master">
     
                 <div class="pro-card p-4">
-                    <div class="d-flex justify-content-between align-items-end mb-4">
+                    <div class="d-flex justify-content-between align-items-end mb-4 flex-wrap gap-2">
                         <div class="d-flex gap-3 flex-wrap">
                             <div><label class="form-label"><i class="fa-regular fa-calendar text-primary"></i> Date Filter</label><input type="date" id="filterDate" class="form-control form-control-sm" onchange="renderMasterData()"></div>
                             <div><label class="form-label"><i class="fa-solid fa-calendar-days text-primary"></i> Coke Month</label><input type="text" id="filterCokeMonth" class="form-control form-control-sm" placeholder="Ex: 2026 March" oninput="renderMasterData()"></div>
@@ -330,6 +347,10 @@
                             <div><label class="form-label"><i class="fa-solid fa-truck text-primary"></i> Vehicle No</label><input type="text" id="filterVehicle" class="form-control form-control-sm" placeholder="Search Vehicle..." oninput="renderMasterData()"></div>
                         </div>
                         <div class="d-flex gap-2">
+                            <div class="dropdown">
+                                <button class="btn btn-outline-info btn-sm dropdown-toggle" type="button" id="masterColsBtn" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false"><i class="fa-solid fa-table-columns"></i> Columns</button>
+                                <div class="dropdown-menu dropdown-menu-dark dropdown-menu-end p-2 col-menu" id="masterColsMenu"></div>
+                            </div>
                             <button class="btn btn-outline-success btn-sm" onclick="exportToCSV('masterTable', 'ERP_Master_Data.csv')"><i class="fa-solid fa-file-csv"></i> Export CSV</button>
                             <button class="btn btn-secondary btn-sm" onclick="clearFilters()"><i class="fa-solid fa-rotate-right"></i> Reset</button>
                         </div>
@@ -345,19 +366,29 @@
                                     <th onclick="sortTable('masterTable', 5)">Load No <i class="fa-solid fa-sort ms-1"></i></th>
                                     <th onclick="sortTable('masterTable', 6)">Vehicle <i class="fa-solid fa-sort ms-1"></i></th>
                                     <th onclick="sortTable('masterTable', 7)">Note <i class="fa-solid fa-sort ms-1"></i></th>
-                                    <th class="text-end" onclick="sortTable('masterTable', 8)">Net Value <i class="fa-solid fa-sort ms-1"></i></th>
-                                    <th class="text-end" onclick="sortTable('masterTable', 9)">VAT (18%) <i class="fa-solid fa-sort ms-1"></i></th>
-                                    <th class="text-end text-white" onclick="sortTable('masterTable', 10)">Invoice Value <i class="fa-solid fa-sort ms-1"></i></th>
-                                    <th class="text-end text-info">Empty Value</th>
+                                    <th class="text-end" onclick="sortTable('masterTable', 8)">Qty (Cases) <i class="fa-solid fa-sort ms-1"></i></th>
+                                    <th class="text-end" onclick="sortTable('masterTable', 9)">Net Value <i class="fa-solid fa-sort ms-1"></i></th>
+                                    <th class="text-end text-danger" onclick="sortTable('masterTable', 10)">Cash Discount <i class="fa-solid fa-sort ms-1"></i></th>
+                                    <th class="text-end text-danger" onclick="sortTable('masterTable', 11)">Early Settlement <i class="fa-solid fa-sort ms-1"></i></th>
+                                    <th class="text-end text-danger" onclick="sortTable('masterTable', 12)">Total Discount <i class="fa-solid fa-sort ms-1"></i></th>
+                                    <th class="text-end" onclick="sortTable('masterTable', 13)">Taxable Value <i class="fa-solid fa-sort ms-1"></i></th>
+                                    <th class="text-end" onclick="sortTable('masterTable', 14)">VAT (18%) <i class="fa-solid fa-sort ms-1"></i></th>
+                                    <th class="text-end text-white" onclick="sortTable('masterTable', 15)">Invoice Value <i class="fa-solid fa-sort ms-1"></i></th>
+                                    <th class="text-end text-info" onclick="sortTable('masterTable', 16)">Empty Value <i class="fa-solid fa-sort ms-1"></i></th>
                                     <th class="text-center">Action</th>
                                 </tr>
                             </thead>
-              
+
                             <tbody></tbody>
                             <tfoot>
                                 <tr>
                                     <th colspan="8" class="text-end fs-6">Grand Total (Filtered):</th>
+                                    <th class="text-end fs-6 text-light" id="totQty">0</th>
                                     <th class="text-end fs-6 text-info" id="totNetValue">0.00</th>
+                                    <th class="text-end fs-6 text-danger" id="totCashDisc">0.00</th>
+                                    <th class="text-end fs-6 text-danger" id="totEarlySet">0.00</th>
+                                    <th class="text-end fs-6 text-danger" id="totDiscAll">0.00</th>
+                                    <th class="text-end fs-6 text-light" id="totTaxable">0.00</th>
                                     <th class="text-end fs-6 text-warning" id="totVat">0.00</th>
                                     <th class="text-end fs-5 text-success" id="totInvValue">0.00</th>
                                     <th class="text-end fs-6 text-info" id="totEmptyValue">0.00</th>
@@ -656,6 +687,138 @@
                         </div>
                     </div>
                 
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="discountSummaryView">
+                <div class="pro-card p-4 mb-4">
+                    <div class="d-flex flex-wrap justify-content-between align-items-end gap-3">
+                        <div>
+                            <h4 class="fw-bold text-white mb-1"><i class="fa-solid fa-table-list text-warning"></i> Discount Summary</h4>
+                            <p class="text-muted small mb-0">තෝරාගත් දින දෙක අතර දත්ත පමණක් පෙන්වයි. එකතු අගයන් ස්වයංක්‍රීයව යාවත්කාලීන වේ.</p>
+                        </div>
+                        <div class="d-flex gap-2 align-items-end flex-wrap">
+                            <div><label class="form-label">From Date</label><input type="date" id="dsFrom" class="form-control form-control-sm" onchange="renderDiscountSummary()"></div>
+                            <div><label class="form-label">To Date</label><input type="date" id="dsTo" class="form-control form-control-sm" onchange="renderDiscountSummary()"></div>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('dsFrom').value=''; document.getElementById('dsTo').value=''; renderDiscountSummary();"><i class="fa-solid fa-rotate-right"></i> Reset</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center mb-4">
+                    <ul class="nav nav-pills justify-content-center gap-2" style="background: rgba(0,0,0,0.3); padding: 5px; border-radius: 30px; display: inline-flex;">
+                        <li class="nav-item"><button class="nav-link active rounded-pill px-4" data-bs-toggle="tab" data-bs-target="#dsTradeOfferView">Trade Offer</button></li>
+                        <li class="nav-item"><button class="nav-link rounded-pill px-4" data-bs-toggle="tab" data-bs-target="#dsSpecialOutletView">Special Outlet</button></li>
+                    </ul>
+                </div>
+
+                <div class="tab-content">
+                    <!-- ================= TRADE OFFER ================= -->
+                    <div class="tab-pane fade show active" id="dsTradeOfferView">
+                        <div class="row g-4 mb-4">
+                            <div class="col-xl-8">
+                                <div class="pro-card p-4 h-100 border-top border-4 border-info">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <div>
+                                            <h5 class="fw-bold text-white mb-1"><i class="fa-solid fa-gift text-info"></i> FREE Loads - Beverage Types</h5>
+                                            <p class="text-muted small mb-0">Note එක "FREE" ලෙස සඳහන් තොග පමණි.</p>
+                                        </div>
+                                        <button class="btn btn-outline-success btn-sm" onclick="exportToCSV('dsFreeLoadsTable', 'Trade_Offer_Free_Loads.csv')"><i class="fa-solid fa-file-csv"></i> CSV</button>
+                                    </div>
+                                    <div class="table-container" style="max-height:480px;">
+                                        <table class="table table-hover table-dark table-bordered align-middle text-center mb-0 text-nowrap" id="dsFreeLoadsTable">
+                                            <thead class="table-dark" style="position:sticky; top:0; z-index:2;"><tr id="dsFreeHeadRow"></tr></thead>
+                                            <tbody id="dsFreeBody"></tbody>
+                                            <tfoot><tr id="dsFreeFootRow" class="fw-bold"></tr></tfoot>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-xl-4">
+                                <div class="pro-card p-4 h-100 border-top border-4 border-success">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <div>
+                                            <h5 class="fw-bold text-white mb-1"><i class="fa-solid fa-boxes-stacked text-success"></i> Free Cases &amp; Sale Value</h5>
+                                            <p class="text-muted small mb-0">බීම වර්ගය අනුව.</p>
+                                        </div>
+                                        <button class="btn btn-outline-success btn-sm" onclick="exportToCSV('dsFreeItemsTable', 'Trade_Offer_Free_Items.csv')"><i class="fa-solid fa-file-csv"></i> CSV</button>
+                                    </div>
+                                    <div class="table-container" style="max-height:480px;">
+                                        <table class="table table-hover table-dark align-middle mb-0 text-nowrap" id="dsFreeItemsTable">
+                                            <thead class="table-dark" style="position:sticky; top:0; z-index:2;">
+                                                <tr><th>Beverage Type</th><th class="text-end">Free Cases</th><th class="text-end">Sale Price / Case</th><th class="text-end">Total Sale Price</th></tr>
+                                            </thead>
+                                            <tbody id="dsFreeItemsBody"></tbody>
+                                            <tfoot><tr id="dsFreeItemsFoot" class="fw-bold"></tr></tfoot>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pro-card p-4 border-top border-4 border-warning">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <h5 class="fw-bold text-white mb-1"><i class="fa-solid fa-tags text-warning"></i> Discounts Given (Excl. Special Outlet)</h5>
+                                    <p class="text-muted small mb-0">ඩිස්කවුන්ට් ලබා දී ඇති බීම වර්ගය අනුව දිනය පතා.</p>
+                                </div>
+                                <button class="btn btn-outline-success btn-sm" onclick="exportToCSV('dsDiscountsTable', 'Trade_Offer_Discounts_Given.csv')"><i class="fa-solid fa-file-csv"></i> CSV</button>
+                            </div>
+                            <div class="table-container" style="max-height:480px;">
+                                <table class="table table-hover table-dark table-bordered align-middle text-center mb-0 text-nowrap" id="dsDiscountsTable">
+                                    <thead class="table-dark" style="position:sticky; top:0; z-index:2;"><tr id="dsDiscHeadRow"></tr></thead>
+                                    <tbody id="dsDiscBody"></tbody>
+                                    <tfoot><tr id="dsDiscFootRow" class="fw-bold"></tr></tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ================= SPECIAL OUTLET ================= -->
+                    <div class="tab-pane fade" id="dsSpecialOutletView">
+                        <div class="row g-4">
+                            <div class="col-lg-6">
+                                <div class="pro-card p-4 h-100 border-top border-4 border-primary">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <div>
+                                            <h5 class="fw-bold text-white mb-1"><i class="fa-solid fa-hand-holding-dollar text-primary"></i> Collection Loads - Cash Discount</h5>
+                                            <p class="text-muted small mb-0">Neural Database හි Note එක "Collection" ලෙස සඳහන් තොග.</p>
+                                        </div>
+                                        <button class="btn btn-outline-success btn-sm" onclick="exportToCSV('dsCollectionTable', 'Special_Outlet_Collection.csv')"><i class="fa-solid fa-file-csv"></i> CSV</button>
+                                    </div>
+                                    <div class="table-container" style="max-height:520px;">
+                                        <table class="table table-hover table-dark align-middle mb-0 text-nowrap" id="dsCollectionTable">
+                                            <thead class="table-dark" style="position:sticky; top:0; z-index:2;">
+                                                <tr><th>Date</th><th>Invoice No</th><th class="text-end">Cash Discount</th></tr>
+                                            </thead>
+                                            <tbody id="dsCollectionBody"></tbody>
+                                            <tfoot><tr id="dsCollectionFoot" class="fw-bold"></tr></tfoot>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="pro-card p-4 h-100 border-top border-4 border-danger">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <div>
+                                            <h5 class="fw-bold text-white mb-1"><i class="fa-solid fa-store text-danger"></i> Special Outlet Discounts</h5>
+                                            <p class="text-muted small mb-0">එක් එක් දිනයට ලබා දී ඇති Special Outlet ඩිස්කවුන්ට්.</p>
+                                        </div>
+                                        <button class="btn btn-outline-success btn-sm" onclick="exportToCSV('dsSpecialTable', 'Special_Outlet_Discounts.csv')"><i class="fa-solid fa-file-csv"></i> CSV</button>
+                                    </div>
+                                    <div class="table-container" style="max-height:520px;">
+                                        <table class="table table-hover table-dark align-middle mb-0 text-nowrap" id="dsSpecialTable">
+                                            <thead class="table-dark" style="position:sticky; top:0; z-index:2;">
+                                                <tr><th>Date</th><th class="text-end">Special Outlet Discount</th></tr>
+                                            </thead>
+                                            <tbody id="dsSpecialBody"></tbody>
+                                            <tfoot><tr id="dsSpecialFoot" class="fw-bold"></tr></tfoot>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -1306,12 +1469,45 @@
         priceMasterManageModalInstance = new bootstrap.Modal(document.getElementById('priceMasterManageModal'));
     };
     
+    // Cloud එකෙන් මුළු දත්තම බාගන්නා තෙක් බලා නොසිට, Browser එකේ ගබඩා වී ඇති (Local) නවතම දත්ත
+    // වහාම පෙන්වයි. පසුබිමේ Cloud Sync වී අලුත් දත්ත ඇත්නම් පමණක් නැවත යාවත්කාලීන කරයි.
+    function setSyncLock(on) {
+        let wrap = document.getElementById('mainAppWrapper'); let bar = document.getElementById('syncBar');
+        if (wrap) wrap.classList.toggle('sync-lock', !!on);
+        if (bar) bar.style.display = on ? 'block' : 'none';
+    }
+
     function initLiveSync() {
         let localBackupUsed = false;
-        // Cloud එකෙන් Response එකක් තත්පර 6ක් ඇතුළත නොලැබුනොත් (Network එක මන්දගාමී නම්
-        // හෝ විසන්ධි වී ඇත්නම්), Browser එකේම ගබඩා වී ඇති Local Backup එකෙන් දත්ත වහාම
-        // load කර, User ට තමන් ඇතුළත් කළ දත්ත සමගම වැඩ කරගෙන යාමට හැකි කරයි.
+        let firstCloudSnapshot = true;
+        let cachedShown = false;
+        let syncLockTimer = null;
+
+        // (1) ක්ෂණික Local Cache පෙන්වීම
+        let cached = loadLocalBackup();
+        if (cached && (cached.masterData || cached.priceMaster)) {
+            try {
+                applyDataSnapshot(cached);
+                lastSavedSnapshot = JSON.stringify({ priceMaster, masterData, targetMaster, discountData, halfCaseItems, discountHeaders, emptySettings, emptyTransactions });
+                localBackupUsed = true; cachedShown = true;
+                document.getElementById('globalLoader').style.display = 'none';
+                setSyncLock(true);
+                let badge = document.getElementById('statusBadge');
+                if (badge) badge.innerText = 'Syncing latest data...';
+                refreshAllUIs();
+                // Cloud එක ප්‍රතිචාර නොදක්වන්නේ නම් (Offline) තත්පර 8කට පසු සාමාන්‍ය ලෙස වැඩ කිරීමට ඉඩ දෙයි
+                syncLockTimer = setTimeout(() => {
+                    setSyncLock(false);
+                    let b = document.getElementById('statusBadge');
+                    if (b) { b.classList.add('bg-warning', 'text-dark'); b.innerText = 'Loaded from Local Backup (Offline)'; }
+                }, 8000);
+            } catch (e) { console.error('Local cache render failed:', e); setSyncLock(false); }
+        }
+
+        // Local Cache නොමැති නම් (අලුත් Browser එකක්) පමණක් Loader එක පෙන්වයි.
+        // Cloud එකෙන් Response එකක් තත්පර 6ක් ඇතුළත නොලැබුනොත් Local Backup එකෙන් load කරයි.
         let localFallbackTimer = setTimeout(() => {
+            if (cachedShown) return;
             let backup = loadLocalBackup();
             if (backup) {
                 localBackupUsed = true;
@@ -1324,10 +1520,15 @@
             }
         }, 6000);
 
+        const releaseSyncLock = () => { clearTimeout(syncLockTimer); setSyncLock(false); };
+
         db.ref('geethara_db/cokeSysUltraData').on('value', (snapshot) => {
             clearTimeout(localFallbackTimer);
+            releaseSyncLock();
             if(isSyncing) return;
             const data = snapshot.val();
+            const prevSnapshotStr = lastSavedSnapshot;
+            const isFirst = firstCloudSnapshot; firstCloudSnapshot = false;
             
             if(data) {
                 priceMaster = data.priceMaster || {}; 
@@ -1341,8 +1542,16 @@
 
                 // Undo/Redo baseline එක අලුතින් පැමිණි දත්ත වලට යාවත්කාලීන කරයි
                 lastSavedSnapshot = JSON.stringify({ priceMaster, masterData, targetMaster, discountData, halfCaseItems, discountHeaders, emptySettings, emptyTransactions });
-                saveLocalBackup(); // Cloud එකෙන් ලැබුණු නවතම දත්ත ද Local Backup එකට යාවත්කාලීන කරයි
- 
+                // Local Cache එකේ දත්ත සහ Cloud දත්ත සමාන නම්, නැවත UI Render කිරීම අවශ්‍ය නැත (වේගවත්)
+                if (isFirst && cachedShown && prevSnapshotStr === lastSavedSnapshot) {
+                    document.getElementById('globalLoader').style.display = 'none';
+                    let b = document.getElementById('statusBadge');
+                    if (b) { b.classList.remove('bg-warning', 'text-dark'); b.innerText = 'Cloud Live Syncing...'; }
+                    return;
+                }
+                // බර JSON Backup එක UI එක පෙන්වූ පසු (idle වේලාවක) සිදු කරයි
+                if (window.requestIdleCallback) requestIdleCallback(() => saveLocalBackup(), { timeout: 2000 }); else setTimeout(saveLocalBackup, 500);
+
                 clearTimeout(refreshTimeout);
                 refreshTimeout = setTimeout(() => {
                     try {
@@ -1352,14 +1561,14 @@
                     } finally {
                         document.getElementById('globalLoader').style.display = 'none';
                         let badge = document.getElementById('statusBadge');
-                        badge.classList.add('bg-success', 'text-white');
+                        badge.classList.remove('bg-warning', 'text-dark'); badge.classList.add('bg-success', 'text-white');
                         badge.innerText = "Live Update Received!";
                         setTimeout(() => { 
                             badge.classList.remove('bg-success', 'text-white'); 
                             badge.innerText = "Cloud Live Syncing..."; 
                         }, 2000);
                     }
-                }, 300);
+                }, isFirst ? 0 : 300);
             } else {
                 // Cloud එකේ දත්තක් නොමැති නම් (හෝ තවම ලැබී නැත්නම්), Local Backup එකක් තිබේදැයි
                 // පරීක්ෂා කර, තිබේ නම් එය Cloud එකට නැවත Sync කරයි
@@ -1374,6 +1583,7 @@
             }
         }, (error) => {
             clearTimeout(localFallbackTimer);
+            releaseSyncLock();
             console.error("Firebase Sync Error: ", error);
             // Cloud සම්බන්ධතාවයේ දෝෂයක් ඇතිවුවත්, Local Backup එකෙන් දත්ත load කර වැඩ කරගෙන යා හැක
             let backup = loadLocalBackup();
@@ -1433,6 +1643,7 @@
         updateGlassItemDropdown();
         renderNewIRDTable(); // අලුත් IRD වගුව
         renderDuplicateQueue(); // Duplicate Mode Queue
+        renderDiscountSummary();
         renderBeverageSummary(); // Beverage Types - Stock Received Summary
         updateUndoRedoButtons();
         if(document.getElementById('priceMasterManageModal').classList.contains('show')) {
@@ -2813,35 +3024,240 @@
         let tbody = document.querySelector('#masterTable tbody');
         tbody.innerHTML = "";
         let fDate = document.getElementById('filterDate').value; let fCokeMonth = document.getElementById('filterCokeMonth').value.toLowerCase(); let fInv = document.getElementById('filterInvoice').value.toLowerCase(); let fVeh = document.getElementById('filterVehicle').value.toLowerCase();
-        let totNet = 0, totVat = 0, totFinal = 0, totEmpty = 0;
+        let T = { qty:0, net:0, cd:0, es:0, disc:0, tax:0, vat:0, fin:0, empty:0 };
+        const fmt = (n) => (parseFloat(n) || 0).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+        // Excel අගය තිබේ නම් එය, නැතහොත් System (sysTotals) අගය fallback ලෙස ගනී.
+        const pick = (excVal, sysVal) => (excVal !== undefined && excVal !== null && excVal !== "") ? (parseFloat(excVal) || 0) : (parseFloat(sysVal) || 0);
+        let rowsHtml = [];
         masterData.forEach((l, i) => {
             if (fDate && l.date !== fDate) return; if (fCokeMonth && !(l.cokeMonth||"").toLowerCase().includes(fCokeMonth)) return; if (fInv && !(l.invNo||"").toLowerCase().includes(fInv)) return; if (fVeh && !(l.vehicleNo||"").toLowerCase().includes(fVeh)) return;
-            // Neural Database හි Net Value / VAT / Invoice Value සදහා, එක්සෙල් එකෙන් ඇතුළු කළ (excelSummary) අගයන්ම පෙන්විය යුතුයි -
-            // සිස්ටම් Calculation (sysTotals) නොවේ. Excel අගයක් නොමැති (manual add කළ) load එකකදී පමණක්, sysTotals අගය fallback එකක් ලෙස යොදාගැනේ.
-            let exc = l.excelSummary || {};
-            let dispNet = (exc.netValue !== undefined && exc.netValue !== null && exc.netValue !== "") ? parseFloat(exc.netValue) || 0 : (l.sysTotals.netValue || 0);
-            let dispVat = (exc.vat !== undefined && exc.vat !== null && exc.vat !== "") ? parseFloat(exc.vat) || 0 : (l.sysTotals.vat || 0);
-            let dispFinal = (exc.finalValue !== undefined && exc.finalValue !== null && exc.finalValue !== "") ? parseFloat(exc.finalValue) || 0 : (l.sysTotals.finalValue || 0);
+            // Neural Database හි සියලු අගයන් (Net / Discounts / Taxable / VAT / Invoice Value) සදහා
+            // Excel Invoice එකේ අගයන් (excelSummary) පෙන්වයි. Excel අගයක් නොමැති (manual) load එකකදී sysTotals fallback වේ.
+            let exc = l.excelSummary || {}; let sys = l.sysTotals || {};
+            let dispQty = (l.items || []).reduce((sum, it) => sum + (parseFloat(it.qty) || 0), 0);
+            let dispNet = pick(exc.netValue, sys.netValue);
+            let dispCD = pick(exc.cashDiscount, sys.cashDiscount);
+            let dispES = pick(exc.earlySet, sys.earlySet);
+            let dispDisc = dispCD + dispES;
+            let dispTax = pick(exc.taxable, (sys.taxable !== undefined ? sys.taxable : (dispNet - dispDisc)));
+            let dispVat = pick(exc.vat, sys.vat);
+            let dispFinal = pick(exc.finalValue, sys.finalValue);
             let dispEmpty = calcLoadEmptyValue(l);
-            totNet += dispNet; totVat += dispVat; totFinal += dispFinal; totEmpty += dispEmpty;
+            T.qty += dispQty; T.net += dispNet; T.cd += dispCD; T.es += dispES; T.disc += dispDisc; T.tax += dispTax; T.vat += dispVat; T.fin += dispFinal; T.empty += dispEmpty;
             let badgeColor = "bg-transparent border border-warning text-warning"; if(String(l.note).toUpperCase() === 'FREE') badgeColor = "bg-success text-white fw-bold";
-            
+
             // Exclude mark styling
             let trStyle = l.excludeFromTarget ? 'opacity: 0.7; border-left: 3px solid var(--coke-red);' : '';
 
-            tbody.innerHTML += `<tr onclick="showLoadDetails(${i})" style="${trStyle}">
+            rowsHtml.push(`<tr onclick="showLoadDetails(${i})" style="${trStyle}">
                 <td class="text-center" onclick="event.stopPropagation()"><input class="form-check-input" type="checkbox" ${l.audit1 ? 'checked':''} onchange="toggleAudit(${i},1)"></td>
                 <td class="text-center" onclick="event.stopPropagation()"><input class="form-check-input" type="checkbox" ${l.audit2 ? 'checked':''} onchange="toggleAudit(${i},2)"></td>
                 <td class="text-center" onclick="event.stopPropagation()"><input class="form-check-input" type="checkbox" ${l.audit3 ? 'checked':''} onchange="toggleAudit(${i},3)"></td>
                 <td><span class="badge bg-dark border">${l.date}</span></td><td class="text-info fw-bold">${l.invNo || '-'}</td><td>${l.loadNo || '-'}</td>
                 <td><span class="badge bg-secondary text-light">${l.vehicleNo || '-'}</span></td><td><span class="badge ${badgeColor}">${l.note}</span> ${l.excludeFromTarget ? '<i class="fa-solid fa-ban text-danger ms-1" title="Excluded from Targets"></i>' : ''} ${l.itemsManuallyAdjusted ? '<i class="fa-solid fa-rotate-left text-warning ms-1" title="Return/Quantity Adjustment Applied"></i>' : ''}</td>
-                <td class="text-end font-monospace">${dispNet.toLocaleString('en-US',{minimumFractionDigits:2})}</td><td class="text-end font-monospace text-warning">${dispVat.toLocaleString('en-US',{minimumFractionDigits:2})}</td>
-                <td class="text-end font-monospace text-success fw-bold">Rs. ${dispFinal.toLocaleString('en-US',{minimumFractionDigits:2})}</td>
-                <td class="text-info font-monospace text-end">Rs. ${dispEmpty.toLocaleString('en-US',{minimumFractionDigits:2})}</td>
-                <td class="text-center"><button class="btn btn-sm btn-outline-danger" onclick="event.stopPropagation(); deleteLoad(${i})"><i class="fa-solid fa-trash"></i></button></td></tr>`;
+                <td class="text-end font-monospace">${dispQty.toLocaleString('en-US',{maximumFractionDigits:2})}</td>
+                <td class="text-end font-monospace">${fmt(dispNet)}</td>
+                <td class="text-end font-monospace text-danger">${fmt(dispCD)}</td>
+                <td class="text-end font-monospace text-danger">${fmt(dispES)}</td>
+                <td class="text-end font-monospace text-danger fw-bold">${fmt(dispDisc)}</td>
+                <td class="text-end font-monospace">${fmt(dispTax)}</td>
+                <td class="text-end font-monospace text-warning">${fmt(dispVat)}</td>
+                <td class="text-end font-monospace text-success fw-bold">Rs. ${fmt(dispFinal)}</td>
+                <td class="text-info font-monospace text-end">Rs. ${fmt(dispEmpty)}</td>
+                <td class="text-center"><button class="btn btn-sm btn-outline-danger" onclick="event.stopPropagation(); deleteLoad(${i})"><i class="fa-solid fa-trash"></i></button></td></tr>`);
         });
-        document.getElementById('totNetValue').innerText = totNet.toLocaleString('en-US',{minimumFractionDigits:2}); document.getElementById('totVat').innerText = totVat.toLocaleString('en-US',{minimumFractionDigits:2}); document.getElementById('totInvValue').innerText = `Rs. ${totFinal.toLocaleString('en-US',{minimumFractionDigits:2})}`; document.getElementById('totEmptyValue').innerText = totEmpty.toLocaleString('en-US',{minimumFractionDigits:2});
+        tbody.innerHTML = rowsHtml.join('');
+        const setTxt = (id, v) => { let el = document.getElementById(id); if (el) el.innerText = v; };
+        setTxt('totQty', T.qty.toLocaleString('en-US',{maximumFractionDigits:2}));
+        setTxt('totNetValue', fmt(T.net)); setTxt('totCashDisc', fmt(T.cd)); setTxt('totEarlySet', fmt(T.es)); setTxt('totDiscAll', fmt(T.disc));
+        setTxt('totTaxable', fmt(T.tax)); setTxt('totVat', fmt(T.vat)); setTxt('totInvValue', `Rs. ${fmt(T.fin)}`); setTxt('totEmptyValue', fmt(T.empty));
+        applyMasterColumnVisibility();
     }
+
+    // ==========================================
+    // Neural Database - අනවශ්‍ය තීරු Hide / Show
+    // ==========================================
+    const MASTER_COLS = [
+        {i:0,l:'A1'},{i:1,l:'A2'},{i:2,l:'A3'},{i:3,l:'Date'},{i:4,l:'Invoice No'},{i:5,l:'Load No'},{i:6,l:'Vehicle'},{i:7,l:'Note'},
+        {i:8,l:'Qty (Cases)'},{i:9,l:'Net Value'},{i:10,l:'Cash Discount'},{i:11,l:'Early Settlement'},{i:12,l:'Total Discount'},
+        {i:13,l:'Taxable Value'},{i:14,l:'VAT (18%)'},{i:15,l:'Invoice Value'},{i:16,l:'Empty Value'}
+    ];
+    const MASTER_ESSENTIAL = [3,4,7,9,12,15];
+    let masterHiddenCols = new Set();
+    try { masterHiddenCols = new Set(JSON.parse(localStorage.getItem('master_hidden_cols') || '[]')); } catch (e) {}
+
+    function buildMasterColsMenu() {
+        let menu = document.getElementById('masterColsMenu'); if (!menu) return;
+        menu.innerHTML = `<div class="d-flex gap-1 mb-2">
+                <button type="button" class="btn btn-sm btn-outline-success flex-fill" onclick="setMasterCols('all')">Show All</button>
+                <button type="button" class="btn btn-sm btn-outline-warning flex-fill" onclick="setMasterCols('essential')">Essentials</button>
+            </div>` + MASTER_COLS.map(c => `<div class="form-check mx-2 mb-1">
+                <input class="form-check-input" type="checkbox" id="mcol_${c.i}" ${masterHiddenCols.has(c.i) ? '' : 'checked'} onchange="toggleMasterCol(${c.i}, this.checked)">
+                <label class="form-check-label small text-light" for="mcol_${c.i}">${c.l}</label></div>`).join('');
+    }
+    function toggleMasterCol(i, show) {
+        if (show) masterHiddenCols.delete(i); else masterHiddenCols.add(i);
+        saveMasterCols(); applyMasterColumnVisibility();
+    }
+    function setMasterCols(mode) {
+        masterHiddenCols = new Set(mode === 'essential' ? MASTER_COLS.map(c => c.i).filter(i => !MASTER_ESSENTIAL.includes(i)) : []);
+        saveMasterCols(); buildMasterColsMenu(); applyMasterColumnVisibility();
+    }
+    function saveMasterCols() { try { localStorage.setItem('master_hidden_cols', JSON.stringify([...masterHiddenCols])); } catch (e) {} }
+    function applyMasterColumnVisibility() {
+        let table = document.getElementById('masterTable'); if (!table) return;
+        const hid = (i) => masterHiddenCols.has(i);
+        table.querySelectorAll('thead tr, tbody tr').forEach(tr => {
+            if (tr.cells.length < 17) return; // හිස්/පණිවිඩ පේළි මඟහැරීම
+            MASTER_COLS.forEach(c => { if (tr.cells[c.i]) tr.cells[c.i].style.display = hid(c.i) ? 'none' : ''; });
+        });
+        // Footer: පළමු "Grand Total" කොටුව (තීරු 0-7 ආවරණය) - පෙනෙන තීරු ගණනට colspan සකසයි
+        let ftr = table.querySelector('tfoot tr');
+        if (ftr && ftr.cells.length >= 10) {
+            let vis = 0; for (let i = 0; i <= 7; i++) if (!hid(i)) vis++;
+            ftr.cells[0].colSpan = Math.max(vis, 1); ftr.cells[0].style.display = vis === 0 ? 'none' : '';
+            for (let k = 1; k <= 9; k++) ftr.cells[k].style.display = hid(7 + k) ? 'none' : '';
+        }
+        let btn = document.getElementById('masterColsBtn');
+        if (btn) btn.innerHTML = '<i class="fa-solid fa-table-columns"></i> Columns' + (masterHiddenCols.size ? ` <span class="badge bg-warning text-dark">${masterHiddenCols.size} hidden</span>` : '');
+    }
+    document.addEventListener('DOMContentLoaded', function () { buildMasterColsMenu(); applyMasterColumnVisibility(); });
+
+    // ==========================================
+    // DISCOUNT SUMMARY (Trade Offer / Special Outlet)
+    // ==========================================
+    function dsFmt(n) { return (parseFloat(n) || 0).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+    function dsEsc(t) { return String(t === undefined || t === null ? '' : t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+    function dsInRange(date, from, to) { return !((from && (date || '') < from) || (to && (date || '') > to)); }
+    function dsFindPrice(code) {
+        let c = cleanItemCode(code); let p = priceMaster[c];
+        if (!p) { let fk = Object.keys(priceMaster).find(k => k === c || k.includes(c) || c.includes(k)); p = fk ? priceMaster[fk] : null; }
+        return p || {};
+    }
+    function dsItemSalePrice(item) { let p = dsFindPrice(item.code); return parseFloat(item.salePrice || p.salePrice || 0) || 0; }
+    function dsCashDiscount(l) {
+        let exc = l.excelSummary || {}, sys = l.sysTotals || {};
+        let v = (exc.cashDiscount !== undefined && exc.cashDiscount !== null && exc.cashDiscount !== "") ? exc.cashDiscount : sys.cashDiscount;
+        return parseFloat(v) || 0;
+    }
+
+    function renderDiscountSummary() {
+        if (!document.getElementById('dsFreeHeadRow')) return;
+        let from = document.getElementById('dsFrom').value, to = document.getElementById('dsTo').value;
+        renderDsTradeOffer(from, to);
+        renderDsSpecialOutlet(from, to);
+    }
+
+    function renderDsTradeOffer(from, to) {
+        // ---- (1) FREE Loads x Beverage Types ----
+        let freeLoads = masterData.filter(l => String(l.note || '').trim().toUpperCase() === 'FREE' && dsInRange(l.date, from, to))
+            .slice().sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+        let columns = getBeverageColumnsFromLoads(freeLoads);
+        let loadValue = (l) => (l.items || []).reduce((sum, it) => sum + (parseFloat(it.qty) || 0) * dsItemSalePrice(it), 0);
+
+        document.getElementById('dsFreeHeadRow').innerHTML = '<th>Date</th><th>Invoice No</th><th>Load No</th>' +
+            columns.map(c => `<th title="Code: ${dsEsc(c.code)}">${dsEsc(c.name)}<br><small class="text-muted">${dsEsc(c.code)}</small></th>`).join('') +
+            '<th class="text-warning border-start">Net Worth (Sale Price)</th>';
+        let fBody = document.getElementById('dsFreeBody'), fFoot = document.getElementById('dsFreeFootRow');
+        if (freeLoads.length === 0) {
+            fBody.innerHTML = `<tr><td colspan="${4 + columns.length}" class="text-muted py-4">තෝරාගත් කාල සීමාව තුළ FREE තොග හමු නොවීය.</td></tr>`;
+            fFoot.innerHTML = '';
+        } else {
+            let colTotals = columns.map(() => 0), grand = 0, rows = '';
+            freeLoads.forEach(l => {
+                let cells = columns.map((c, idx) => { let q = getQtyForLoadAndCode(l, c.code); colTotals[idx] += q; return `<td>${q > 0 ? q : ''}</td>`; }).join('');
+                let v = loadValue(l); grand += v;
+                rows += `<tr><td>${dsEsc(l.date || '-')}</td><td class="text-info">${dsEsc(l.invNo || '-')}</td><td>${dsEsc(l.loadNo || '-')}</td>${cells}<td class="text-end font-monospace text-warning fw-bold border-start">${dsFmt(v)}</td></tr>`;
+            });
+            fBody.innerHTML = rows;
+            fFoot.innerHTML = '<th colspan="3" class="text-end">Total:</th>' + colTotals.map(t => `<th>${t}</th>`).join('') + `<th class="text-end font-monospace text-warning border-start">${dsFmt(grand)}</th>`;
+        }
+
+        // ---- (2) Beverage type -> Free cases / Sale price per case / Total ----
+        let byCode = {};
+        freeLoads.forEach(l => (l.items || []).forEach(it => {
+            let code = cleanItemCode(it.code); if (!code) return;
+            let q = parseFloat(it.qty) || 0; if (q <= 0) return;
+            if (!byCode[code]) byCode[code] = { qty: 0, value: 0 };
+            byCode[code].qty += q; byCode[code].value += q * dsItemSalePrice(it);
+        }));
+        let nameOf = {}; columns.forEach(c => nameOf[c.code] = c.name);
+        let items = Object.keys(byCode).sort((a, b) => (nameOf[a] || a).localeCompare(nameOf[b] || b));
+        let iBody = document.getElementById('dsFreeItemsBody'), iFoot = document.getElementById('dsFreeItemsFoot');
+        if (items.length === 0) { iBody.innerHTML = '<tr><td colspan="4" class="text-muted py-4 text-center">දත්ත නොමැත.</td></tr>'; iFoot.innerHTML = ''; }
+        else {
+            let tq = 0, tv = 0;
+            iBody.innerHTML = items.map(code => {
+                let d = byCode[code]; tq += d.qty; tv += d.value;
+                return `<tr><td>${dsEsc(nameOf[code] || code)}</td><td class="text-end font-monospace">${d.qty}</td><td class="text-end font-monospace">${dsFmt(d.qty ? d.value / d.qty : 0)}</td><td class="text-end font-monospace text-warning">${dsFmt(d.value)}</td></tr>`;
+            }).join('');
+            iFoot.innerHTML = `<th class="text-end">Total:</th><th class="text-end font-monospace">${tq}</th><th></th><th class="text-end font-monospace text-warning">${dsFmt(tv)}</th>`;
+        }
+
+        // ---- (3) Discounts Given (Excl. Special Outlet) x Beverage Types ----
+        let recs = discountData.filter(d => dsInRange(d.date, from, to));
+        let order = (discountHeaders || []).map(h => String(h));
+        let nameSet = new Set(), hasUnalloc = false;
+        recs.forEach(d => {
+            let bd = Array.isArray(d.itemBreakdown) ? d.itemBreakdown : [];
+            bd.forEach(b => nameSet.add(String(b.name)));
+            if (bd.length === 0 && (parseFloat(d.eligibleDiscount) || 0) > 0) hasUnalloc = true;
+        });
+        let names = [...nameSet].sort((a, b) => { let ia = order.indexOf(a), ib = order.indexOf(b); return (ia < 0 ? 999 : ia) - (ib < 0 ? 999 : ib); });
+        if (hasUnalloc) names.push('Unallocated');
+        let byDate = {};
+        recs.forEach(d => {
+            let row = byDate[d.date] = byDate[d.date] || {};
+            let bd = Array.isArray(d.itemBreakdown) ? d.itemBreakdown : [];
+            if (bd.length === 0) { let e = parseFloat(d.eligibleDiscount) || 0; if (e > 0) row['Unallocated'] = (row['Unallocated'] || 0) + e; }
+            bd.forEach(b => { let n = String(b.name); row[n] = (row[n] || 0) + (parseFloat(b.value) || 0); });
+        });
+        let dates = Object.keys(byDate).sort();
+        document.getElementById('dsDiscHeadRow').innerHTML = '<th>Date</th>' + names.map(n => `<th>${dsEsc(n)}</th>`).join('') + '<th class="text-warning border-start">Total</th>';
+        let dBody = document.getElementById('dsDiscBody'), dFoot = document.getElementById('dsDiscFootRow');
+        if (dates.length === 0 || names.length === 0) {
+            dBody.innerHTML = `<tr><td colspan="${2 + names.length}" class="text-muted py-4">තෝරාගත් කාල සීමාව තුළ Discount දත්ත හමු නොවීය.</td></tr>`; dFoot.innerHTML = '';
+        } else {
+            let colT = names.map(() => 0), gt = 0, rows = '';
+            dates.forEach(dt => {
+                let rt = 0;
+                let cells = names.map((n, idx) => { let v = byDate[dt][n] || 0; colT[idx] += v; rt += v; return `<td class="text-end font-monospace">${v ? dsFmt(v) : ''}</td>`; }).join('');
+                gt += rt;
+                rows += `<tr><td>${dsEsc(dt)}</td>${cells}<td class="text-end font-monospace text-warning fw-bold border-start">${dsFmt(rt)}</td></tr>`;
+            });
+            dBody.innerHTML = rows;
+            dFoot.innerHTML = '<th class="text-end">Total:</th>' + colT.map(t => `<th class="text-end font-monospace">${dsFmt(t)}</th>`).join('') + `<th class="text-end font-monospace text-warning border-start">${dsFmt(gt)}</th>`;
+        }
+    }
+
+    function renderDsSpecialOutlet(from, to) {
+        // ---- Collection loads: Date / Invoice / Cash Discount ----
+        let loads = masterData.filter(l => String(l.note || '').trim().toUpperCase() === 'COLLECTION' && dsInRange(l.date, from, to))
+            .slice().sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+        let cBody = document.getElementById('dsCollectionBody'), cFoot = document.getElementById('dsCollectionFoot');
+        if (loads.length === 0) { cBody.innerHTML = '<tr><td colspan="3" class="text-muted py-4 text-center">Collection තොග හමු නොවීය.</td></tr>'; cFoot.innerHTML = ''; }
+        else {
+            let tot = 0;
+            cBody.innerHTML = loads.map(l => { let v = dsCashDiscount(l); tot += v; return `<tr><td>${dsEsc(l.date || '-')}</td><td class="text-info">${dsEsc(l.invNo || '-')}</td><td class="text-end font-monospace">${dsFmt(v)}</td></tr>`; }).join('');
+            cFoot.innerHTML = `<th colspan="2" class="text-end">Total:</th><th class="text-end font-monospace text-warning">${dsFmt(tot)}</th>`;
+        }
+        // ---- Special Outlet discounts per date ----
+        let byDate = {};
+        discountData.forEach(d => {
+            if (!dsInRange(d.date, from, to)) return;
+            let v = parseFloat(d.specialOutlet) || 0; if (v <= 0) return;
+            byDate[d.date] = (byDate[d.date] || 0) + v;
+        });
+        let dates = Object.keys(byDate).sort();
+        let sBody = document.getElementById('dsSpecialBody'), sFoot = document.getElementById('dsSpecialFoot');
+        if (dates.length === 0) { sBody.innerHTML = '<tr><td colspan="2" class="text-muted py-4 text-center">Special Outlet දත්ත හමු නොවීය.</td></tr>'; sFoot.innerHTML = ''; }
+        else {
+            let tot = 0;
+            sBody.innerHTML = dates.map(dt => { tot += byDate[dt]; return `<tr><td>${dsEsc(dt)}</td><td class="text-end font-monospace text-danger">${dsFmt(byDate[dt])}</td></tr>`; }).join('');
+            sFoot.innerHTML = `<th class="text-end">Total:</th><th class="text-end font-monospace text-warning">${dsFmt(tot)}</th>`;
+        }
+    }
+
     function deleteLoad(index) {
         Swal.fire({ title: 'Delete Load?', text: `Invoice ${masterData[index].invNo} will be removed.`, icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', cancelButtonColor: '#3085d6', confirmButtonText: 'Yes, delete'
         }).then((result) => { if (result.isConfirmed) { masterData.splice(index, 1); saveToDatabase(); renderMasterData(); renderDiscountDashboard(); renderHistoricalProfit(); Swal.fire('Deleted!', 'Load has been removed.', 'success'); } });
@@ -2995,6 +3411,9 @@
         // නොකළහොත් Table එකේ පරණ (වැරදි) අගයම පෙන්වනු ඇත. එබැවින් මෙතනින්ම Sync කරයි.
         l.excelSummary = l.excelSummary || {};
         l.excelSummary.netValue = l.sysTotals.netValue;
+        l.excelSummary.cashDiscount = l.sysTotals.cashDiscount;
+        l.excelSummary.earlySet = l.sysTotals.earlySet;
+        l.excelSummary.taxable = l.sysTotals.taxable;
         l.excelSummary.vat = l.sysTotals.vat;
         l.excelSummary.finalValue = l.sysTotals.finalValue;
 
